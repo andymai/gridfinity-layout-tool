@@ -5,6 +5,8 @@ import { useTranslation } from '@/i18n';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useScanLaunch } from '@/shared/hooks/useScanLaunch';
+import { useYour2026Routing } from '@/shared/hooks/useYour2026Routing';
+import { isYearReviewOpen } from '@/shared/yearReview/window';
 import type { WhatsNewAction, WhatsNewEntry, WhatsNewKind } from '@/features/whats-new';
 import type { Locale } from '@/i18n/types';
 
@@ -38,6 +40,10 @@ export function useDestinationLabel(entry: WhatsNewEntry): string | null {
       return t(`whatsNew.action.openModal.${action.modal}`);
     case 'scanTool':
       return t('whatsNew.action.scanTool');
+    case 'yearReview':
+      // Outside the window the route sends visitors home, so an archived entry
+      // offers no button rather than one that goes nowhere.
+      return isYearReviewOpen() ? t('whatsNew.action.yearReview') : null;
     default: {
       const _exhaustive: never = action;
       throw new Error(`whats-new: unknown action ${JSON.stringify(_exhaustive)}`);
@@ -57,6 +63,7 @@ export function useEntryActivation(onNavigate: () => void): Activate {
   const { navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { navigateToBaseplate } = useBaseplateRouting();
   const launchScan = useScanLaunch();
+  const { navigateToYour2026 } = useYour2026Routing();
 
   const run = useCallback(
     (action: WhatsNewAction) => {
@@ -99,6 +106,9 @@ export function useEntryActivation(onNavigate: () => void): Activate {
         case 'scanTool':
           launchScan('whats_new');
           return;
+        case 'yearReview':
+          navigateToYour2026('?from=whats_new');
+          return;
         default: {
           const _exhaustive: never = action;
           throw new Error(`whats-new: unknown action ${JSON.stringify(_exhaustive)}`);
@@ -107,6 +117,7 @@ export function useEntryActivation(onNavigate: () => void): Activate {
     },
     [
       launchScan,
+      navigateToYour2026,
       navigateToBaseplate,
       navigateToDesigner,
       navigateToPlanner,

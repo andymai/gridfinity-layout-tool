@@ -3,7 +3,6 @@ import { Button, SegmentedControl } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { useCurrentLocale, useTranslation } from '@/i18n';
 import { SubHeader } from '@/shared/components/PanelText';
-import { WHATS_NEW_ENTRIES } from '@/features/whats-new/entries';
 import { countByKind, groupByMonth, resolveText } from '@/features/whats-new/digest';
 import type { WhatsNewEntry, WhatsNewKind } from '@/features/whats-new';
 import { formatDay, formatMonth, useDestinationLabel, type Activate } from './whatsNewShared';
@@ -14,9 +13,11 @@ export type KindFilter = 'all' | WhatsNewKind;
 const FILTERS: readonly KindFilter[] = ['all', 'new', 'improved', 'fixed'];
 
 export function KindFilterControl({
+  entries,
   value,
   onChange,
 }: {
+  entries: WhatsNewEntry[];
   value: KindFilter;
   onChange: (value: KindFilter) => void;
 }) {
@@ -30,12 +31,12 @@ export function KindFilterControl({
           <span className="flex items-center gap-1.5">
             {kind === 'all' ? t('common.all') : t(`whatsNew.kind.${kind}`)}
             <span className="tabular-nums text-content-disabled">
-              {kind === 'all' ? WHATS_NEW_ENTRIES.length : countByKind(WHATS_NEW_ENTRIES, kind)}
+              {kind === 'all' ? entries.length : countByKind(entries, kind)}
             </span>
           </span>
         ),
       })),
-    [t]
+    [entries, t]
   );
 
   return (
@@ -49,15 +50,21 @@ export function KindFilterControl({
   );
 }
 
-export function ArchiveList({ filter, activate }: { filter: KindFilter; activate: Activate }) {
+export function ArchiveList({
+  entries,
+  filter,
+  activate,
+}: {
+  entries: WhatsNewEntry[];
+  filter: KindFilter;
+  activate: Activate;
+}) {
   const locale = useCurrentLocale();
   const groups = useMemo(() => {
     const matching =
-      filter === 'all'
-        ? WHATS_NEW_ENTRIES
-        : WHATS_NEW_ENTRIES.filter((entry) => (entry.kind ?? 'new') === filter);
+      filter === 'all' ? entries : entries.filter((entry) => (entry.kind ?? 'new') === filter);
     return groupByMonth(matching);
-  }, [filter]);
+  }, [entries, filter]);
 
   return (
     <div className="flex flex-col py-2">

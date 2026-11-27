@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AppVersionButton, AppVersionRailButton } from './AppVersionButton';
 import { usePWAUpdateStore } from '@/core/store/pwaUpdate';
@@ -38,6 +38,22 @@ describe('AppVersionButton', () => {
     render(<AppVersionButton />);
     expect(button()).toHaveTextContent(/^v\d/);
     expect(button()).not.toHaveTextContent('whatsNew.badge');
+  });
+
+  it("lights up at midnight when a scheduled entry's day comes, with no reload", async () => {
+    vi.useFakeTimers({ now: new Date(2026, 10, 30, 23, 59) });
+    try {
+      markAllSeen();
+      render(<AppVersionButton />);
+      expect(button()).not.toHaveTextContent('whatsNew.badge');
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2 * 60 * 1000);
+      });
+      expect(button()).toHaveTextContent('whatsNew.badge');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('badges unseen highlights and opens the digest', async () => {

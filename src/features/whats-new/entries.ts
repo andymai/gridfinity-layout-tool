@@ -14,6 +14,18 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'your-2026',
+    date: '2026-12-01',
+    showFrom: '2026-12-01',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Your 2026' },
+    body: {
+      en: 'Your year in bins: drawers, prints, the most complicated thing you made, and the people who kept it free.',
+    },
+    action: { kind: 'yearReview' },
+  },
+  {
     id: 'cutout-cradle',
     date: '2026-11-23',
     kind: 'new',

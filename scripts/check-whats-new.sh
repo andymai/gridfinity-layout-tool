@@ -6,7 +6,7 @@
 #
 #   1. A staged feature touching src/features/ with no entry added. Most feats
 #      genuinely do not warrant one, which is why this cannot block.
-#   2. LATEST_ENTRY_ID out of sync with the newest entry.
+#   2. LATEST_ENTRIES in latest.ts out of sync with the newest entry.
 
 trap 'exit 0' ERR
 
@@ -22,11 +22,11 @@ NC='\033[0m'
 # 1. Marker drift, cheap enough to check on every commit that touches either file.
 if [ -f "$ENTRIES" ] && [ -f "$LATEST" ]; then
   NEWEST=$(grep -m1 -oE "id: '[^']+'" "$ENTRIES" | head -1 | sed "s/id: '//; s/'$//")
-  MARKER=$(grep -oE "LATEST_ENTRY_ID = '[^']+'" "$LATEST" | sed "s/LATEST_ENTRY_ID = '//; s/'$//")
+  MARKER=$(grep -m1 -oE "id: '[^']+'" "$LATEST" | head -1 | sed "s/id: '//; s/'$//")
   if [ -n "$NEWEST" ] && [ -n "$MARKER" ] && [ "$NEWEST" != "$MARKER" ]; then
-    printf "${YELLOW}⚠ whats-new:${NC} LATEST_ENTRY_ID is '%s' but the newest entry is '%s'.\n" \
+    printf "${YELLOW}⚠ whats-new:${NC} LATEST_ENTRIES starts at '%s' but the newest entry is '%s'.\n" \
       "$MARKER" "$NEWEST"
-    printf "  Update %s. The sidebar badge reads that constant.\n\n" "$LATEST"
+    printf "  Update %s. The sidebar badge reads that list.\n\n" "$LATEST"
   fi
 fi
 

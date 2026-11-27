@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react';
-import { LATEST_ENTRY_ID } from './latest';
+import { useLocalDay } from './hooks/useLocalDay';
+import { isCaughtUp, latestEntryId } from './latest';
+import { localDay } from './schedule';
 
 const STORAGE_KEY = 'gridfinity-whats-new-v1';
 
@@ -73,9 +75,14 @@ export function getSeenState(): SeenState {
  * on. Returning false there keeps the badge dark on the first paint, before
  * `seedIfFirstRun` has run, and on routes where seeding is deferred.
  */
-export function hasUnseen(state: SeenState): boolean {
+export function hasUnseen(state: SeenState, day: string = localDay()): boolean {
   if (state.lastSeenId === '') return false;
-  return state.lastSeenId !== LATEST_ENTRY_ID;
+  return !isCaughtUp(state.lastSeenId, day);
+}
+
+/** `hasUnseen` for a component: it re-renders when a scheduled entry's day comes. */
+export function useHasUnseen(): boolean {
+  return hasUnseen(useSeenState(), useLocalDay());
 }
 
 /**
@@ -85,12 +92,12 @@ export function hasUnseen(state: SeenState): boolean {
  */
 export function seedIfFirstRun(): boolean {
   if (cache.lastSeenId !== '') return false;
-  write({ lastSeenId: LATEST_ENTRY_ID, lastAutoOpenAt: Date.now() });
+  write({ lastSeenId: latestEntryId(), lastAutoOpenAt: Date.now() });
   return true;
 }
 
-export function markAllSeen(): void {
-  write({ ...cache, lastSeenId: LATEST_ENTRY_ID });
+export function markAllSeen(day: string = localDay()): void {
+  write({ ...cache, lastSeenId: latestEntryId(day) });
 }
 
 export function recordAutoOpen(): void {

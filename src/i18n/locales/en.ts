@@ -6610,6 +6610,7 @@ const en: Record<string, string> = {
   'whatsNew.action.openModal.designGallery': 'Open gallery',
   'whatsNew.action.openModal.labels': 'Open labels',
   'whatsNew.action.scanTool': 'Scan a tool',
+  'whatsNew.action.yearReview': 'Play Your 2026',
   'whatsNew.action.openLabs': 'Open Labs',
   'settings.general.showUpdateSummaries': 'Show update summaries',
   'settings.search.keywords.updateSummaries':

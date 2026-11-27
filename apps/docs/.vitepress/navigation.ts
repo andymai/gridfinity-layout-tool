@@ -127,6 +127,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Work together live', link: '/sharing/live-collaboration' },
       { text: 'Accounts and sync', link: '/sharing/accounts-and-sync' },
       { text: 'The community gallery', link: '/sharing/community' },
+      { text: 'Your 2026', link: '/sharing/your-2026' },
     ],
   },
   {
