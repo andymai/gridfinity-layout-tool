@@ -1,0 +1,46 @@
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_cbdce95362cca9::t_db35295f804e97 74,78-80
+  s_cbdce95362cca9::t_74b2d3de5ec945 35,51
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_cbdce95362cca9::t_1a57913377d9f9 36,376-381
+  s_cbdce95362cca9::t_c1a0d799fc8509 286
+src/features/baseplate/components/BaseplateSelector/BaseplateSelector.test.tsx
+  s_cbdce95362cca9::t_dc206cda4e603d 5-6,16-17,46-52,71,85-86,92-108,178-211
+  s_cbdce95362cca9::t_5adfbb9be9de81 212
+src/features/baseplate/components/BaseplateSelector/index.ts
+  s_cbdce95362cca9::t_58ba4dab265731 1
+src/features/baseplate/components/BaseplatePage/BaseplatePage.test.tsx
+  s_cbdce95362cca9::t_6b603202659407 3,90,155-159
+  s_cbdce95362cca9::t_688d77c2ac7cab 79-84,91-93,97-101,160-177
+  s_cbdce95362cca9::t_5a98158766941e 178
+src/features/baseplate/hooks/useNewBaseplate.ts
+  s_cbdce95362cca9::t_78401864756f01 1-36
+src/features/baseplate/hooks/useNewBaseplate.test.ts
+  s_cbdce95362cca9::t_2cbe6bb8be7ab2 1-93
+apps/docs/baseplates/basics.md
+  s_cbdce95362cca9::t_3ad3951f2ac6ed 13,101-103,109
+  s_cbdce95362cca9::t_b8d6d5d9e68425 110
+src/features/baseplate/components/BaseplateSelector/BaseplateSelector.tsx
+  s_cbdce95362cca9::t_6653afd8fae1fb 92
+  s_cbdce95362cca9::t_58ba4dab265731 19,120-136
+  s_cbdce95362cca9::t_63e50d353c1496 117
+  s_cbdce95362cca9::t_431167ff82b302 3-4,6,8,10-11,22,35,108-116
+  s_cbdce95362cca9::t_c1a0d799fc8509 118
+  s_cbdce95362cca9::t_88a21bca797639 119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c5cc0ba89191b1aba56cff136635165ebaeaede2",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
