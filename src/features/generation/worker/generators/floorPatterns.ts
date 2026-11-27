@@ -27,7 +27,13 @@ import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacemen
 import { resolveTrayBottomInputs } from './trayBottomInputs';
 import { isPartialMask, isRegionFilled } from '@/shared/utils/cellMask';
 import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
-import { cornerHoleCandidates } from '@/shared/generation/magnetPositions';
+import {
+  cornerHoleCandidates,
+  footHoleMouthRadius,
+  keepFootHolesOffFlank,
+  socketFootHoles,
+  type SocketFootHoleSpec,
+} from '@/shared/generation/magnetPositions';
 import { magnetHoleStyleFrom } from '@/shared/generation/magnetHoleStyle';
 import { DEFAULT_SOCKET_CELL_PLAN } from '@/shared/generation/socketCellPlan';
 import type { PatternPanelSpec } from './dividerPatterns';
@@ -39,11 +45,7 @@ import { interiorDividerSegments } from './compartmentBuilder';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { filledSocketCells } from './socketBuilder';
 import { padTakesChamfer } from './lightweightBaseBuilder';
-import {
-  cellHostsAttachmentHoles,
-  chamferFitsCell,
-  magnetPositionsForCell,
-} from './baseplateMagnets';
+import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { footPinPositions, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { DETACHABLE_PIN_HOLE_DIAMETER_MM } from '@/shared/types/bin';
 import { forEachCell, type CellInfo } from './cellDecomposition';
@@ -184,10 +186,37 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
 
   const pitch = { x: dim.gridUnitMmX, y: dim.gridUnitMmY };
   const anchor = params.magnetAnchor ?? DEFAULT_MAGNET_ANCHOR;
-  const sitesOf = (cell: CellInfo): Array<[number, number]> =>
-    cellHostsAttachmentHoles(cell, radius, pitch.x, pitch.y)
-      ? magnetPositionsForCell(cell, radius, pitch.x, pitch.y, anchor)
-      : [];
+  const style = magnetHoleStyleFrom(params.base);
+  const spec: SocketFootHoleSpec = {
+    magnetRadius: dim.withMagnet ? params.base.magnetDiameter / 2 : 0,
+    screwRadius: dim.withScrew ? params.base.screwDiameter / 2 : 0,
+    chamfer: style.chamfer,
+    pitchX: pitch.x,
+    pitchY: pitch.y,
+    anchor,
+  };
+  // The holes the active builder drills, so the keep-outs land on them: the
+  // socket's own plan, or the lightweight base's, which opens every pad the
+  // same way rather than judging each cell's fit.
+  const padChamfer = dim.withMagnet && padTakesChamfer(style);
+  const holesOf = (cell: CellInfo, cornersOf?: SocketFootHoleSpec['cornersOf']) => {
+    if (!cellHostsAttachmentHoles(cell, radius, pitch.x, pitch.y)) return [];
+    if (!dim.lightweight) return socketFootHoles(cell, { ...spec, cornersOf }).positions;
+    const own = cornersOf
+      ? cornerHoleCandidates(
+          cell,
+          radius,
+          pitch.x,
+          pitch.y,
+          anchor,
+          cornersOf.width,
+          cornersOf.depth,
+          padChamfer
+        )
+      : magnetPositionsForCell(cell, radius, pitch.x, pitch.y, anchor);
+    const mouth = footHoleMouthRadius(spec.magnetRadius, spec.screwRadius, padChamfer);
+    return keepFootHolesOffFlank(own, cell, mouth, pitch.x, pitch.y);
+  };
   const edge = { x: params.fractionalEdgeX, y: params.fractionalEdgeY };
   const cells: CellInfo[] = [];
   forEachCell(params.width, params.depth, (cell) => cells.push(cell), {
@@ -196,7 +225,7 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
     fractionalEdgeY: edge.y,
   });
 
-  if (!dim.cornerHolesOnly) return cells.flatMap(sitesOf).map(keepOut);
+  if (!dim.cornerHolesOnly) return cells.flatMap((cell) => holesOf(cell)).map(keepOut);
 
   // The corners are taken over the holes the active builder actually drills.
   // Detachable feet sit on whole cells only, and the lightweight base walks the
@@ -205,28 +234,8 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
     const resolved = resolveDetachableFeet(params);
     return (resolved.screw?.positions ?? resolved.magnet?.positions ?? []).map(keepOut);
   }
-  // The chamfer decision each builder makes. It decides whether a borrowed
-  // corner hole fits, so it must match for the keep-outs to land on the holes.
-  const style = magnetHoleStyleFrom(params.base);
-  const chamferAt = (cell: CellInfo): boolean => {
-    if (!dim.withMagnet) return false;
-    if (dim.lightweight) return padTakesChamfer(style);
-    const own = magnetPositionsForCell(cell, radius, pitch.x, pitch.y, anchor);
-    return style.chamfer && chamferFitsCell(cell, radius, pitch.x, pitch.y, anchor, own);
-  };
-  const cornerSitesOf = (cell: CellInfo): Array<[number, number]> =>
-    cellHostsAttachmentHoles(cell, radius, pitch.x, pitch.y)
-      ? cornerHoleCandidates(
-          cell,
-          radius,
-          pitch.x,
-          pitch.y,
-          anchor,
-          params.width,
-          params.depth,
-          chamferAt(cell)
-        )
-      : [];
+  const corners = { width: params.width, depth: params.depth };
+  const cornerSitesOf = (cell: CellInfo) => holesOf(cell, corners);
   const drilled = dim.lightweight
     ? filledSocketCells(
         params.width,

@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
+  FOOT_HOLE_MIN_WALL_MM,
+  FOOT_UNDERSIDE_INSET_MM,
   GRIDFINITY_SPEC,
   NOZZLE_WALL_COUNTS,
+  footHoleOffsetMm,
   magnetPadMarginForNozzle,
   wallThicknessForNozzle,
 } from '@/shared/printSettings/gridfinityGeometry';
@@ -99,6 +102,43 @@ describe('gridfinityGeometry', () => {
 
     it('keeps omitted nozzle settings on the legacy margin', () => {
       expect(magnetPadMarginForNozzle()).toBe(1);
+    });
+  });
+
+  describe('footHoleOffsetMm', () => {
+    // A full 42mm foot's flat underside ends 17.8mm from its centre, and the
+    // spec hole sits 13mm out, so a mouth up to 4.4mm wide keeps the wall.
+    it('places the flat underside half the clearance plus both tapers inside the cell', () => {
+      expect(FOOT_UNDERSIDE_INSET_MM).toBeCloseTo(3.2, 9);
+    });
+
+    it.each([
+      ['the default 6.5mm magnet', 3.25],
+      ['a chamfered default magnet', 4.05],
+      ['an 8mm magnet', 4],
+    ])('leaves %s where it is', (_, mouth) => {
+      expect(footHoleOffsetMm(13, 42, mouth)).toBe(13);
+      expect(footHoleOffsetMm(-13, 42, mouth)).toBe(-13);
+    });
+
+    it('pulls a 10mm magnet in just far enough to keep the wall', () => {
+      const pulled = footHoleOffsetMm(13, 42, 5);
+      expect(pulled).toBeCloseTo(12.4, 9);
+      expect(21 - FOOT_UNDERSIDE_INSET_MM - pulled - 5).toBeCloseTo(FOOT_HOLE_MIN_WALL_MM, 9);
+      expect(footHoleOffsetMm(-13, 42, 5)).toBeCloseTo(-12.4, 9);
+    });
+
+    it('pulls a chamfered mouth in by its full width', () => {
+      expect(footHoleOffsetMm(13, 42, 5.8)).toBeCloseTo(11.6, 9);
+    });
+
+    it('measures a half foot by its own span', () => {
+      expect(footHoleOffsetMm(0, 21, 5)).toBe(0);
+      expect(footHoleOffsetMm(4, 21, 5)).toBeCloseTo(1.9, 9);
+    });
+
+    it('stops at the centre when even a centred hole cannot keep the wall', () => {
+      expect(footHoleOffsetMm(3, 12, 5)).toBe(0);
     });
   });
 });

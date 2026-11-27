@@ -10,11 +10,8 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
-import {
-  assertStructurallyValid,
-  assertWatertight,
-  columnCrossings,
-} from './__kernel-tests__/meshAssertions';
+import { assertStructurallyValid, assertWatertight } from './__kernel-tests__/meshAssertions';
+import { holeCentres as probeHoleCentres, outboardWallMm } from './__kernel-tests__/holeProbes';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
 import type { BaseConfig, BinParams } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -77,82 +74,9 @@ function drilledSites(mesh: MeshData, candidates: Array<[number, number]>): stri
     .sort();
 }
 
-/**
- * Centre of every pocket ceiling in the mesh, measured rather than matched
- * against candidates. Each pair of ceiling-height vertices votes for the two
- * centres of a hole-radius circle through both; a ring's pairs all agree on
- * its centre, while the foot's own outline at that height scatters its votes.
- * The draft kernel draws a ring in ~20 vertices, so this holds on every
- * kernel.
- */
+/** Pocket ceiling centres for a hole of `radius` at the default magnet depth. */
 function holeCentres(mesh: MeshData, radius = MAGNET_RADIUS): string[] {
-  let minZ = Infinity;
-  for (let i = 2; i < mesh.vertices.length; i += 3) minZ = Math.min(minZ, mesh.vertices[i]);
-  const ceilingZ = minZ + CEILING;
-  const points: Array<[number, number]> = [];
-  for (let i = 0; i < mesh.vertices.length; i += 3) {
-    if (Math.abs(mesh.vertices[i + 2] - ceilingZ) > 0.02) continue;
-    points.push([mesh.vertices[i], mesh.vertices[i + 1]]);
-  }
-  const bin = (v: number): number => Math.round(v * 20) / 20;
-  const votes = new Map<string, { x: number; y: number; n: number }>();
-  for (let i = 0; i < points.length; i++) {
-    for (let j = i + 1; j < points.length; j++) {
-      const [ax, ay] = points[i];
-      const [bx, by] = points[j];
-      const d = Math.hypot(bx - ax, by - ay);
-      if (d < 0.2 || d > 2 * radius - 0.01) continue;
-      const h = Math.sqrt(radius ** 2 - (d / 2) ** 2);
-      for (const side of [-1, 1]) {
-        const x = bin((ax + bx) / 2 - (side * h * (by - ay)) / d);
-        const y = bin((ay + by) / 2 + (side * h * (bx - ax)) / d);
-        const key = `${x},${y}`;
-        const vote = votes.get(key) ?? { x, y, n: 0 };
-        vote.n++;
-        votes.set(key, vote);
-      }
-    }
-  }
-  // A pocket ceiling is a whole circle; an arc of the foot's outline that
-  // happens to match the radius only covers part of one.
-  const wholeRing = (cx: number, cy: number): boolean => {
-    const sectors = new Set<number>();
-    for (const [x, y] of points) {
-      if (Math.abs(Math.hypot(x - cx, y - cy) - radius) > 0.05) continue;
-      sectors.add(Math.floor(((Math.atan2(y - cy, x - cx) + Math.PI) / (2 * Math.PI)) * 8) % 8);
-    }
-    return sectors.size === 8;
-  };
-  const accepted: Array<{ x: number; y: number }> = [];
-  for (const v of [...votes.values()].sort((a, b) => b.n - a.n)) {
-    if (v.n < 15) break;
-    if (accepted.some((a) => Math.hypot(a.x - v.x, a.y - v.y) < 1)) continue;
-    if (wholeRing(v.x, v.y)) accepted.push(v);
-  }
-  const round = (v: number): number => Math.round(v * 10) / 10 + 0;
-  return accepted.map((a) => `${round(a.x)},${round(a.y)}`).sort();
-}
-
-/**
- * Solid between a hole and the foot's flank beyond it, along +X through the
- * hole's centre at `z` above the underside. Zero when the bore opens through
- * the flank, which leaves no material on that side of it.
- */
-function outboardWallMm(mesh: MeshData, [x, y]: readonly [number, number], z: number): number {
-  let minZ = Infinity;
-  for (let i = 2; i < mesh.vertices.length; i += 3) minZ = Math.min(minZ, mesh.vertices[i]);
-  // Rotate the axes so a vertical column probe runs along X instead.
-  const rotated = new Float32Array(mesh.vertices.length);
-  for (let i = 0; i < rotated.length; i += 3) {
-    rotated[i] = mesh.vertices[i + 1];
-    rotated[i + 1] = mesh.vertices[i + 2];
-    rotated[i + 2] = mesh.vertices[i];
-  }
-  // Off the hole's axis by a hair: the bore has a vertex exactly on it.
-  const beyond = columnCrossings({ ...mesh, vertices: rotated }, y + 0.013, minZ + z).filter(
-    (crossing) => crossing > x
-  );
-  return beyond.length >= 2 ? beyond[1] - beyond[0] : 0;
+  return probeHoleCentres(mesh, radius, CEILING);
 }
 
 const OUTER_3x2 = ['-55,-34', '-55,34', '55,-34', '55,34'];
@@ -288,7 +212,13 @@ describe('corner-only attachment holes', () => {
           for (const hole of halfFoot) {
             expect(outboardWallMm(mesh, hole, 0.05)).toBeGreaterThanOrEqual(MAGNET_EDGE_CLEARANCE);
           }
-          expect(holes).toEqual(['-23.5,-13', '-23.5,13', '21,-13', '21,13']);
+          // A 10mm hole is too wide for any spec corner, so every foot pulls its
+          // holes 0.6mm in off the flank; the chamfered 6.5mm hole keeps its own.
+          expect(holes).toEqual(
+            radius === 5
+              ? ['-22.9,-12.4', '-22.9,12.4', '21,-12.4', '21,12.4']
+              : ['-23.5,-13', '-23.5,13', '21,-13', '21,13']
+          );
           assertStructurallyValid(mesh);
           assertWatertight(mesh);
         },

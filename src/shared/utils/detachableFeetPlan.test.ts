@@ -357,3 +357,32 @@ describe('corner-only holes', () => {
     expect(resolveCorners(false).magnet?.positions.length).toBeGreaterThan(4);
   });
 });
+
+describe('magnets wider than the foot allows at the spec corner', () => {
+  const resolveMagnet = (magnetDiameter: number) =>
+    resolveDetachableFeet({
+      width: 1,
+      depth: 1,
+      gridUnitMm: 42,
+      fractionalEdgeX: 'end',
+      fractionalEdgeY: 'end',
+      base: { style: 'magnet', magnetDiameter, magnetDepth: 2, screwDiameter: 3 },
+    });
+
+  it('keeps the spec corners for a magnet that leaves the flank its wall', () => {
+    expect(resolveMagnet(8).magnet?.positions.map(([x, y]) => [Math.abs(x), Math.abs(y)])).toEqual(
+      Array.from({ length: 4 }, () => [13, 13])
+    );
+  });
+
+  it('pulls a 10mm magnet in and grows the arm by the same amount', () => {
+    const plain = resolveMagnet(8);
+    const large = resolveMagnet(10);
+    for (const [x, y] of large.magnet?.positions ?? []) {
+      expect(Math.abs(x)).toBeCloseTo(12.4, 9);
+      expect(Math.abs(y)).toBeCloseTo(12.4, 9);
+    }
+    // The arm reaches the far side of the magnet plus the embed margin.
+    expect(large.armMm - plain.armMm).toBeCloseTo(1 + 0.6, 9);
+  });
+});

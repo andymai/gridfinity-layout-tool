@@ -177,6 +177,39 @@ export function magnetInsetFromCellEdgeMm(
 }
 
 /**
+ * How far inside its cell a bin foot's flat underside ends (mm). The foot only
+ * widens going up, so a hole drilled up from the underside comes closest to
+ * the tapered flank right there.
+ */
+export const FOOT_UNDERSIDE_INSET_MM =
+  GRIDFINITY_SPEC.TOLERANCE / 2 +
+  GRIDFINITY_SPEC.SOCKET_SMALL_TAPER +
+  GRIDFINITY_SPEC.SOCKET_BIG_TAPER;
+
+/**
+ * Solid a foot hole's mouth keeps from the edge of that underside (mm), about
+ * one extrusion line. Thinner, and the flank prints open beside the magnet.
+ */
+export const FOOT_HOLE_MIN_WALL_MM = 0.4;
+
+/**
+ * A foot hole's offset from its foot's centre along one axis, pulled in just
+ * far enough that a mouth of `mouthRadiusMm` keeps {@link FOOT_HOLE_MIN_WALL_MM}.
+ * An offset that already keeps it comes back unchanged, so the spec corners
+ * of every magnet up to about 8.8mm (7.2mm chamfered) stay where they are.
+ */
+export function footHoleOffsetMm(
+  offsetMm: number,
+  footSpanMm: number,
+  mouthRadiusMm: number
+): number {
+  const limit = footSpanMm / 2 - FOOT_UNDERSIDE_INSET_MM - mouthRadiusMm - FOOT_HOLE_MIN_WALL_MM;
+  if (Math.abs(offsetMm) <= limit + 1e-9) return offsetMm;
+  if (limit <= 0) return 0;
+  return offsetMm < 0 ? -limit : limit;
+}
+
+/**
  * Number of perimeter walls per nozzle size, matching common slicer defaults.
  *
  * Most slicers default to 2 perimeters. For very small nozzles (0.2mm),

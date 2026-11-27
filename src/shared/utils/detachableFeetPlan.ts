@@ -43,10 +43,11 @@ import {
 import { isFractional } from '@/core/constants';
 import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
-import { magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
+import { MAGNET_CHAMFER_MM, magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
 import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
 import {
   GRIDFINITY_SPEC,
+  footHoleOffsetMm,
   magnetInsetFromCellEdgeMm,
 } from '@/shared/printSettings/gridfinityGeometry';
 
@@ -525,16 +526,29 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
   const carriesMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
   const carriesScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
 
+  const anchor = params.magnetAnchor ?? 'edge';
+  const chamfer = params.base.magnetChamfer === true && magnetChamferFits(FOOT_EMBED_MARGIN_MM);
+  const mouthRadius = Math.max(
+    carriesMagnet ? params.base.magnetDiameter / 2 + (chamfer ? MAGNET_CHAMFER_MM : 0) : 0,
+    carriesScrew ? params.base.screwDiameter / 2 : 0
+  );
+  // A foot is a section of the full socket profile, so a hole too wide for the
+  // spec corner moves in off its flank exactly as an integral foot's does.
+  const insetX = magnetInsetFromCellEdgeMm(pitchX, anchor);
+  const insetY = magnetInsetFromCellEdgeMm(pitchY, anchor);
+  const specOffX = pitchX / 2 - insetX;
+  const specOffY = pitchY / 2 - insetY;
+  const cornerOffX = footHoleOffsetMm(specOffX, pitchX, mouthRadius);
+  const cornerOffY = footHoleOffsetMm(specOffY, pitchY, mouthRadius);
+
   // The arm is sized against the SHORTER pitch: a foot deep enough for the
   // magnet on one axis is not automatically deep enough on the other, and a
   // single arm value serves both. Screws share the magnets' spec corners, so
-  // one inset serves both attachments.
+  // one inset serves both attachments. A hole pulled in off the flank sits
+  // further from the edge, and the arm grows with it.
   const cornerInsetFromEdgeMm =
     carriesMagnet || carriesScrew
-      ? Math.min(
-          magnetInsetFromCellEdgeMm(pitchX, params.magnetAnchor ?? 'edge'),
-          magnetInsetFromCellEdgeMm(pitchY, params.magnetAnchor ?? 'edge')
-        )
+      ? Math.min(insetX, insetY) + Math.max(specOffX - cornerOffX, specOffY - cornerOffY)
       : undefined;
 
   const armMm = footArmMm({
@@ -565,7 +579,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
     ? placed.filter((foot) => cellIsFilled(foot, params.cellMask, pitchX, pitchY, params))
     : placed;
 
-  const corners = standardMagnetCorners(placements, pitchX, pitchY, params.magnetAnchor);
+  const corners = standardMagnetCorners(placements, cornerOffX, cornerOffY);
   const holePositions =
     params.base.cornerHolesOnly === true ? corners.filter(outerCornerHoleFilter(corners)) : corners;
 
@@ -585,7 +599,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
           depthMm: params.base.magnetDepth,
           style: {
             crushRibs: params.base.magnetCrushRibs === true,
-            chamfer: params.base.magnetChamfer === true && magnetChamferFits(FOOT_EMBED_MARGIN_MM),
+            chamfer,
           },
           positions: holePositions,
         }
@@ -594,7 +608,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
 }
 
 /**
- * The four spec magnet positions of every cell a foot sits in, deduplicated.
+ * The four magnet positions of every cell a foot sits in, deduplicated.
  *
  * Offsets come from the same inset the magnet placement resolves to, so a foot
  * carrying one lines up with the pocket magnet under it. A candidate list, not
@@ -602,12 +616,9 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
  */
 function standardMagnetCorners(
   placements: readonly FootPlacement[],
-  pitchX: number,
-  pitchY: number,
-  anchor: 'edge' | 'center' = 'edge'
+  offX: number,
+  offY: number
 ): Array<readonly [number, number]> {
-  const offX = pitchX / 2 - magnetInsetFromCellEdgeMm(pitchX, anchor);
-  const offY = pitchY / 2 - magnetInsetFromCellEdgeMm(pitchY, anchor);
   const seen = new Set<string>();
   const out: Array<readonly [number, number]> = [];
   for (const p of placements) {
