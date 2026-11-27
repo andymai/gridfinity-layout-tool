@@ -162,6 +162,7 @@ const SAMPLE_PATHS = [
   '/designer',
   '/baseplate',
   '/supporters',
+  '/your-2026',
   '/community',
   '/community/d/AbCdEfGhIjKl',
   '/community/d/short',

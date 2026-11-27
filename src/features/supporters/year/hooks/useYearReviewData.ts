@@ -6,7 +6,7 @@ import { useLayoutStore, useLibraryStore, useSettingsStore } from '@/core/store'
 import { readExportCount } from '@/shared/components/ExportDialog/exportSupportGate';
 import type { YearStats } from '../types';
 import { loadYearSources } from '../utils/loadYearSources';
-import { computeYearStats } from '../utils/yearStats';
+import { computeYearStats, hasYearActivity } from '../utils/yearStats';
 
 export type YearReviewData =
   | { readonly status: 'loading' }
@@ -36,17 +36,20 @@ async function collect(year: number): Promise<YearStats> {
   });
 }
 
-export function useYearReviewData(year: number): YearReviewData {
+/** `enabled` false reads nothing, so a visit sent home caches no early snapshot. */
+export function useYearReviewData(year: number, enabled: boolean): YearReviewData {
   const isLoaded = useLibraryStore((s) => s.isLoaded);
   const [data, setData] = useState<YearReviewData>({ status: 'loading' });
 
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || !enabled) return;
     let cancelled = false;
     if (session?.year !== year) session = { year, stats: collect(year) };
     const current = session;
     current.stats.then(
       (stats) => {
+        // An empty year sends the maker off to start work, so the next visit reads again.
+        if (!hasYearActivity(stats) && session === current) session = null;
         if (!cancelled) setData({ status: 'ready', stats });
       },
       () => {
@@ -57,7 +60,7 @@ export function useYearReviewData(year: number): YearReviewData {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, year]);
+  }, [isLoaded, year, enabled]);
 
   return data;
 }

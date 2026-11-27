@@ -39,6 +39,7 @@ import {
   BaseplatePage,
   BaseplateLibraryInitMount,
   SupportersPage,
+  Your2026Page,
   CommunityPage,
   DevThumbnailRoute,
   HelpModal,
@@ -77,6 +78,7 @@ import { useThemeEffect } from '@/shared/hooks/useThemeEffect';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
+import { useYour2026Routing } from '@/shared/hooks/useYour2026Routing';
 import { useLabelsRouting } from '@/shared/hooks/useLabelsRouting';
 import { useCommunityRouting } from '@/shared/hooks/useCommunityRouting';
 import {
@@ -106,6 +108,7 @@ export default function App() {
   const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
   const { isBaseplateRoute } = useBaseplateRouting();
   const { isSupportersRoute, navigateToSupporters } = useSupportersRouting();
+  const { isYour2026Route } = useYour2026Routing();
   const { isCommunityRoute, communityDesignIdFromUrl } = useCommunityRouting();
   const { isLabelsRoute } = useLabelsRouting();
   // Dev-only thumbnail capture route. Suppresses layout/designer routing so
@@ -119,6 +122,7 @@ export default function App() {
     isDesignerRoute ||
     isBaseplateRoute ||
     isSupportersRoute ||
+    isYour2026Route ||
     isCommunityRoute ||
     isLabelsRoute ||
     isDevThumbnailRoute;
@@ -136,6 +140,7 @@ export default function App() {
     isDesignerRoute,
     isBaseplateRoute,
     isSupportersRoute,
+    isYour2026Route,
     isCommunityRoute,
     isLabelsRoute,
   };
@@ -226,6 +231,7 @@ export default function App() {
       !isCollaborative &&
       !isCommunityRoute &&
       !isSupportersRoute &&
+      !isYour2026Route &&
       !hasSharedLayoutPreview &&
       !shouldShowDrawTutorial,
   });
@@ -301,7 +307,9 @@ export default function App() {
           ? { Page: LabelsPage, loading: t('loading.labels') }
           : isSupportersRoute
             ? { Page: SupportersPage, loading: t('loading.supporters') }
-            : null;
+            : isYour2026Route
+              ? { Page: Your2026Page, loading: t('loading.your2026') }
+              : null;
     if (page) {
       return (
         <Suspense fallback={<LoadingFallback label={page.loading} />}>

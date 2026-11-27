@@ -588,6 +588,10 @@
       "destination": "/"
     },
     {
+      "source": "/your-2026",
+      "destination": "/"
+    },
+    {
       "source": "/labels",
       "destination": "/"
     },

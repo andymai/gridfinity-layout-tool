@@ -94,6 +94,8 @@ export interface YearStats {
   readonly designs: number;
   /** Month index 0-11 in local time, with the number of items touched that month. */
   readonly busiestMonth: { readonly month: number; readonly count: number } | null;
+  /** Items touched in each local month, January first. */
+  readonly monthCounts: readonly number[];
   readonly filament: { readonly grams: number; readonly printMinutes: number } | null;
   readonly longestPrint: YearPrintedDesign | null;
   /** Bin designs by feature score, highest first, for the triangle-count shortlist. */

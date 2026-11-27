@@ -204,6 +204,18 @@ describe('SupportersPage', () => {
     });
   });
 
+  describe('arriving from Your 2026', () => {
+    afterEach(() => window.history.replaceState(null, '', '/'));
+
+    it('rolls the credits even after they were seen', () => {
+      markCreditsSeen();
+      window.history.replaceState(null, '', '/supporters?from=your-2026');
+      render(<SupportersPage />);
+      expect(screen.getByRole('button', { name: 'supporters.credits.skip' })).toBeInTheDocument();
+      expect(screen.queryByText('supporters.credits.theEnd')).not.toBeInTheDocument();
+    });
+  });
+
   describe('a return visit', () => {
     beforeEach(() => markCreditsSeen());
 

@@ -5,6 +5,7 @@ export interface RouteMetaFlags {
   readonly isDesignerRoute: boolean;
   readonly isBaseplateRoute: boolean;
   readonly isSupportersRoute: boolean;
+  readonly isYour2026Route: boolean;
   readonly isCommunityRoute: boolean;
   readonly isLabelsRoute: boolean;
   readonly communityDesignIdFromUrl: string | null;
@@ -26,6 +27,7 @@ export function routeTitleKey(
   if (flags.isDesignerRoute) return 'seo.designer.title';
   if (flags.isBaseplateRoute) return 'seo.baseplate.title';
   if (flags.isSupportersRoute) return 'seo.supporters.title';
+  if (flags.isYour2026Route) return 'seo.your2026.title';
   if (flags.isCommunityRoute) return 'seo.community.title';
   if (flags.isLabelsRoute) return 'seo.labels.title';
   return null;
@@ -37,6 +39,7 @@ export function useRouteMeta(flags: RouteMetaFlags): void {
     isDesignerRoute,
     isBaseplateRoute,
     isSupportersRoute,
+    isYour2026Route,
     isCommunityRoute,
     isLabelsRoute,
     communityDesignIdFromUrl,
@@ -53,6 +56,7 @@ export function useRouteMeta(flags: RouteMetaFlags): void {
         isDesignerRoute,
         isBaseplateRoute,
         isSupportersRoute,
+        isYour2026Route,
         isCommunityRoute,
         isLabelsRoute,
       }) ?? 'seo.title';
@@ -62,11 +66,13 @@ export function useRouteMeta(flags: RouteMetaFlags): void {
         ? 'seo.baseplate.description'
         : isSupportersRoute
           ? 'seo.supporters.description'
-          : isCommunityRoute
-            ? 'seo.community.description'
-            : isLabelsRoute
-              ? 'seo.labels.description'
-              : 'seo.description';
+          : isYour2026Route
+            ? 'seo.your2026.description'
+            : isCommunityRoute
+              ? 'seo.community.description'
+              : isLabelsRoute
+                ? 'seo.labels.description'
+                : 'seo.description';
     const title = t(titleKey);
     const desc = t(descKey);
     document.title = title;
@@ -79,6 +85,7 @@ export function useRouteMeta(flags: RouteMetaFlags): void {
     isDesignerRoute,
     isBaseplateRoute,
     isSupportersRoute,
+    isYour2026Route,
     isCommunityRoute,
     isLabelsRoute,
     communityDesignIdFromUrl,
