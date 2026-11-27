@@ -225,3 +225,6 @@ lazy entry (`year/index.ts`). It reuses this slice's clock, pixel font and palet
   `useBackgroundThumbnailRegen` so nothing else uses the worker.
 - **Sound:** `YearSoundtrack` takes only a paused flag, never the story clock,
   so a card skip cannot lurch the tune. It shares the credits' sound setting.
+- **Share:** the PNG renders when a card settles, so the click shares at once
+  (a share sheet needs a fresh gesture). Canvas fonts need resolved families;
+  `PIXEL_FONT` holds a CSS variable, which `document.fonts.load` rejects.

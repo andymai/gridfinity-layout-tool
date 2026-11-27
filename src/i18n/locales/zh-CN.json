@@ -5622,5 +5622,6 @@
   "loading.your2026": "正在加载你的 2026",
   "your2026.complicated.title": "最复杂：“{name}”",
   "your2026.complicated.line": "{triangles} 个三角形。切片软件至今记得它。",
-  "your2026.complicated.lineNoCount": "切片软件至今记得它。"
+  "your2026.complicated.lineNoCount": "切片软件至今记得它。",
+  "your2026.controls.save": "保存图片"
 }

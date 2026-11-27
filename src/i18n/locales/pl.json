@@ -6105,5 +6105,6 @@
   "loading.your2026": "Wczytywanie Twojego roku 2026",
   "your2026.complicated.title": "Najbardziej skomplikowany: „{name}”",
   "your2026.complicated.line": "Trójkąty: {triangles}. Twój slicer dobrze to pamięta.",
-  "your2026.complicated.lineNoCount": "Twój slicer dobrze to pamięta."
+  "your2026.complicated.lineNoCount": "Twój slicer dobrze to pamięta.",
+  "your2026.controls.save": "Zapisz obraz"
 }

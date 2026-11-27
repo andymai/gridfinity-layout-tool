@@ -5783,5 +5783,6 @@
   "loading.your2026": "თქვენი 2026 იტვირთება",
   "your2026.complicated.title": "ყველაზე რთული: „{name}“",
   "your2026.complicated.line": "{triangles} სამკუთხედი. თქვენს სლაისერს ის ჯერ კიდევ ახსოვს.",
-  "your2026.complicated.lineNoCount": "თქვენს სლაისერს ის ჯერ კიდევ ახსოვს."
+  "your2026.complicated.lineNoCount": "თქვენს სლაისერს ის ჯერ კიდევ ახსოვს.",
+  "your2026.controls.save": "სურათის შენახვა"
 }

@@ -23,6 +23,8 @@ export interface StoryPlayerProps {
   readonly onReachEnd: () => void;
   /** Called each time a different card shows. */
   readonly onCardChange?: (card: YearCard) => void;
+  /** Called once a card's entrance has finished, when it is ready to share. */
+  readonly onCardSettled?: (card: YearCard) => void;
   /** Called when the viewer pauses or resumes; a held press is not a pause. */
   readonly onPausedChange?: (paused: boolean) => void;
   /** Controls beside the pause button, such as the sound toggle. */
@@ -62,6 +64,7 @@ export function StoryPlayer({
   onClose,
   onReachEnd,
   onCardChange,
+  onCardSettled,
   onPausedChange,
   extraControls,
   renderCard,
@@ -101,6 +104,10 @@ export function StoryPlayer({
   useEffect(() => {
     if (card) onCardChange?.(card);
   }, [card, onCardChange]);
+  const settledNow = position.elapsed >= SETTLED_S - 0.01;
+  useEffect(() => {
+    if (card && settledNow) onCardSettled?.(card);
+  }, [card, settledNow, onCardSettled]);
 
   useEffect(() => {
     onPausedChange?.(paused);

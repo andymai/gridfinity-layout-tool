@@ -5946,5 +5946,6 @@
   "loading.your2026": "Načítání tvého roku 2026",
   "your2026.complicated.title": "Nejsložitější: „{name}“",
   "your2026.complicated.line": "{triangles} trojúhelníků. Tohle si tvůj slicer pamatuje.",
-  "your2026.complicated.lineNoCount": "Tohle si tvůj slicer pamatuje."
+  "your2026.complicated.lineNoCount": "Tohle si tvůj slicer pamatuje.",
+  "your2026.controls.save": "Uložit obrázek"
 }

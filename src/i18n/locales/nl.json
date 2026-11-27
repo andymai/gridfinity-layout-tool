@@ -5783,5 +5783,6 @@
   "loading.your2026": "Jouw 2026 laden",
   "your2026.complicated.title": "Het ingewikkeldst: “{name}”",
   "your2026.complicated.line": "{triangles} driehoeken. Je slicer weet het nog.",
-  "your2026.complicated.lineNoCount": "Je slicer weet het nog."
+  "your2026.complicated.lineNoCount": "Je slicer weet het nog.",
+  "your2026.controls.save": "Afbeelding opslaan"
 }

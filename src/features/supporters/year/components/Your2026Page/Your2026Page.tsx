@@ -9,16 +9,21 @@ import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { useYour2026Routing } from '@/shared/hooks/useYour2026Routing';
 import { markYearReviewSeen } from '@/shared/yearReview/dockRow';
 import { isYearReviewOpen, YEAR_REVIEW_YEAR } from '@/shared/yearReview/window';
+import { useLatestRef } from '@/shared/hooks';
 import { useSupportersData } from '../../../hooks/useSupportersData';
 import { getSupportersPalette } from '../../../scene/palette';
 import { getSupporterCount } from '../../../utils/supportersData';
 import { SoundToggle } from '../../../components/SoundToggle';
 import { readSoundOn, saveSoundOn } from '../../../utils/soundPreference';
+import { useShareImage } from '../../hooks/useShareImage';
 import { useYearMeshes } from '../../hooks/useYearMeshes';
 import { useYearSoundtrack } from '../../hooks/useYearSoundtrack';
 import { useYearReviewData } from '../../hooks/useYearReviewData';
 import { meshCandidates, pickComplicated, type ComplicatedPick } from '../../utils/complicatedPick';
 import type { YearCard } from '../../utils/yearCards';
+import { readableAccent } from '../../utils/readableAccent';
+import { ShareButton } from '../ShareButton';
+import { shareSpecFor } from '../YearCardView/shareSpec';
 import { buildYearCards } from '../../utils/yearCards';
 import { hasYearActivity } from '../../utils/yearStats';
 import { StoryPlayer } from '../StoryPlayer';
@@ -30,6 +35,8 @@ import { YearStage } from '../YearStage';
  * lands later cannot change the answer, and a replay names the same bin.
  */
 let frozenComplicated: ComplicatedPick | null = null;
+
+const SITE_HOST = 'gridfinitylayouttool.com';
 
 /** Doors that pass `?from=`; anything else is a direct visit. */
 function openSource(from: string | null): 'dock' | 'whats_new' | 'direct' {
@@ -90,6 +97,10 @@ export function Your2026Page() {
 
   const stats = data.status === 'ready' ? data.stats : null;
   const cards = useMemo(() => (stats ? buildYearCards(stats) : []), [stats]);
+  const drawerPreview = useMemo(() => {
+    const id = stats?.biggestDrawer?.layoutId;
+    return entries.find((entry) => entry.id === id)?.preview ?? null;
+  }, [entries, stats]);
   const candidates = useMemo(() => (stats ? meshCandidates(stats) : []), [stats]);
   const meshes = useYearMeshes(candidates, nozzleSizeMm, stats !== null && hasYearActivity(stats));
   const [complicated, setComplicated] = useState(() => frozenComplicated);
@@ -99,18 +110,60 @@ export function Your2026Page() {
     [stats, meshes]
   );
   const shownComplicated = complicated ?? liveComplicated;
+  const [settledCard, setSettledCard] = useState<YearCard | null>(null);
+  // Read through a ref: a new handler makes the player call it again with no
+  // card change, which would clear the image the settled card prepared.
+  const liveComplicatedRef = useLatestRef(liveComplicated);
   const onCardChange = useCallback(
     (card: YearCard) => {
+      setSettledCard(null);
       if (card.kind !== 'complicated' || frozenComplicated) return;
-      frozenComplicated = liveComplicated;
-      setComplicated(liveComplicated);
+      frozenComplicated = liveComplicatedRef.current;
+      setComplicated(liveComplicatedRef.current);
     },
-    [liveComplicated]
+    [liveComplicatedRef]
   );
-  const drawerPreview = useMemo(() => {
-    const id = stats?.biggestDrawer?.layoutId;
-    return entries.find((entry) => entry.id === id)?.preview ?? null;
-  }, [entries, stats]);
+  const supporterCount = getSupporterCount(supporters);
+  const shareSpec = useMemo(
+    () =>
+      settledCard && stats
+        ? shareSpecFor(settledCard, {
+            t,
+            stats,
+            locale,
+            unit,
+            supporterCount,
+            complicated: complicated ?? liveComplicated,
+            drawerPreview,
+            meshes,
+          })
+        : null,
+    [
+      settledCard,
+      stats,
+      t,
+      locale,
+      unit,
+      supporterCount,
+      complicated,
+      liveComplicated,
+      drawerPreview,
+      meshes,
+    ]
+  );
+  const shareTheme = useMemo(() => {
+    // Canvas fonts cannot read CSS variables, so the families are resolved here.
+    const appFont = getComputedStyle(document.body).fontFamily;
+    return {
+      accent,
+      accentText: readableAccent(accent),
+      appFont,
+      pixelFont: `"Press Start 2P", ${appFont}`,
+      kicker: t('your2026.kicker'),
+      site: SITE_HOST,
+    };
+  }, [accent, t]);
+  const shareBlob = useShareImage(shareSpec, shareTheme);
 
   const onReachEnd = useCallback(() => trackEvent('your_2026_finished'), []);
 
@@ -184,8 +237,14 @@ export function Your2026Page() {
       onClose={navigateHome}
       onReachEnd={onReachEnd}
       onCardChange={onCardChange}
+      onCardSettled={setSettledCard}
       onPausedChange={setPaused}
-      extraControls={<SoundToggle on={soundOn} onToggle={toggleSound} />}
+      extraControls={
+        <>
+          <ShareButton blob={shareBlob} fileName={`your-2026-${settledCard?.kind ?? 'card'}.png`} />
+          <SoundToggle on={soundOn} onToggle={toggleSound} />
+        </>
+      }
       describeCard={(card) =>
         describeCard(card, {
           t,
