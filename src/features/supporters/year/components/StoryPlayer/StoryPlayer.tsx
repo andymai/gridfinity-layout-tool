@@ -64,7 +64,13 @@ export function StoryPlayer({
   const { clock, paused, setPaused } = useCreditsClock(true, ignoreEnd);
   const [time, setTime] = useState(() => startOf(timeline, initialIndex));
   const hiddenPause = useRef(false);
-  const press = useRef<{ x: number; y: number; at: number; wasPaused: boolean } | null>(null);
+  const press = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+    at: number;
+    wasPaused: boolean;
+  } | null>(null);
   const reachedEnd = useRef(false);
 
   useEffect(() => {
@@ -109,6 +115,11 @@ export function StoryPlayer({
         return;
       }
       if (ownsInput(event.target) && (event.key === ' ' || event.key === 'Enter')) return;
+      // A held Space repeats keydown; only the first press toggles.
+      if (event.key === ' ' && event.repeat) {
+        event.preventDefault();
+        return;
+      }
       if (event.key === 'ArrowRight') goNext();
       else if (event.key === 'ArrowLeft') goPrevious();
       else if (event.key === ' ') togglePause();
@@ -134,10 +145,12 @@ export function StoryPlayer({
   }, [clock, setPaused]);
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (ownsInput(event.target) || event.button !== 0) return;
+    // One press at a time: a second finger must not take over the first.
+    if (press.current || ownsInput(event.target) || event.button !== 0) return;
     // Capture, so a press dragged off the card still ends here and resumes.
     event.currentTarget.setPointerCapture(event.pointerId);
     press.current = {
+      pointerId: event.pointerId,
       x: event.clientX,
       y: event.clientY,
       at: performance.now(),
@@ -148,8 +161,8 @@ export function StoryPlayer({
 
   const onPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
     const start = press.current;
+    if (start?.pointerId !== event.pointerId) return;
     press.current = null;
-    if (!start) return;
     clock.setPaused(start.wasPaused);
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
@@ -165,10 +178,11 @@ export function StoryPlayer({
     else goNext();
   };
 
-  const onPointerCancel = () => {
+  const onPointerCancel = (event: ReactPointerEvent<HTMLDivElement>) => {
     const start = press.current;
+    if (start?.pointerId !== event.pointerId) return;
     press.current = null;
-    if (start) clock.setPaused(start.wasPaused);
+    clock.setPaused(start.wasPaused);
   };
 
   const card = cards.at(position.index);

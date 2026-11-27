@@ -86,7 +86,7 @@ describe('StoryPlayer', () => {
     });
     expect(capture).toHaveBeenCalledWith(1);
     act(() => {
-      fireEvent(surface, new Event('lostpointercapture', { bubbles: true }));
+      fireEvent.lostPointerCapture(surface, { pointerId: 1 });
       // A stray release after capture was lost must not count as a tap.
       fireEvent.pointerUp(surface, { button: 0, pointerId: 1, clientX: 10, clientY: 10 });
     });
@@ -115,5 +115,34 @@ describe('StoryPlayer', () => {
     expect(screen.getByRole('region', { name: 'Card 1 of 3' })).not.toHaveAttribute('aria-live');
     key('ArrowRight');
     expect(screen.getByText('final drawers')).toBeInTheDocument();
+  });
+
+  it('toggles pause once for a held Space', () => {
+    renderPlayer();
+    key(' ');
+    act(() => {
+      fireEvent.keyDown(window, { key: ' ', repeat: true });
+      fireEvent.keyDown(window, { key: ' ', repeat: true });
+    });
+    expect(screen.getByRole('button', { name: 'Play' })).toBeInTheDocument();
+  });
+
+  it("keeps the first finger's press when a second finger lands", () => {
+    const capture = vi.spyOn(Element.prototype, 'setPointerCapture').mockImplementation(() => {});
+    renderPlayer();
+    const surface = screen.getByRole('region', { name: 'Card 1 of 3' }).parentElement;
+    if (!surface) throw new Error('no surface');
+    const at = { button: 0, clientX: 300, clientY: 10 };
+    act(() => {
+      fireEvent.pointerDown(surface, { ...at, pointerId: 1 });
+      fireEvent.pointerDown(surface, { ...at, pointerId: 2 });
+      fireEvent.pointerUp(surface, { ...at, pointerId: 2 });
+    });
+    expect(screen.getByText('card:intro')).toBeInTheDocument();
+    act(() => {
+      fireEvent.pointerUp(surface, { ...at, pointerId: 1 });
+    });
+    expect(screen.getByText('card:drawers')).toBeInTheDocument();
+    capture.mockRestore();
   });
 });

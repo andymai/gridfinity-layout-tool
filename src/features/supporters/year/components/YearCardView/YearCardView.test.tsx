@@ -115,5 +115,6 @@ describe('YearCardView', () => {
       'You planned 3 drawers. 3 fewer places where things go to vanish.'
     );
     expect(describeCard({ kind: 'summary', duration: 5 }, input)).toContain('Drawers: 3');
+    expect(describeCard({ kind: 'type', duration: 5 }, input)).toContain('The Compartmentalist');
   });
 });

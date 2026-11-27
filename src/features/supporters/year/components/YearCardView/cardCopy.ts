@@ -179,5 +179,8 @@ export function describeCard(card: YearCard, input: CopyInput): string {
     );
   }
   const copy = cardCopy(card.kind, { ...input, shown: (value) => value });
-  return copy ? [copy.kicker, copy.title, ...copy.lines].filter(Boolean).join(' ') : '';
+  if (!copy) return '';
+  // On screen the type's name is the badge, which is not part of the copy.
+  const name = card.kind === 'type' ? typeName(input.t, input.stats.type.id) : undefined;
+  return [copy.kicker, name, copy.title, ...copy.lines].filter(Boolean).join(' ');
 }
