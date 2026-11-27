@@ -34,7 +34,7 @@ import {
 } from '@/core/storage/designStorePort';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { expectOk, expectErr, createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
-import { prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
+import { listNoDesignSummaries, prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
 
 // Mock clipboard API
 const mockClipboard = {
@@ -59,6 +59,7 @@ const fakePort: DesignStorePort = {
   registryEdgeFields: async () => ({}),
   registryPlacementFields: async () => ({}),
   prepareBinParams: prepareBinParamsAsIs,
+  listDesignSummaries: listNoDesignSummaries,
 };
 
 function expectImportError(result: Result<unknown, ValidationError>): ValidationImportError {

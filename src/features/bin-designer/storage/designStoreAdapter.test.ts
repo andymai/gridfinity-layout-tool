@@ -11,6 +11,7 @@ import type { Cutout, SavedDesign } from '../types';
 import { closeDesignerDb, saveDesign } from './DesignerStorage';
 import { DESIGNS_STORE, getDb } from './designerDb';
 import { designStoreAdapter } from './designStoreAdapter';
+import { createDesignVersion } from './DesignVersionService';
 
 function deleteDb(name: string): Promise<void> {
   return new Promise((resolve) => {
@@ -174,5 +175,66 @@ describe('designStoreAdapter.prepareBinParams', () => {
     ['an array', [DEFAULT_BIN_PARAMS]],
   ])('refuses %s', async (_label, params) => {
     expect(await designStoreAdapter.prepareBinParams(params)).toBeNull();
+  });
+});
+
+describe('designStoreAdapter.listDesignSummaries', () => {
+  async function save(name: string, params = DEFAULT_BIN_PARAMS): Promise<SavedDesign> {
+    return unwrap(
+      await saveDesign({
+        name,
+        params: { ...params },
+        thumbnail: 'data:image/webp;base64,thumb',
+        exportFileNameConfig: null,
+      })
+    );
+  }
+
+  it('lists every design with its version dates', async () => {
+    const edited = await save('Tall bin', { ...DEFAULT_BIN_PARAMS, height: 9 });
+    unwrap(await createDesignVersion(edited.id, 'First try', { name: 'Tall bin' }, null));
+
+    const summaries = unwrap(await designStoreAdapter.listDesignSummaries());
+    expect(summaries).toHaveLength(1);
+    expect(summaries[0]).toMatchObject({
+      id: edited.id,
+      name: 'Tall bin',
+      thumbnail: 'data:image/webp;base64,thumb',
+      remixed: false,
+      untouched: false,
+    });
+    expect(summaries[0]?.versionDates).toHaveLength(1);
+  });
+
+  it('marks the untouched default that a first designer visit saves', async () => {
+    await save('Untitled Bin');
+    const [summary] = unwrap(await designStoreAdapter.listDesignSummaries());
+    expect(summary?.untouched).toBe(true);
+  });
+
+  it('drops thumbnails on request', async () => {
+    await save('Tall bin', { ...DEFAULT_BIN_PARAMS, height: 9 });
+    const [summary] = unwrap(await designStoreAdapter.listDesignSummaries({ thumbnails: false }));
+    expect(summary?.thumbnail).toBeNull();
+  });
+
+  it('marks a community remix', async () => {
+    unwrap(
+      await saveDesign({
+        name: 'Remix',
+        params: { ...DEFAULT_BIN_PARAMS, height: 6 },
+        thumbnail: null,
+        exportFileNameConfig: null,
+        lineage: {
+          parentId: 'p1',
+          rootId: 'r1',
+          parentName: 'Parent',
+          parentAuthorName: 'Someone',
+          rootAuthorName: 'Someone',
+        },
+      })
+    );
+    const [summary] = unwrap(await designStoreAdapter.listDesignSummaries());
+    expect(summary?.remixed).toBe(true);
   });
 });

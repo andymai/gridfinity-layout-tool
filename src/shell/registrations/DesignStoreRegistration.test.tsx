@@ -11,6 +11,7 @@ const { fakeAdapter } = vi.hoisted(() => ({
     registryEdgeFields: vi.fn(),
     registryPlacementFields: vi.fn(),
     prepareBinParams: vi.fn(),
+    listDesignSummaries: vi.fn(),
   },
 }));
 

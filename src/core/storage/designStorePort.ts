@@ -58,6 +58,24 @@ export interface SaveDesignInput {
   readonly exportFileNameConfig: null;
 }
 
+/** One saved design, as a year in review reads it. */
+export interface DesignSummary {
+  readonly id: DesignId;
+  readonly name: string;
+  /** ISO timestamps, as the design store keeps them. */
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  /** Migrated bin params; absent for tool racks, imported meshes and assemblies. */
+  readonly params?: unknown;
+  readonly thumbnail: string | null;
+  /** True when the design came from a community remix by another author. */
+  readonly remixed: boolean;
+  /** True while every field a person edits still holds the designer's default. */
+  readonly untouched: boolean;
+  /** ISO capture times of the design's saved versions. */
+  readonly versionDates: readonly string[];
+}
+
 /** The slice of a saved design core reads back after a successful save. */
 export interface SavedDesignData {
   readonly id: DesignId;
@@ -143,6 +161,13 @@ export interface DesignStorePort {
    * every later read of the design.
    */
   prepareBinParams(params: unknown): Promise<PreparedBinParams | null>;
+  /**
+   * Every saved design with its version dates. `thumbnails: false` drops the
+   * thumbnails, for a caller that only needs dates.
+   */
+  listDesignSummaries(options?: {
+    readonly thumbnails?: boolean;
+  }): Promise<Result<DesignSummary[], StorageError>>;
 }
 
 let port: DesignStorePort | null = null;

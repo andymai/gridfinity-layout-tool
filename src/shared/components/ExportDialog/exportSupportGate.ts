@@ -38,6 +38,11 @@ function load(): ExportSupportState {
   return { exportCount: 0 };
 }
 
+/** Export actions on this device since the counter began on 2026-06-06. */
+export function readExportCount(): number {
+  return load().exportCount;
+}
+
 function save(state: ExportSupportState): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));

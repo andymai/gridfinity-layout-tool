@@ -21,12 +21,13 @@ import type {
   DesignRegistryEntry,
   DesignRegistryPlacementFields,
   DesignStorePort,
+  DesignSummary,
   LoadedDesignData,
   PreparedBinParams,
   SaveDesignInput,
   SavedDesignData,
 } from '@/core/storage/designStorePort';
-import { isOk } from '@/core/result';
+import { isOk, ok } from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import type { DesignId } from '@/core/types';
 import type { BinParams } from '@/features/bin-designer/types';
@@ -109,5 +110,40 @@ export const designStoreAdapter: DesignStorePort = {
     const size = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0;
     if (!size(width) || !size(depth) || !size(height)) return null;
     return { params: migrated, width, depth, height };
+  },
+
+  async listDesignSummaries(
+    options: { readonly thumbnails?: boolean } = {}
+  ): Promise<Result<DesignSummary[], StorageError>> {
+    const [{ listDesigns }, { listAllDesignVersions }, { isUntouchedDefault }] = await Promise.all([
+      import('@/features/bin-designer/storage/DesignerStorage'),
+      import('@/features/bin-designer/storage/DesignVersionService'),
+      import('@/features/bin-designer/utils/untouchedDesign'),
+    ]);
+    const designs = await listDesigns();
+    if (!isOk(designs)) return designs;
+    // Version dates only sharpen the summary, so a failed read leaves them empty.
+    const versions = await listAllDesignVersions();
+    const versionDates = new Map<string, string[]>();
+    if (isOk(versions)) {
+      for (const version of versions.value) {
+        const dates = versionDates.get(version.designId) ?? [];
+        dates.push(version.createdAt);
+        versionDates.set(version.designId, dates);
+      }
+    }
+    return ok(
+      designs.value.map((design) => ({
+        id: design.id,
+        name: design.name,
+        createdAt: design.createdAt,
+        updatedAt: design.updatedAt,
+        ...(design.params ? { params: design.params } : {}),
+        thumbnail: options.thumbnails === false ? null : design.thumbnail,
+        remixed: (design.lineage ?? null) !== null,
+        untouched: design.params ? isUntouchedDefault(design.params) : false,
+        versionDates: versionDates.get(design.id) ?? [],
+      }))
+    );
   },
 };
