@@ -30,6 +30,12 @@ const GENERATION_LIMIT_MS = 20_000;
 /** A result to show nowhere and keep nowhere: a pocket's mesh file has not arrived. */
 const NOT_YET = 'not-yet';
 
+interface Run {
+  cancelled: boolean;
+  /** Stops the generation in flight: its deadline and its request on the shared bridge. */
+  abort?: () => void;
+}
+
 /** Per session, so a replay or a return from the credits generates nothing twice. */
 const session = new Map<string, YearMesh | null>();
 
@@ -45,14 +51,25 @@ function yearMesh(mesh: MeshData, params: Params): YearMesh {
 async function generateWithin(
   bridge: GenerationBridge,
   params: Params,
-  key: string
+  key: string,
+  run: Run
 ): Promise<YearMesh | null | typeof NOT_YET> {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const limit = new Promise<'timeout'>((resolve) => {
+  let stop: (value: 'stopped') => void = () => undefined;
+  const limit = new Promise<'timeout' | 'stopped'>((resolve) => {
+    stop = resolve;
     timer = setTimeout(() => resolve('timeout'), GENERATION_LIMIT_MS);
   });
+  // A deadline left armed after the page goes would reset the shared worker
+  // under the next page's work. At cleanup the request in flight is still ours.
+  run.abort = () => {
+    clearTimeout(timer);
+    stop('stopped');
+    bridge.cancel();
+  };
   try {
     const result = await Promise.race([bridge.generateImmediate(params), limit]);
+    if (result === 'stopped') return NOT_YET;
     if (result === 'timeout') {
       // The cancel clears the request's own watchdog, which would otherwise
       // fire later and reset the replacement worker too.
@@ -67,6 +84,7 @@ async function generateWithin(
     return null;
   } finally {
     clearTimeout(timer);
+    run.abort = undefined;
   }
 }
 
@@ -85,7 +103,7 @@ export function useYearMeshes(
 
   useEffect(() => {
     if (!enabled || designs.length === 0) return;
-    const run = { cancelled: false };
+    const run: Run = { cancelled: false };
     // A call, so TypeScript does not narrow the flag across the awaits below.
     const stopped = (): boolean => run.cancelled;
     let bridge: Promise<GenerationBridge> | null = null;
@@ -118,6 +136,12 @@ export function useYearMeshes(
       if (missing.length === 0 || stopped() || !(await isKernelCached(kernel))) return;
       for (const { id, params, key } of missing) {
         if (stopped()) return;
+        // A saved copy with the same params may have been generated, or given up on, above.
+        const known = session.get(key);
+        if (known !== undefined) {
+          publish(id, known);
+          continue;
+        }
         bridge ??= bridgeManager.acquire();
         let ready: GenerationBridge;
         try {
@@ -127,7 +151,7 @@ export function useYearMeshes(
           return;
         }
         if (stopped()) return;
-        const entry = await generateWithin(ready, params, key);
+        const entry = await generateWithin(ready, params, key, run);
         if (entry === NOT_YET) continue;
         session.set(key, entry);
         publish(id, entry);
@@ -136,6 +160,7 @@ export function useYearMeshes(
 
     return () => {
       run.cancelled = true;
+      run.abort?.();
       if (bridge)
         void bridge.then(
           () => bridgeManager.release(),

@@ -110,6 +110,31 @@ describe('useYearMeshes', () => {
     expect(cancelled).toBeLessThan(reset ?? 0);
   });
 
+  it('leaves no deadline armed on the shared worker when the page leaves mid-generation', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    bridge.generateImmediate.mockReturnValue(new Promise(() => {}));
+    const { unmount } = renderHook(() => useYearMeshes([design('a', 12)], 0.4, true));
+    await vi.waitFor(() => expect(bridge.generateImmediate).toHaveBeenCalled());
+    unmount();
+    expect(bridge.cancel).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(20_000);
+    });
+    expect(bridge.hardResetWorker).not.toHaveBeenCalled();
+  });
+
+  it('generates once for saved copies that share their params', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    bridge.generateImmediate.mockReturnValue(new Promise(() => {}));
+    renderHook(() => useYearMeshes([design('a', 12), design('copy', 12)], 0.4, true));
+    await vi.waitFor(() => expect(bridge.generateImmediate).toHaveBeenCalled());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(40_000);
+    });
+    expect(bridge.generateImmediate).toHaveBeenCalledTimes(1);
+    expect(bridge.hardResetWorker).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps the thumbnail for a mesh whose pocket files have not arrived, and tries again later', async () => {
     bridge.generateImmediate.mockResolvedValue({ mesh: mesh(700), meshesPending: true });
     const designs = [design('a', 9)];
