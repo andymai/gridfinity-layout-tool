@@ -59,6 +59,7 @@ patchedDependencies:
   '@rollup/plugin-node-resolve@16.0.3': be62dc9211d95e5034b7dc50fcd1c89993757756796f2f0b4e9386f191d50e53
   '@ts-morph/common@0.11.1': 0bfc6fe55a9af424dbd3f4bdbbd59a555b2eaef9855cca13466f93e69ba97232
   eslint-plugin-jsx-a11y@6.10.2: b8ef271a4b50b7ee48a5e92a3ee36f8e5ca942682264a445d0b76b82b084e993
+  idb@8.0.4: efd818bc2940f4beaa2345a91b6b118526e016a061df6edc62887d5c24538897
   three-stdlib: 36724fca3e5152268afe4887b2c2ec81ad8a494ef2b660d4f1c1c34ef4ddfa47
 
 importers:
@@ -136,7 +137,7 @@ importers:
         version: 0.2.0
       idb:
         specifier: ^8.0.4
-        version: 8.0.4
+        version: 8.0.4(patch_hash=efd818bc2940f4beaa2345a91b6b118526e016a061df6edc62887d5c24538897)
       immer:
         specifier: ^11.2.10
         version: 11.2.10
@@ -10702,7 +10703,7 @@ snapshots:
 
   idb@7.1.1: {}
 
-  idb@8.0.4: {}
+  idb@8.0.4(patch_hash=efd818bc2940f4beaa2345a91b6b118526e016a061df6edc62887d5c24538897): {}
 
   ieee754@1.2.1: {}
 

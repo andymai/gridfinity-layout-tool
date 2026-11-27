@@ -210,4 +210,5 @@ patchedDependencies:
   '@rollup/plugin-node-resolve@16.0.3': patches/@rollup__plugin-node-resolve@16.0.3.patch
   '@ts-morph/common@0.11.1': patches/@ts-morph__common@0.11.1.patch
   eslint-plugin-jsx-a11y@6.10.2: patches/eslint-plugin-jsx-a11y@6.10.2.patch
+  idb@8.0.4: patches/idb@8.0.4.patch
   three-stdlib: patches/three-stdlib.patch
