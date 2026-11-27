@@ -1,0 +1,89 @@
+src/i18n/locales/nb.json
+  s_cbdce95362cca9::t_c688999105b114 5784-5785
+src/i18n/locales/it.json
+  s_cbdce95362cca9::t_c688999105b114 5784-5785
+src/i18n/locales/pl.json
+  s_cbdce95362cca9::t_c688999105b114 6106-6107
+src/i18n/locales/zh-CN.json
+  s_cbdce95362cca9::t_c688999105b114 5623-5624
+src/i18n/locales/es.json
+  s_cbdce95362cca9::t_c688999105b114 5784-5785
+src/features/supporters/year/components/StoryPlayer/StoryPlayer.tsx
+  s_cbdce95362cca9::t_c688999105b114 26-27,67,107-110
+  s_cbdce95362cca9::t_0f7c77aa3ba812 240-247
+src/i18n/locales/ja.json
+  s_cbdce95362cca9::t_c688999105b114 5623-5624
+src/features/supporters/year/components/YearCardView/shareSpec.ts
+  s_cbdce95362cca9::t_76b442e01979d7 1-15,21-28,34-48,51,53-69,74-90,95-97,99-102,104-109,111-126
+  s_cbdce95362cca9::t_24f51a098ad932 16-18,50,70-73,91-94
+  s_cbdce95362cca9::t_f49d760a79be76 19-20,29-33,49,52,98,103,110
+src/features/supporters/year/utils/shareText.test.ts
+  s_cbdce95362cca9::t_417f38c259a09d 1-27
+src/i18n/locales/uk.json
+  s_cbdce95362cca9::t_c688999105b114 6106-6107
+src/features/supporters/year/components/ShareButton/ShareButton.test.tsx
+  s_cbdce95362cca9::t_2db12581154ed6 15-16,32-33
+  s_cbdce95362cca9::t_583925c67915b5 1-14,17-31,34-39
+src/i18n/locales/sv.json
+  s_cbdce95362cca9::t_c688999105b114 5784-5785
+src/i18n/locales/pt-BR.json
+  s_cbdce95362cca9::t_c688999105b114 5784-5785
+src/i18n/locales/ka.json
+  s_cbdce95362cca9::t_c688999105b114 5784-5785
+src/features/supporters/year/components/YearCardView/shareSpec.test.ts
+  s_cbdce95362cca9::t_2db12581154ed6 62-64
+  s_cbdce95362cca9::t_b9f383e42c7e0d 1-61,65-66,72-93
+  s_cbdce95362cca9::t_cbf87d5a7629a3 67-71
+  s_cbdce95362cca9::t_4a0ff86c612b82 94-96
+src/i18n/locales/nl.json
+  s_cbdce95362cca9::t_c688999105b114 5784-5785
+src/features/supporters/year/components/ShareButton/index.ts
+  s_cbdce95362cca9::t_8473b3ff88113d 1-2
+src/i18n/locales/de.json
+  s_cbdce95362cca9::t_c688999105b114 5784-5785
+src/i18n/locales/cs.json
+  s_cbdce95362cca9::t_c688999105b114 5947-5948
+src/i18n/locales/en.ts
+  s_cbdce95362cca9::t_c688999105b114 153
+src/features/supporters/year/hooks/useShareImage.ts
+  s_cbdce95362cca9::t_465659e9da1d9c 1-2,4-5,7-11,13-58
+  s_cbdce95362cca9::t_2db12581154ed6 3,6,12
+src/features/supporters/year/components/Your2026Page/Your2026Page.tsx
+  s_cbdce95362cca9::t_24f51a098ad932 93-96
+  s_cbdce95362cca9::t_f34b6322a7f0ad 133-136,139-140,143-144
+  s_cbdce95362cca9::t_c688999105b114 16,22-24,37-38,106,109,116-132,137-138,141-142,145
+  s_cbdce95362cca9::t_4cffb85c62a925 102,146-156,230,232-237
+src/features/supporters/year/utils/shareText.ts
+  s_cbdce95362cca9::t_51f02a9c81ec6c 1-40
+src/features/supporters/year/components/ShareButton/ShareButton.tsx
+  s_cbdce95362cca9::t_d49fd5aaa6bee3 1-43
+  s_cbdce95362cca9::t_d3f7d08b7e1140 44-46
+  s_cbdce95362cca9::t_59a0ef6958ea2e 47-49
+src/i18n/locales/ko.json
+  s_cbdce95362cca9::t_c688999105b114 5623-5624
+src/i18n/locales/fr.json
+  s_cbdce95362cca9::t_c688999105b114 5784-5785
+src/features/supporters/year/utils/shareCard.ts
+  s_cbdce95362cca9::t_cbf87d5a7629a3 177-198,201-204,206
+  s_cbdce95362cca9::t_732cd30faf2070 1-32,41-46,55-81,85,91-94,97-164,173-176,199-200,205,207-245,248-273
+  s_cbdce95362cca9::t_2db12581154ed6 33-40,47-54,82-84,86-90,95-96,165-172,246-247
+  s_cbdce95362cca9::t_5a4a6af9cc9ab9 274-297
+src/features/supporters/README.md
+  s_cbdce95362cca9::t_8672cf9615551c 228-230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2c36efb76f1f4ed1a55c1c189239e996a7b56296",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
