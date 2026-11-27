@@ -1,0 +1,34 @@
+src/features/supporters/year/utils/readableAccent.test.ts
+  s_cbdce95362cca9::t_8388d485c43344 3,15-18
+  s_cbdce95362cca9::t_b17a5bde704ad2 19
+src/features/supporters/year/components/StoryPlayer/StoryPlayer.tsx
+  s_cbdce95362cca9::t_ad0ec5fe39096d 67-73,118-122,148-149,153,164,181,183,185
+src/features/supporters/year/components/YearCardView/cardCopy.ts
+  s_cbdce95362cca9::t_ad0ec5fe39096d 182-185
+src/features/supporters/year/components/StoryPlayer/StoryPlayer.test.tsx
+  s_cbdce95362cca9::t_ef6d6915184295 130
+  s_cbdce95362cca9::t_8388d485c43344 89,119-129,131-147
+src/features/supporters/year/utils/readableAccent.ts
+  s_cbdce95362cca9::t_ad0ec5fe39096d 8,10-12,19-26,34
+src/features/supporters/year/components/YearCardView/YearCardView.test.tsx
+  s_cbdce95362cca9::t_8388d485c43344 118
+src/features/supporters/year/components/YearStage/YearStage.tsx
+  s_cbdce95362cca9::t_ad0ec5fe39096d 7,47
+  s_cbdce95362cca9::t_aea6a1c80645db 48-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "61dd69dcc1927394e8dccbd7240acdbaaf0d1299",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
