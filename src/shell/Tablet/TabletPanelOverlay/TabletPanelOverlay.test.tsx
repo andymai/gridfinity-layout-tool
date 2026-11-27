@@ -27,4 +27,14 @@ describe('TabletPanelOverlay', () => {
     );
     expect(getByText('Panel Content')).toBeInTheDocument();
   });
+
+  it('stretches the panel to the screen height, so the sidebar keeps its dock on screen', () => {
+    const { getByText } = render(
+      <TabletPanelOverlay isOpen={true} onClose={vi.fn()} side="left">
+        <aside>Sidebar</aside>
+      </TabletPanelOverlay>
+    );
+    const container = getByText('Sidebar').parentElement;
+    expect(container).toHaveClass('fixed', 'top-0', 'bottom-0', 'flex');
+  });
 });
