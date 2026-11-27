@@ -238,7 +238,7 @@ async function executeInner(ctx: ClaimContext, guard: ClaimGuard): Promise<Claim
 
   guard.check();
   persistLastSignedInUserId(ctx.userId);
-  useSyncStatusStore.getState().succeed();
+  useSyncStatusStore.getState().succeed('pull');
 
   return {
     status: 'merged',
