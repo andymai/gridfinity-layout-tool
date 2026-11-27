@@ -1,0 +1,25 @@
+patches/idb@8.0.4.patch
+  s_cbdce95362cca9::t_665bc5569d46d6 1-32
+src/core/storage/backends/idbTransactionDone.test.ts
+  s_cbdce95362cca9::t_96b920486923da 1-49
+pnpm-workspace.yaml
+  s_cbdce95362cca9::t_665bc5569d46d6 213
+pnpm-lock.yaml
+  s_cbdce95362cca9::t_9f5f34e1b6ac84 62,140,10706
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2b1561b8f74f238e0621a8ac4a060879106f2772",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
