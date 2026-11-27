@@ -12,10 +12,11 @@ vi.mock('../../hooks/useYearReviewData', () => ({
   useYearReviewData: () => review.data,
 }));
 
+const supportersState = { settled: true };
 vi.mock('../../../hooks/useSupportersData', () => ({
   useSupportersData: () => ({
     data: { supporters: Array.from({ length: 312 }, (_, i) => ({ name: `S${i}` })) },
-    settled: true,
+    settled: supportersState.settled,
   }),
 }));
 
@@ -43,6 +44,7 @@ function visit(path: string) {
 }
 
 beforeEach(() => {
+  supportersState.settled = true;
   vi.mocked(trackEvent).mockClear();
   review.data = { status: 'ready', stats: active };
   vi.useFakeTimers({ toFake: ['Date'] });
@@ -96,6 +98,12 @@ describe('Your2026Page', () => {
     ).toBeInTheDocument();
     expect(trackEvent).not.toHaveBeenCalledWith('your_2026_opened', expect.anything());
     expect(trackEvent).toHaveBeenCalledWith('your_2026_finished');
+  });
+
+  it('holds the thank-you card until the live supporter count is in', () => {
+    supportersState.settled = false;
+    visit('/your-2026?card=thanks');
+    expect(screen.queryByRole('heading', { name: /thanks to/ })).not.toBeInTheDocument();
   });
 
   it('rolls the credits and marks this card for the way back', () => {

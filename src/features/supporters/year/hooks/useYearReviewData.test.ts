@@ -45,9 +45,17 @@ afterEach(() => {
 });
 
 describe('useYearReviewData', () => {
+  it('reads nothing while disabled', async () => {
+    seed(Date.UTC(2026, 2, 1));
+    const { result } = renderHook(() => useYearReviewData(2026, false));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(listDesignSummaries).not.toHaveBeenCalled();
+    expect(result.current.status).toBe('loading');
+  });
+
   it('waits for the library, then reads the open drawer from the editor', async () => {
     useLibraryStore.setState({ isLoaded: false });
-    const { result, rerender } = renderHook(() => useYearReviewData(2026));
+    const { result, rerender } = renderHook(() => useYearReviewData(2026, true));
     expect(result.current.status).toBe('loading');
     expect(listDesignSummaries).not.toHaveBeenCalled();
 
@@ -61,22 +69,22 @@ describe('useYearReviewData', () => {
 
   it('reads the year once per session', async () => {
     seed(new Date(2026, 3, 1).getTime());
-    const first = renderHook(() => useYearReviewData(2026));
+    const first = renderHook(() => useYearReviewData(2026, true));
     await waitFor(() => expect(first.result.current.status).toBe('ready'));
     first.unmount();
 
-    const second = renderHook(() => useYearReviewData(2026));
+    const second = renderHook(() => useYearReviewData(2026, true));
     await waitFor(() => expect(second.result.current.status).toBe('ready'));
     expect(listDesignSummaries).toHaveBeenCalledTimes(1);
   });
 
   it('reads an empty year again on the next visit', async () => {
     seed(new Date(2025, 3, 1).getTime());
-    const first = renderHook(() => useYearReviewData(2026));
+    const first = renderHook(() => useYearReviewData(2026, true));
     await waitFor(() => expect(first.result.current.status).toBe('ready'));
     first.unmount();
 
-    const second = renderHook(() => useYearReviewData(2026));
+    const second = renderHook(() => useYearReviewData(2026, true));
     await waitFor(() => expect(second.result.current.status).toBe('ready'));
     expect(listDesignSummaries).toHaveBeenCalledTimes(2);
   });

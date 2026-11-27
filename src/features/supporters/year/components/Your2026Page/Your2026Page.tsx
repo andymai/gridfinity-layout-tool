@@ -53,11 +53,11 @@ export function Your2026Page() {
   const allowed = params.has('preview') || isYearReviewOpen();
   const startOnThanks = params.get('card') === 'thanks';
 
-  const data = useYearReviewData(YEAR_REVIEW_YEAR);
+  const data = useYearReviewData(YEAR_REVIEW_YEAR, allowed);
   const accentName = useSettingsStore((s) => s.settings.accentColor);
   const unit = useSettingsStore((s) => s.settings.measureUnit);
   const entries = useLibraryStore((s) => s.library.entries);
-  const { data: supporters } = useSupportersData();
+  const { data: supporters, settled: supportersSettled } = useSupportersData();
   const accent = getSupportersPalette('dark', accentName).accent;
 
   useEffect(() => {
@@ -106,7 +106,8 @@ export function Your2026Page() {
     );
   }
 
-  if (!stats) {
+  // The thank-you card's count is its final word, so it waits for the live list.
+  if (!stats || (startOnThanks && !supportersSettled)) {
     return (
       <YearStage accent={accent} onClose={navigateHome}>
         <div className="flex flex-1 items-center justify-center text-white/60" role="status">

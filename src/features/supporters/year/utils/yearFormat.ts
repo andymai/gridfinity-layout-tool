@@ -9,6 +9,12 @@ function number(locale: string, value: number, maximumFractionDigits = 0): strin
   return new Intl.NumberFormat(locale, { maximumFractionDigits }).format(value);
 }
 
+/** Whole units, but two significant digits below one, so a real area never reads as 0. */
+function smallUnits(locale: string, value: number): string {
+  if (value >= 1) return number(locale, value);
+  return new Intl.NumberFormat(locale, { maximumSignificantDigits: 2 }).format(value);
+}
+
 export function formatCount(locale: string, value: number): string {
   return number(locale, value);
 }
@@ -16,17 +22,16 @@ export function formatCount(locale: string, value: number): string {
 const MM2_PER_CM2 = 100;
 const MM2_PER_IN2 = 645.16;
 
-/**
- * Square metres, or square feet for a user who measures in inches. A small
- * drawer drops to cm² or in², so a real area never reads as zero.
- */
+/** Square metres, or square feet for a user who measures in inches; a small drawer drops to cm² or in². */
 export function formatArea(locale: string, mm2: number, unit: LengthUnit): string {
   if (unit === 'in') {
     const ft2 = mm2 / MM2_PER_FT2;
-    return ft2 >= 1 ? `${number(locale, ft2, 1)} ft²` : `${number(locale, mm2 / MM2_PER_IN2)} in²`;
+    return ft2 >= 1
+      ? `${number(locale, ft2, 1)} ft²`
+      : `${smallUnits(locale, mm2 / MM2_PER_IN2)} in²`;
   }
   const m2 = mm2 / MM2_PER_M2;
-  return m2 >= 0.1 ? `${number(locale, m2, 2)} m²` : `${number(locale, mm2 / MM2_PER_CM2)} cm²`;
+  return m2 >= 0.1 ? `${number(locale, m2, 2)} m²` : `${smallUnits(locale, mm2 / MM2_PER_CM2)} cm²`;
 }
 
 const LENGTH_DIGITS: Readonly<Record<LengthUnit, number>> = { mm: 0, cm: 1, in: 1 };
