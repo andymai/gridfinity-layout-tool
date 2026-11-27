@@ -1,0 +1,112 @@
+src/i18n/locales/en.ts
+  s_cbdce95362cca9::t_bb714a84801246 255-256
+src/i18n/locales/uk.json
+  s_cbdce95362cca9::t_bb714a84801246 6103-6104
+src/i18n/locales/ja.json
+  s_cbdce95362cca9::t_bb714a84801246 5620-5621
+src/features/supporters/README.md
+  s_cbdce95362cca9::t_3ee1f6b7c0c9eb 218-222
+src/features/supporters/year/hooks/useSampleYear.test.ts
+  s_cbdce95362cca9::t_a95e48cdad7441 69-71
+  s_cbdce95362cca9::t_d7d59742948bd0 1-68
+src/i18n/locales/pt-BR.json
+  s_cbdce95362cca9::t_bb714a84801246 5781-5782
+src/App.tsx
+  s_cbdce95362cca9::t_e69e1581b12b7e 242
+scripts/gen-your-2026-sample.ts
+  s_cbdce95362cca9::t_273055167aa29c 53
+  s_cbdce95362cca9::t_383b55ebd4594b 185-189,196-203,210
+  s_cbdce95362cca9::t_137fa283a3d410 1-52,54-184,190-195,204-209,211-236,238-295
+  s_cbdce95362cca9::t_7b03a7295e054a 237
+src/features/supporters/year/components/Your2026Page/Your2026Page.test.tsx
+  s_cbdce95362cca9::t_e9033d74b59de6 119
+  s_cbdce95362cca9::t_563ffef6a50146 4,16-26,62,102-118
+scripts/build-route-entries.ts
+  s_cbdce95362cca9::t_fc5cdd5b193a01 3-5
+  s_cbdce95362cca9::t_73496b2a399884 281-282
+  s_cbdce95362cca9::t_4f53aa9f0f8468 260-268,270-280
+  s_cbdce95362cca9::t_0a848615b9ec2a 269
+scripts/gen-seo-images.ts
+  s_cbdce95362cca9::t_97f71511b7bd60 867-872
+  s_cbdce95362cca9::t_0a848615b9ec2a 933-935
+  s_cbdce95362cca9::t_f3f70060fd78ad 908,911-913
+  s_cbdce95362cca9::t_a746dfbb54f247 856,866,875,877-879,882-883,931
+  s_cbdce95362cca9::t_76d76c22490550 839-855,857-865,873-874,876,880-881,884-907,909-910,914-930,932,936-940,1037-1039
+docker/smoke.sh
+  s_cbdce95362cca9::t_4f53aa9f0f8468 51
+src/features/supporters/year/utils/sampleMeshes.test.ts
+  s_cbdce95362cca9::t_b5cabed75fba40 1-57
+src/features/supporters/year/data/sample/sample.json
+  s_cbdce95362cca9::t_7b03a7295e054a 1-3,5-34,40-56
+  s_cbdce95362cca9::t_273055167aa29c 4,35-39
+scripts/gen-supporters-meshes.ts
+  s_cbdce95362cca9::t_b67beb3d7259e3 31
+src/i18n/locales/pl.json
+  s_cbdce95362cca9::t_bb714a84801246 6103-6104
+src/i18n/locales/nb.json
+  s_cbdce95362cca9::t_bb714a84801246 5781-5782
+src/features/supporters/year/utils/sampleMeshes.ts
+  s_cbdce95362cca9::t_458b77c72d7d0b 11-16,22-25,29,66
+  s_cbdce95362cca9::t_563e1975502bc1 1-10,17-21,26-28,30-65,67-71
+src/i18n/locales/cs.json
+  s_cbdce95362cca9::t_bb714a84801246 5944-5945
+src/i18n/locales/ka.json
+  s_cbdce95362cca9::t_bb714a84801246 5781-5782
+src/i18n/locales/fr.json
+  s_cbdce95362cca9::t_bb714a84801246 5781-5782
+src/shell/hooks/usePrefetchChunks.ts
+  s_cbdce95362cca9::t_e69e1581b12b7e 60-61,63,71,116
+src/i18n/locales/es.json
+  s_cbdce95362cca9::t_bb714a84801246 5781-5782
+src/features/supporters/year/utils/sampleYear.test.ts
+  s_cbdce95362cca9::t_38e800a3117437 1-110
+src/features/supporters/year/hooks/useSampleYear.ts
+  s_cbdce95362cca9::t_3c7569026191e1 18,24-39,112
+  s_cbdce95362cca9::t_233a65f13dec93 80-82,84
+  s_cbdce95362cca9::t_dac2ac611780fc 11-12,16,65,73,83,87-89
+  s_cbdce95362cca9::t_680e32dbde210d 1-10,13-15,17,19-23,40-64,66-72,74-79,85-86,90-111,113-114
+src/shell/hooks/usePrefetchChunks.test.ts
+  s_cbdce95362cca9::t_e69e1581b12b7e 98-110
+src/i18n/locales/nl.json
+  s_cbdce95362cca9::t_bb714a84801246 5781-5782
+src/features/supporters/year/data/sampleAssets.ts
+  s_cbdce95362cca9::t_c10c58098b768a 1-27
+src/i18n/locales/de.json
+  s_cbdce95362cca9::t_bb714a84801246 5781-5782
+src/i18n/locales/sv.json
+  s_cbdce95362cca9::t_bb714a84801246 5781-5782
+src/features/supporters/year/components/Your2026Page/Your2026Page.tsx
+  s_cbdce95362cca9::t_524c7da04f0850 112
+  s_cbdce95362cca9::t_6da212c4959606 17,33-34,39,48-52,56-57,60,65-77,83-90,92-101,105,108-109,113-114,133-134,138,142,144-152,155-161,168-169,172,243,275-276
+src/i18n/locales/ko.json
+  s_cbdce95362cca9::t_bb714a84801246 5620-5621
+src/i18n/locales/it.json
+  s_cbdce95362cca9::t_bb714a84801246 5781-5782
+src/features/supporters/year/utils/sampleYear.ts
+  s_cbdce95362cca9::t_5b89a757f29d94 36,43
+  s_cbdce95362cca9::t_c41e89cc10f4c5 1-35,38,55,71-114,116-121,127-128,130-139
+  s_cbdce95362cca9::t_8f18a6b0e28315 37,39-42,44-54,56-70,115,122-126,129
+scripts/lib/meshBake.ts
+  s_cbdce95362cca9::t_b67beb3d7259e3 1-142
+src/i18n/locales/zh-CN.json
+  s_cbdce95362cca9::t_bb714a84801246 5620-5621
+package.json
+  s_cbdce95362cca9::t_7b03a7295e054a 33
+  s_cbdce95362cca9::t_659746189f167e 121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d1efd0b7c891043ad196c24bc6e4b3218d530eb7",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
