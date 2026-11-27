@@ -607,7 +607,7 @@ export function buildBaseSocket(
             holeStyle.chamfer &&
             chamferFitsCell(cell, holeRadius, unitX, unitY, anchor, positions);
           const drilled = cornersOnly
-            ? cornerHoleCandidates(cell, holeRadius, unitX, unitY, anchor, gridW, gridD)
+            ? cornerHoleCandidates(cell, holeRadius, unitX, unitY, anchor, gridW, gridD, chamfer)
             : positions;
           holeCells.push({ positions: drilled, chamfer });
         },

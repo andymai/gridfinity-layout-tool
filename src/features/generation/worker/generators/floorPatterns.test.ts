@@ -221,6 +221,23 @@ describe('planFloorPattern keep-outs', () => {
     expect(centres.sort()).toEqual(['-23.5,-13', '-23.5,13', '23.5,-13', '23.5,13']);
   });
 
+  it("reserves the half foot's centred pocket when a chamfer there would thin its wall", () => {
+    const params = makeParams({
+      width: 1.5,
+      depth: 1,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'magnet',
+        cornerHolesOnly: true,
+        magnetChamfer: true,
+      },
+    });
+    const centres = (plan(params)?.windows ?? []).flatMap((w) =>
+      w.keepOuts.map((k) => `${w.x + (k.uMin + k.uMax) / 2},${w.y + (k.zMin + k.zMax) / 2}`)
+    );
+    expect(centres.sort()).toEqual(['-23.5,-13', '-23.5,13', '21,-13', '21,13']);
+  });
+
   it("keeps an L-shaped bin's five corner pockets, not the removed cell's", () => {
     const corners = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, cornerHolesOnly: true };
     // 2x2 at half-unit resolution, bottom row first, top-right unit removed.

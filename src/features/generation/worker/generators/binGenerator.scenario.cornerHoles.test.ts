@@ -10,13 +10,21 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
-import { assertStructurallyValid, assertWatertight } from './__kernel-tests__/meshAssertions';
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import {
+  assertStructurallyValid,
+  assertWatertight,
+  columnCrossings,
+} from './__kernel-tests__/meshAssertions';
+import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
 import type { BaseConfig, BinParams } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { MeshData } from '@/features/generation/bridge/types';
 import { forEachCell } from './cellDecomposition';
-import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
+import {
+  MAGNET_EDGE_CLEARANCE,
+  cellHostsAttachmentHoles,
+  magnetPositionsForCell,
+} from './baseplateMagnets';
 
 const PITCH = 42;
 const MAGNET_RADIUS = DEFAULT_BIN_PARAMS.base.magnetDiameter / 2;
@@ -77,7 +85,7 @@ function drilledSites(mesh: MeshData, candidates: Array<[number, number]>): stri
  * The draft kernel draws a ring in ~20 vertices, so this holds on every
  * kernel.
  */
-function holeCentres(mesh: MeshData): string[] {
+function holeCentres(mesh: MeshData, radius = MAGNET_RADIUS): string[] {
   let minZ = Infinity;
   for (let i = 2; i < mesh.vertices.length; i += 3) minZ = Math.min(minZ, mesh.vertices[i]);
   const ceilingZ = minZ + CEILING;
@@ -93,8 +101,8 @@ function holeCentres(mesh: MeshData): string[] {
       const [ax, ay] = points[i];
       const [bx, by] = points[j];
       const d = Math.hypot(bx - ax, by - ay);
-      if (d < 0.2 || d > 2 * MAGNET_RADIUS - 0.01) continue;
-      const h = Math.sqrt(MAGNET_RADIUS ** 2 - (d / 2) ** 2);
+      if (d < 0.2 || d > 2 * radius - 0.01) continue;
+      const h = Math.sqrt(radius ** 2 - (d / 2) ** 2);
       for (const side of [-1, 1]) {
         const x = bin((ax + bx) / 2 - (side * h * (by - ay)) / d);
         const y = bin((ay + by) / 2 + (side * h * (bx - ax)) / d);
@@ -110,7 +118,7 @@ function holeCentres(mesh: MeshData): string[] {
   const wholeRing = (cx: number, cy: number): boolean => {
     const sectors = new Set<number>();
     for (const [x, y] of points) {
-      if (Math.abs(Math.hypot(x - cx, y - cy) - MAGNET_RADIUS) > 0.05) continue;
+      if (Math.abs(Math.hypot(x - cx, y - cy) - radius) > 0.05) continue;
       sectors.add(Math.floor(((Math.atan2(y - cy, x - cx) + Math.PI) / (2 * Math.PI)) * 8) % 8);
     }
     return sectors.size === 8;
@@ -123,6 +131,28 @@ function holeCentres(mesh: MeshData): string[] {
   }
   const round = (v: number): number => Math.round(v * 10) / 10 + 0;
   return accepted.map((a) => `${round(a.x)},${round(a.y)}`).sort();
+}
+
+/**
+ * Solid between a hole and the foot's flank beyond it, along +X through the
+ * hole's centre at `z` above the underside. Zero when the bore opens through
+ * the flank, which leaves no material on that side of it.
+ */
+function outboardWallMm(mesh: MeshData, [x, y]: readonly [number, number], z: number): number {
+  let minZ = Infinity;
+  for (let i = 2; i < mesh.vertices.length; i += 3) minZ = Math.min(minZ, mesh.vertices[i]);
+  // Rotate the axes so a vertical column probe runs along X instead.
+  const rotated = new Float32Array(mesh.vertices.length);
+  for (let i = 0; i < rotated.length; i += 3) {
+    rotated[i] = mesh.vertices[i + 1];
+    rotated[i + 1] = mesh.vertices[i + 2];
+    rotated[i + 2] = mesh.vertices[i];
+  }
+  // Off the hole's axis by a hair: the bore has a vertex exactly on it.
+  const beyond = columnCrossings({ ...mesh, vertices: rotated }, y + 0.013, minZ + z).filter(
+    (crossing) => crossing > x
+  );
+  return beyond.length >= 2 ? beyond[1] - beyond[0] : 0;
 }
 
 const OUTER_3x2 = ['-55,-34', '-55,34', '55,-34', '55,34'];
@@ -229,6 +259,42 @@ describe('corner-only attachment holes', () => {
       );
       expect(holeCentres(mesh)).toEqual(CORNERS_1_5x1);
     }, 120_000);
+
+    describe('when the corner hole would not keep its wall', () => {
+      // The foot's flat underside ends CLEARANCE/2 + FOOT_INSET_BOT inside the
+      // cell, so a hole 8mm from the bin's edge keeps 4.8mm minus its mouth
+      // radius there. Below the printable wall, the half foot keeps its own
+      // centred hole.
+      const cases: Array<[string, Partial<BaseConfig>]> = [
+        ['the largest magnet', { magnetDiameter: DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER }],
+        ['a chamfered default magnet', { magnetChamfer: true }],
+      ];
+
+      it.each(cases)(
+        'keeps a printable wall beyond the half foot hole with %s',
+        (_, base) => {
+          const radius = (base.magnetDiameter ?? DEFAULT_BIN_PARAMS.base.magnetDiameter) / 2;
+          const mesh = generateBin(
+            makeParams({ cornerHolesOnly: true, ...base }, { width: 1.5, depth: 1 }),
+            undefined,
+            true
+          );
+          const holes = holeCentres(mesh, radius);
+          // The half foot spans x = 10.5..31.5 on the bin's +X side.
+          const halfFoot = holes
+            .map((site) => site.split(',').map(Number) as [number, number])
+            .filter(([x]) => x > PITCH / 4);
+          expect(halfFoot).toHaveLength(2);
+          for (const hole of halfFoot) {
+            expect(outboardWallMm(mesh, hole, 0.05)).toBeGreaterThanOrEqual(MAGNET_EDGE_CLEARANCE);
+          }
+          expect(holes).toEqual(['-23.5,-13', '-23.5,13', '21,-13', '21,13']);
+          assertStructurallyValid(mesh);
+          assertWatertight(mesh);
+        },
+        120_000
+      );
+    });
 
     it('still centres the half foot holes when every foot is drilled', () => {
       // A baseplate's half pocket and a lid's half cell centre their magnets

@@ -9,7 +9,13 @@ import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { MAGNET_CHAMFER_MM } from './magnetHoleStyle';
-import { SIZE, HOLE_OFFSET, CLEARANCE, SOCKET_TAPER_WIDTH } from './generatorConstants';
+import {
+  SIZE,
+  HOLE_OFFSET,
+  CLEARANCE,
+  FOOT_INSET_BOT,
+  SOCKET_TAPER_WIDTH,
+} from './generatorConstants';
 import type { CellInfo } from './cellDecomposition';
 
 /**
@@ -200,6 +206,15 @@ function fullCellAtEdge(
 }
 
 /**
+ * Half the foot's flat underside across one axis. The foot only widens going
+ * up, and a hole and its chamfer open widest on the underside, so this is
+ * where a bore comes closest to the tapered flank.
+ */
+function footUndersideHalfSpan(units: number, pitch: number): number {
+  return (units * pitch - CLEARANCE) / 2 - FOOT_INSET_BOT;
+}
+
+/**
  * The holes a cell offers when the bin keeps only its outer corners
  * (`outerCornerHoleFilter`).
  *
@@ -209,6 +224,10 @@ function fullCellAtEdge(
  * drills, where they fall inside it, and every corner sits the same distance
  * from the bin's edge. The every-foot pattern keeps the centred hole, which
  * is what a baseplate's half pocket and a lid's half cell mate with.
+ *
+ * A borrowed hole must keep the wall {@link cellHostsAttachmentHoles} demands
+ * of a centred one, between its mouth (widened when `chamfer`) and the edge of
+ * the foot's flat underside. If one does not, the cell keeps its own placement.
  */
 export function cornerHoleCandidates(
   cell: CellInfo,
@@ -217,7 +236,8 @@ export function cornerHoleCandidates(
   pitchY: number,
   anchor: MagnetAnchor | undefined,
   binWidthUnits: number,
-  binDepthUnits: number
+  binDepthUnits: number,
+  chamfer: boolean
 ): Array<[number, number]> {
   const own = magnetPositionsForCell(cell, holeRadius, pitchX, pitchY, anchor);
   const x = fullCellAtEdge(cell.centerX, cell.widthUnits, binWidthUnits, pitchX);
@@ -229,13 +249,18 @@ export function cornerHoleCandidates(
     centerY: y ?? cell.centerY,
     depthUnits: y === undefined ? cell.depthUnits : 1,
   };
-  const reach = holeRadius + MAGNET_EDGE_CLEARANCE;
-  const spanX = (cell.widthUnits * pitchX) / 2 - reach + EDGE_EPS;
-  const spanY = (cell.depthUnits * pitchY) / 2 - reach + EDGE_EPS;
-  const inside = magnetPositionsForCell(full, holeRadius, pitchX, pitchY, anchor).filter(
+  const halfW = (cell.widthUnits * pitchX) / 2 + EDGE_EPS;
+  const halfD = (cell.depthUnits * pitchY) / 2 + EDGE_EPS;
+  const borrowed = magnetPositionsForCell(full, holeRadius, pitchX, pitchY, anchor).filter(
+    ([px, py]) => Math.abs(px - cell.centerX) <= halfW && Math.abs(py - cell.centerY) <= halfD
+  );
+  const reach = holeRadius + (chamfer ? MAGNET_CHAMFER_MM : 0) + MAGNET_EDGE_CLEARANCE;
+  const spanX = footUndersideHalfSpan(cell.widthUnits, pitchX) - reach + EDGE_EPS;
+  const spanY = footUndersideHalfSpan(cell.depthUnits, pitchY) - reach + EDGE_EPS;
+  const fits = borrowed.every(
     ([px, py]) => Math.abs(px - cell.centerX) <= spanX && Math.abs(py - cell.centerY) <= spanY
   );
-  return inside.length > 0 ? inside : own;
+  return borrowed.length > 0 && fits ? borrowed : own;
 }
 
 /**

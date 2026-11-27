@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { MagnetAnchor } from '@/core/types';
+import { DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
 import { outerCornerHoleFilter } from './cornerHoles';
 import { forEachCell } from './cellDecomposition';
 import {
@@ -116,17 +117,23 @@ describe('cornerHoleCandidates', () => {
     readonly pitch?: number;
     readonly anchor?: MagnetAnchor;
     readonly edgeX?: 'start' | 'end';
+    readonly radius?: number;
+    readonly chamfer?: boolean;
   }
 
   function cornerSites(width: number, depth: number, opts: Options = {}): string[] {
     const pitch = opts.pitch ?? PITCH;
+    const radius = opts.radius ?? RADIUS;
+    const chamfer = opts.chamfer ?? false;
     const holes: Array<[number, number]> = [];
     forEachCell(
       width,
       depth,
       (cell) => {
-        if (!cellHostsAttachmentHoles(cell, RADIUS, pitch, pitch)) return;
-        holes.push(...cornerHoleCandidates(cell, RADIUS, pitch, pitch, opts.anchor, width, depth));
+        if (!cellHostsAttachmentHoles(cell, radius, pitch, pitch)) return;
+        holes.push(
+          ...cornerHoleCandidates(cell, radius, pitch, pitch, opts.anchor, width, depth, chamfer)
+        );
       },
       { gridUnitMm: pitch, fractionalEdgeX: opts.edgeX }
     );
@@ -168,12 +175,50 @@ describe('cornerHoleCandidates', () => {
 
   it('leaves a full cell, and a cell inside the bin, on their own holes', () => {
     const full = { widthUnits: 1, depthUnits: 1, centerX: -10.5, centerY: 0 };
-    expect(cornerHoleCandidates(full, RADIUS, PITCH, PITCH, undefined, 1.5, 1)).toEqual(
+    expect(cornerHoleCandidates(full, RADIUS, PITCH, PITCH, undefined, 1.5, 1, false)).toEqual(
       magnetPositionsForCell(full, RADIUS, PITCH, PITCH)
     );
     const inner = { widthUnits: 0.5, depthUnits: 1, centerX: 0, centerY: 0 };
-    expect(cornerHoleCandidates(inner, RADIUS, PITCH, PITCH, undefined, 1.5, 1)).toEqual(
+    expect(cornerHoleCandidates(inner, RADIUS, PITCH, PITCH, undefined, 1.5, 1, false)).toEqual(
       magnetPositionsForCell(inner, RADIUS, PITCH, PITCH)
     );
+  });
+
+  describe("when a borrowed hole would not keep its wall to the foot's underside", () => {
+    // The half foot's underside ends 3.2mm inside its cell, so a hole 8mm from
+    // the bin's edge leaves 4.8mm minus its mouth radius there.
+    const LARGEST_RADIUS = DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER / 2;
+    const CENTRED = ['-23.5,-13', '-23.5,13', '21,-13', '21,13'];
+
+    it('keeps the centred hole of the largest magnet', () => {
+      expect(cornerSites(1.5, 1, { radius: LARGEST_RADIUS })).toEqual(CENTRED);
+      const halfFoot = { widthUnits: 0.5, depthUnits: 1, centerX: 21, centerY: 0 };
+      expect(
+        cornerHoleCandidates(halfFoot, LARGEST_RADIUS, PITCH, PITCH, undefined, 1.5, 1, false)
+      ).toEqual(magnetPositionsForCell(halfFoot, LARGEST_RADIUS, PITCH, PITCH));
+    });
+
+    it('keeps the centred hole when the chamfer widens its mouth', () => {
+      expect(cornerSites(1.5, 1)).not.toEqual(CENTRED);
+      expect(cornerSites(1.5, 1, { chamfer: true })).toEqual(CENTRED);
+    });
+
+    it('keeps the centred hole of a half foot on the leading edge', () => {
+      expect(cornerSites(1.5, 1, { radius: LARGEST_RADIUS, edgeX: 'start' })).toEqual([
+        '-21,-13',
+        '-21,13',
+        '23.5,-13',
+        '23.5,13',
+      ]);
+    });
+
+    it('keeps the centred hole of a half-unit corner foot', () => {
+      expect(cornerSites(2.5, 2.5, { radius: LARGEST_RADIUS })).toEqual([
+        '-44.5,-44.5',
+        '-44.5,42',
+        '42,-44.5',
+        '42,42',
+      ]);
+    });
   });
 });

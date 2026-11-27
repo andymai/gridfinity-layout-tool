@@ -78,6 +78,14 @@ import { UNDERSIDE_RELIEF_BORDER_MM } from '@/shared/types/bin';
 /** Solid margin of plastic around each magnet/screw hole in a retained pad. */
 const PAD_MARGIN = 1.2;
 
+/**
+ * Whether a pad's bore opens with the chamfer. A pad keeps only PAD_MARGIN of
+ * wall around the bore, too thin for the chamfer to open into.
+ */
+export function padTakesChamfer(style: MagnetHoleStyle): boolean {
+  return style.chamfer && magnetChamferFits(PAD_MARGIN);
+}
+
 /** Cross-web thickness that limits each underside bridge to half a cell. */
 export const UNDERSIDE_SUPPORT_RIB_MM = 1.2;
 
@@ -378,6 +386,7 @@ export function buildLightweightBase(
       const pads: Shape3D[] = [];
       const drills: Shape3D[] = [];
       const cellPositions: Array<Array<[number, number]>> = [];
+      const chamfer = padTakesChamfer(holeStyle);
       forEachSocketCell(
         gridW,
         gridD,
@@ -391,7 +400,16 @@ export function buildLightweightBase(
           // drills stay inside the foot instead of breaching its side.
           cellPositions.push(
             cornersOnly
-              ? cornerHoleCandidates(cell, holeRadius, unitX, unitY, anchor, gridW, gridD)
+              ? cornerHoleCandidates(
+                  cell,
+                  holeRadius,
+                  unitX,
+                  unitY,
+                  anchor,
+                  gridW,
+                  gridD,
+                  withMagnet && chamfer
+                )
               : magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor)
           );
         },
@@ -419,12 +437,7 @@ export function buildLightweightBase(
                     buildMagnetHoleCutter({
                       radius: magnetRadius,
                       height: magnetDepth,
-                      // A pad is PAD_MARGIN of wall around the bore, too thin
-                      // for the chamfer to open into; the ribs still apply.
-                      style: {
-                        crushRibs: holeStyle.crushRibs,
-                        chamfer: holeStyle.chamfer && magnetChamferFits(PAD_MARGIN),
-                      },
+                      style: { crushRibs: holeStyle.crushRibs, chamfer },
                     })
                   ),
                   [x, y, -socketHeight]
