@@ -4,6 +4,7 @@ import { err, ok } from '@/core/result';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useLayoutStore } from '@/core/store/layout';
 import { baseplateDesignId, layoutId } from '@/core/types';
+import { claimSelection } from '@/features/baseplate/utils/selectionClaim';
 import { useNewBaseplate } from './useNewBaseplate';
 
 const mocks = vi.hoisted(() => ({
@@ -156,6 +157,26 @@ describe('useNewBaseplate', () => {
       pending = result.current.createBaseplate();
     });
     useLayoutStore.setState({ activeLayoutId: layoutId('layout-b') });
+
+    let succeeded: boolean | undefined;
+    await act(async () => {
+      resolveSave(ok(created));
+      succeeded = await pending;
+    });
+
+    expect(succeeded).toBe(false);
+    expect(mocks.setActiveBaseplate).not.toHaveBeenCalled();
+    expect(result.current.creating).toBe(false);
+  });
+
+  it('keeps a library pick made during the save', async () => {
+    const resolveSave = deferSave();
+    const { result } = renderHook(() => useNewBaseplate());
+    let pending: Promise<boolean> = Promise.resolve(false);
+    act(() => {
+      pending = result.current.createBaseplate();
+    });
+    claimSelection();
 
     let succeeded: boolean | undefined;
     await act(async () => {

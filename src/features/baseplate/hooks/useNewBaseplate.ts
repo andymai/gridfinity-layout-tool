@@ -1,5 +1,4 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import { useLayoutStore } from '@/core/store/layout';
 import { useToastStore } from '@/core/store/toast';
 import { useMutations } from '@/shared/contexts';
 import { isOk } from '@/core/result';
@@ -7,6 +6,7 @@ import { useTranslation } from '@/i18n';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useBaseplateLibrary } from '@/features/baseplate/hooks/useBaseplateLibrary';
 import { nextBaseplateName } from '@/features/baseplate/utils/baseplateName';
+import { claimSelection } from '@/features/baseplate/utils/selectionClaim';
 
 export interface UseNewBaseplate {
   /**
@@ -49,7 +49,7 @@ export function useNewBaseplate(): UseNewBaseplate {
   const createBaseplate = useCallback((): Promise<boolean> => {
     if (inFlight) return inFlight;
     const create = async (): Promise<boolean> => {
-      const { activeLayoutId } = useLayoutStore.getState();
+      const superseded = claimSelection();
       const result = await saveCurrentAsNew(nextBaseplateName(list), {
         ...DEFAULT_BASEPLATE_PARAMS,
       });
@@ -57,9 +57,9 @@ export function useNewBaseplate(): UseNewBaseplate {
         addToast(t('toast.baseplateSaveFailed'), 'error');
         return false;
       }
-      // Another layout opened during the save. Activation would replace that
-      // layout's plate settings with the defaults.
-      if (useLayoutStore.getState().activeLayoutId !== activeLayoutId) return false;
+      // A library pick or another layout arrived during the save, and activation
+      // would overwrite it. The new design stays in the library.
+      if (superseded()) return false;
       mutations.setActiveBaseplate(result.value.id, result.value.params);
       return true;
     };

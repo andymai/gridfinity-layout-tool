@@ -1,10 +1,4 @@
 /**
- * Active-design identity for the /baseplate page header: the design's name
- * (click to rename inline), a button opening the baseplate library, and a
- * button starting a new design.
- *
- *   /baseplate  Baseplate 1    [Baseplates] [New baseplate]  [Export]  ✓ Saved
- *
  * There is no Save / Save As here because there is nothing to save:
  * `useBaseplateLibraryInit` guarantees an active design and `useBaseplateAutoSave`
  * keeps it current. New sits in the bar as well as in the library modal, because

@@ -30,6 +30,7 @@ import {
 } from '@/features/baseplate/store/baseplateRegistry';
 import { ownedCopyName } from '@/features/baseplate/utils/designOwnership';
 import { findDesignUsers, ownedCopyTarget } from '@/features/baseplate/utils/designUsers';
+import { claimSelection } from '@/features/baseplate/utils/selectionClaim';
 
 // useSyncExternalStore requires referentially stable snapshots between
 // notifications. `cachedRegistry` is only reassigned inside `notifyAll` (or on
@@ -70,12 +71,6 @@ function getSnapshot(): BaseplateRef[] {
 function refFromDesign(design: SavedBaseplateDesign): BaseplateRef {
   return { id: design.id, name: design.name, updatedAt: design.updatedAt };
 }
-
-// Monotonic token guarding `switchActive`. Rapidly selecting two designs kicks
-// off two IndexedDB reads; without this the earlier read resolving last would
-// clobber the newer selection. Module-scoped so it's shared across every hook
-// instance (the selector can unmount/remount between clicks).
-let switchSeq = 0;
 
 export interface UseBaseplateLibrary {
   readonly list: BaseplateRef[];
@@ -165,12 +160,8 @@ export function useBaseplateLibrary(): UseBaseplateLibrary {
       // which sets both `activeBaseplateId` and `baseplateParams` and captures
       // the previous state for undo. Synced fields resolve live downstream in
       // `buildFullParams`, so the design still adapts to this layout's drawer.
-      const token = ++switchSeq;
       const { activeLayoutId } = useLayoutStore.getState();
-      // A newer switch, or a different layout opened, while a read was in
-      // flight: drop this result so it never lands on the wrong selection.
-      const superseded = () =>
-        token !== switchSeq || useLayoutStore.getState().activeLayoutId !== activeLayoutId;
+      const superseded = claimSelection();
       const result = await loadDesign(id);
       if (superseded()) return result;
       if (isErr(result)) {

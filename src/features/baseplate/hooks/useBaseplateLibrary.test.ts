@@ -14,6 +14,7 @@ import {
   closeBaseplateDb,
 } from '@/features/baseplate/storage/BaseplateStorage';
 import { ownedCopyId } from '@/features/baseplate/utils/designOwnership';
+import { claimSelection } from '@/features/baseplate/utils/selectionClaim';
 import { useBaseplateLibrary } from './useBaseplateLibrary';
 
 const params: StoredBaseplateParams = {
@@ -151,6 +152,19 @@ describe('useBaseplateLibrary', () => {
       });
 
       expect(useLayoutStore.getState().activeLayoutId).toBe(layoutId('layout-shed'));
+      expect(useLayoutStore.getState().layout.activeBaseplateId ?? null).toBeNull();
+    });
+
+    it('drops a pick when New baseplate starts before it resolves', async () => {
+      const picked = await setUp(null);
+      const { result } = renderHook(() => useBaseplateLibrary());
+
+      await act(async () => {
+        const pending = result.current.switchActive(baseplateDesignId(picked));
+        claimSelection();
+        await pending;
+      });
+
       expect(useLayoutStore.getState().layout.activeBaseplateId ?? null).toBeNull();
     });
 
