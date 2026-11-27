@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { err, ok } from '@/core/result';
 import { baseplateDesignId } from '@/core/types';
-import { BaseplateSelector } from './BaseplateSelector';
+import { Menu } from '@/design-system';
+import { BaseplateMenuItems, BaseplateSelector } from './BaseplateSelector';
 
 const ACTIVE = baseplateDesignId('bp-1');
 
@@ -12,6 +13,8 @@ const mocks = vi.hoisted(() => {
     renameDesign,
     addToast: vi.fn(),
     setShowBaseplateLibrary: vi.fn(),
+    createBaseplate: vi.fn(),
+    newBaseplate: { creating: false },
     libraryState: {
       list: [
         {
@@ -40,6 +43,13 @@ vi.mock('@/features/baseplate/hooks/useBaseplateLibrary', () => ({
   useBaseplateLibrary: () => mocks.libraryState,
 }));
 
+vi.mock('@/features/baseplate/hooks/useNewBaseplate', () => ({
+  useNewBaseplate: () => ({
+    createBaseplate: mocks.createBaseplate,
+    creating: mocks.newBaseplate.creating,
+  }),
+}));
+
 vi.mock('@/core/store/view', () => ({
   useViewStore: (selector: (s: unknown) => unknown) =>
     selector({ setShowBaseplateLibrary: mocks.setShowBaseplateLibrary }),
@@ -58,6 +68,7 @@ describe('BaseplateSelector', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.libraryState.activeBaseplateId = ACTIVE;
+    mocks.newBaseplate.creating = false;
   });
 
   it('shows the active design name', () => {
@@ -71,13 +82,28 @@ describe('BaseplateSelector', () => {
     expect(mocks.setShowBaseplateLibrary).toHaveBeenCalledWith(true);
   });
 
-  // There is no Save/Save As/New here on purpose — an active design always
-  // exists and autosaves, so the header matches the designer's.
-  it('offers no save, save-as, or new actions', () => {
+  // An active design always exists and autosaves, so there is nothing to save.
+  it('offers no save or save-as actions', () => {
     render(<BaseplateSelector />);
-    expect(screen.queryByText('baseplate.library.new')).not.toBeInTheDocument();
     expect(screen.queryByText('common.save')).not.toBeInTheDocument();
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  });
+
+  it('starts a new baseplate from the button beside the list', () => {
+    render(<BaseplateSelector />);
+    const list = screen.getByRole('button', { name: 'baseplate.library.openList' });
+    const create = screen.getByRole('button', { name: 'baseplate.library.newBaseplate' });
+    expect(list.nextElementSibling).toBe(create);
+
+    fireEvent.click(create);
+    expect(mocks.createBaseplate).toHaveBeenCalledOnce();
+    expect(mocks.setShowBaseplateLibrary).not.toHaveBeenCalled();
+  });
+
+  it('disables New baseplate while a design is being created', () => {
+    mocks.newBaseplate.creating = true;
+    render(<BaseplateSelector />);
+    expect(screen.getByRole('button', { name: 'baseplate.library.newBaseplate' })).toBeDisabled();
   });
 
   it('renames on Enter', async () => {
@@ -147,5 +173,40 @@ describe('BaseplateSelector', () => {
     await waitFor(() =>
       expect(mocks.addToast).toHaveBeenCalledWith('toast.baseplateSaveFailed', 'error')
     );
+  });
+});
+
+describe('BaseplateMenuItems', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.newBaseplate.creating = false;
+  });
+
+  const renderInMenu = () =>
+    render(
+      <Menu.Root open onClose={vi.fn()} position={{ x: 0, y: 0 }}>
+        <BaseplateMenuItems />
+      </Menu.Root>
+    );
+
+  it('opens the baseplate list', () => {
+    renderInMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'baseplate.library.baseplates' }));
+    expect(mocks.setShowBaseplateLibrary).toHaveBeenCalledWith(true);
+    expect(mocks.createBaseplate).not.toHaveBeenCalled();
+  });
+
+  it('starts a new baseplate', () => {
+    renderInMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'baseplate.library.newBaseplate' }));
+    expect(mocks.createBaseplate).toHaveBeenCalledOnce();
+  });
+
+  it('disables New baseplate while a design is being created', () => {
+    mocks.newBaseplate.creating = true;
+    renderInMenu();
+    expect(
+      screen.getByRole('menuitem', { name: 'baseplate.library.newBaseplate' })
+    ).toHaveAttribute('aria-disabled', 'true');
   });
 });

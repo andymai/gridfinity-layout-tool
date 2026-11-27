@@ -1,18 +1,8 @@
 /**
- * Active-design identity for the /baseplate page header: the design's name
- * (click to rename inline) plus a button opening the baseplate library.
- *
- * Deliberately the same shape and vocabulary as `DesignerHeader`, so moving
- * between the Bins and Baseplate tabs doesn't mean relearning how designs are
- * named, saved, and switched:
- *
- *   /designer   Untitled Bin   [Designs]     [Export]  ✓ Saved
- *   /baseplate  Baseplate 1    [Baseplates]  [Export]  ✓ Saved
- *
- * There is no Save / Save As / New here because there is nothing to save:
+ * There is no Save / Save As here because there is nothing to save:
  * `useBaseplateLibraryInit` guarantees an active design and `useBaseplateAutoSave`
- * keeps it current. New and duplicate live in the library modal, matching where
- * the designer puts them (`DesignListDialog`).
+ * keeps it current. New sits in the bar as well as in the library modal, because
+ * "Baseplates" reads as a list of saved plates, not as the way to start one.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -20,9 +10,10 @@ import { useToastStore } from '@/core/store/toast';
 import { useViewStore } from '@/core/store/view';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
-import { Button, Input } from '@/design-system';
+import { Button, Input, Menu, PlusIcon } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useBaseplateLibrary } from '@/features/baseplate/hooks/useBaseplateLibrary';
+import { useNewBaseplate } from '@/features/baseplate/hooks/useNewBaseplate';
 
 /** Flat header action, shaped to sit beside Export rather than compete with it. */
 const HEADER_ACTION_CLASS =
@@ -35,6 +26,7 @@ export function BaseplateSelector() {
   const { list, activeBaseplateId, renameDesign } = useBaseplateLibrary();
   const setShowBaseplateLibrary = useViewStore((s) => s.setShowBaseplateLibrary);
   const addToast = useToastStore((s) => s.addToast);
+  const { createBaseplate, creating } = useNewBaseplate();
   // Read through the registry so a rename from the modal shows here immediately.
   const activeName = list.find((ref) => ref.id === activeBaseplateId)?.name ?? '';
 
@@ -91,7 +83,7 @@ export function BaseplateSelector() {
         className={`${HEADER_ACTION_CLASS} max-w-[200px] truncate`}
         title={t('baseplate.library.clickToRename')}
       >
-        {activeName}
+        <span className="truncate">{activeName}</span>
       </Button>
       <Button
         variant="ghost"
@@ -107,6 +99,35 @@ export function BaseplateSelector() {
         </svg>
         <span className="hidden lg:inline">{t('baseplate.library.baseplates')}</span>
       </Button>
+      <Button
+        variant="ghost"
+        onClick={() => void createBaseplate()}
+        disabled={creating}
+        className={`${HEADER_ACTION_CLASS} flex items-center gap-1.5`}
+        title={t('baseplate.library.newBaseplate')}
+        aria-label={t('baseplate.library.newBaseplate')}
+      >
+        <PlusIcon className="h-4 w-4" />
+        {/* Below 2xl the label would take the room the plate name needs. */}
+        <span className="hidden 2xl:inline">{t('baseplate.library.newBaseplate')}</span>
+      </Button>
+    </>
+  );
+}
+
+export function BaseplateMenuItems() {
+  const t = useTranslation();
+  const setShowBaseplateLibrary = useViewStore((s) => s.setShowBaseplateLibrary);
+  const { createBaseplate, creating } = useNewBaseplate();
+
+  return (
+    <>
+      <Menu.Item onClick={() => setShowBaseplateLibrary(true)}>
+        {t('baseplate.library.baseplates')}
+      </Menu.Item>
+      <Menu.Item onClick={() => void createBaseplate()} disabled={creating}>
+        {t('baseplate.library.newBaseplate')}
+      </Menu.Item>
     </>
   );
 }

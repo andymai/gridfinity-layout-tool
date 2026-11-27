@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, onTestFinished } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { BaseplatePage } from './BaseplatePage';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
@@ -75,15 +76,27 @@ vi.mock('@/shared/hooks/useBaseplateRouting', () => ({
 
 vi.mock('@/shared/components/ToolSwitcher', () => ({
   ToolSwitcher: (props: Record<string, unknown>) => (
-    <div data-testid="tool-switcher" data-compact={props.compact} data-icon-only={props.iconOnly} />
+    <div
+      data-testid="tool-switcher"
+      data-compact={props.compact}
+      data-icon-only={props.iconOnly}
+      data-labels-from-xl={props.labelsFromXl}
+    />
   ),
 }));
 
 // Mock HeaderSupportLinks to avoid deep dependency tree (LanguageSelector, analytics, etc.)
 vi.mock('@/shared/components/HeaderSupportLinks', () => ({
-  HeaderSupportLinks: (props: { compact?: boolean }) => (
-    <div data-testid="header-support-links" data-compact={String(props.compact ?? false)} />
+  HeaderSupportLinks: (props: { compact?: boolean; leadingItems?: ReactNode }) => (
+    <div data-testid="header-support-links" data-compact={String(props.compact ?? false)}>
+      {props.leadingItems && <div data-testid="header-menu-leading">{props.leadingItems}</div>}
+    </div>
   ),
+}));
+
+vi.mock('../BaseplateSelector', () => ({
+  BaseplateSelector: () => <div data-testid="baseplate-selector" />,
+  BaseplateMenuItems: () => <div data-testid="baseplate-menu-items" />,
 }));
 
 describe('BaseplatePage', () => {
@@ -137,6 +150,30 @@ describe('BaseplatePage', () => {
     mocks.responsive = responsive;
     render(<BaseplatePage />);
     expect(screen.getByTestId('header-support-links')).toHaveAttribute('data-compact', 'true');
+  });
+
+  it.each([
+    ['desktop', { isDesktop: true, isLandscape: false, isMobile: false, isTablet: false }],
+    ['tablet', { isDesktop: false, isLandscape: false, isMobile: false, isTablet: true }],
+  ])('shows the plate name and its buttons in the header on %s', (_width, responsive) => {
+    mocks.responsive = responsive;
+    render(<BaseplatePage />);
+    expect(screen.getByTestId('baseplate-selector')).toBeInTheDocument();
+    expect(screen.queryByTestId('baseplate-menu-items')).not.toBeInTheDocument();
+  });
+
+  it('folds the list and New baseplate into the header menu on a phone', () => {
+    mocks.responsive = { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false };
+    render(<BaseplatePage />);
+    expect(screen.queryByTestId('baseplate-selector')).not.toBeInTheDocument();
+    expect(screen.getByTestId('header-menu-leading')).toContainElement(
+      screen.getByTestId('baseplate-menu-items')
+    );
+  });
+
+  it('shows tool labels only from xl on desktop, like the other headers', () => {
+    render(<BaseplatePage />);
+    expect(screen.getByTestId('tool-switcher')).toHaveAttribute('data-labels-from-xl', 'true');
   });
 
   it('passes responsive props to ToolSwitcher on mobile', () => {

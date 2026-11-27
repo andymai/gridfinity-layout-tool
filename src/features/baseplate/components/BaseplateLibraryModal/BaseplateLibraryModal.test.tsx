@@ -56,15 +56,20 @@ vi.mock('@/features/baseplate/hooks/useBaseplateLibrary', () => ({
   }),
 }));
 
-vi.mock('@/core/store/layout', () => ({
-  useLayoutStore: (selector: (s: unknown) => unknown) =>
-    selector({
-      layout: {
-        activeBaseplateId: baseplateDesignId('bp-1'),
-        baseplateParams: { magnetHoles: false },
-      },
+vi.mock('@/core/store/layout', () => {
+  const state = {
+    activeLayoutId: 'layout-1',
+    layout: {
+      activeBaseplateId: baseplateDesignId('bp-1'),
+      baseplateParams: { magnetHoles: false },
+    },
+  };
+  return {
+    useLayoutStore: Object.assign((selector: (s: unknown) => unknown) => selector(state), {
+      getState: () => state,
     }),
-}));
+  };
+});
 
 vi.mock('@/shared/contexts', () => ({
   useMutations: () => ({ setActiveBaseplate: mocks.setActiveBaseplate }),

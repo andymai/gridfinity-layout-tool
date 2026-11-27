@@ -10,6 +10,7 @@ sources:
   - src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
   - src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
   - src/features/baseplate/components/BaseplateLibraryModal/
+  - src/features/baseplate/components/BaseplateSelector/
   - src/features/baseplate/hooks/useBaseplateLibraryInit.ts
   - src/features/baseplate/utils/designOwnership.ts
   - src/core/baseplateDefaults.ts
@@ -97,11 +98,15 @@ The same section holds four more settings:
 
 Each drawer gets its own plate settings. A change to the plate of one drawer doesn't change the plate of a different drawer.
 
-The header shows the name of the active plate design. Click the name to rename it. Click <Ui k="baseplate.library.baseplates" /> to open the <Ui k="baseplate.library.title" />, where you can:
+The header shows the name of the active plate design. Click the name to rename it. To start a design from the default settings, click <Ui k="baseplate.library.newBaseplate" /> in the header. On a smaller screen, this button shows only a + sign.
+
+Click <Ui k="baseplate.library.baseplates" /> to open the <Ui k="baseplate.library.title" />, where you can:
 
 - Pick a design to make it the active plate for this layout.
 - Click <Ui k="baseplate.library.newBaseplate" /> to start a design from the default settings.
 - Rename, duplicate or delete a design from its menu.
+
+On a phone, <Ui k="baseplate.library.baseplates" /> and <Ui k="baseplate.library.newBaseplate" /> are in the header menu.
 
 Each card shows which layouts use the design. Pick a design that a different layout uses, and the Layout Tool makes a copy for this layout. The copy gets the design name and the layout name, for example "Baseplate 2 (Kitchen)". Every change saves automatically, so you won't find a save button.
 

@@ -33,7 +33,7 @@ import { useBaseplateLibraryInit } from '../../hooks/useBaseplateLibraryInit';
 import { useBaseplateAutoSave } from '../../hooks/useBaseplateAutoSave';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
 import { useBaseplateUndo } from '../../hooks/useBaseplateUndo';
-import { BaseplateSelector } from '../BaseplateSelector';
+import { BaseplateMenuItems, BaseplateSelector } from '../BaseplateSelector';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
@@ -283,7 +283,7 @@ export function BaseplatePage() {
       )}
       <header className="h-12 flex items-center justify-between gap-2 px-4 bg-surface-secondary border-b border-stroke-subtle">
         <div className="flex items-center gap-3 min-w-0">
-          <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
+          <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} labelsFromXl />
 
           {!isMobile && <BaseplateSelector />}
 
@@ -373,7 +373,12 @@ export function BaseplatePage() {
               </svg>
             </IconButton>
           </div>
-          <HeaderSupportLinks compact={!isDesktop} />
+          {/* A phone has no room for the plate name and its buttons, so the
+              library and New baseplate fold into the header menu. */}
+          <HeaderSupportLinks
+            compact={!isDesktop}
+            leadingItems={isMobile ? <BaseplateMenuItems /> : undefined}
+          />
         </div>
       </header>
 

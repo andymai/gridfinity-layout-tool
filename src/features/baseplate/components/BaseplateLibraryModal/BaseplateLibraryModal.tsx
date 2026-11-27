@@ -13,7 +13,6 @@ import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
-import { useToastStore } from '@/core/store/toast';
 import { useMutations } from '@/shared/contexts';
 import { isOk } from '@/core/result';
 import { useLocale, useTranslation } from '@/i18n';
@@ -33,9 +32,8 @@ import type { BaseplateDesignId } from '@/core/types';
 import type { SavedBaseplateDesign } from '@/features/baseplate/types/library';
 import { listDesigns } from '@/features/baseplate/storage/BaseplateStorage';
 import { useBaseplateLibrary } from '@/features/baseplate/hooks/useBaseplateLibrary';
-import { nextBaseplateName } from '@/features/baseplate/utils/baseplateName';
+import { useNewBaseplate } from '@/features/baseplate/hooks/useNewBaseplate';
 import { designUsage } from '@/features/baseplate/utils/designUsers';
-import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { DeleteBaseplateWarningDialog } from '../DeleteBaseplateWarningDialog';
 
 interface BaseplateLibraryModalProps {
@@ -50,8 +48,7 @@ export function BaseplateLibraryModal({ isOpen, onClose }: BaseplateLibraryModal
 
 function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
   const t = useTranslation();
-  const { list, switchActive, saveCurrentAsNew, renameDesign, duplicateDesign, deleteDesign } =
-    useBaseplateLibrary();
+  const { switchActive, renameDesign, duplicateDesign, deleteDesign } = useBaseplateLibrary();
   const { activeBaseplateId, baseplateParams } = useLayoutStore(
     useShallow((s) => ({
       activeBaseplateId: s.layout.activeBaseplateId ?? null,
@@ -59,7 +56,6 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
     }))
   );
   const mutations = useMutations();
-  const addToast = useToastStore((s) => s.addToast);
 
   const [designs, setDesigns] = useState<SavedBaseplateDesign[]>([]);
   const [usage, setUsage] = useState<ReadonlyMap<string, string[]>>(new Map());
@@ -75,22 +71,12 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
       current = false;
     };
   }, [designs, activeBaseplateId, layoutEntries]);
-  const [creating, setCreating] = useState(false);
+  const { createBaseplate, creating } = useNewBaseplate();
   const [pendingDelete, setPendingDelete] = useState<SavedBaseplateDesign | null>(null);
 
   const handleNew = useCallback(async () => {
-    setCreating(true);
-    const result = await saveCurrentAsNew(nextBaseplateName(list), { ...DEFAULT_BASEPLATE_PARAMS });
-    setCreating(false);
-    if (!isOk(result)) {
-      // Say so rather than leaving the modal open with a re-enabled button and
-      // no explanation. Stays open on purpose so the click can be retried.
-      addToast(t('toast.baseplateSaveFailed'), 'error');
-      return;
-    }
-    mutations.setActiveBaseplate(result.value.id, result.value.params);
-    onClose();
-  }, [list, saveCurrentAsNew, mutations, onClose, addToast, t]);
+    if (await createBaseplate()) onClose();
+  }, [createBaseplate, onClose]);
 
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
