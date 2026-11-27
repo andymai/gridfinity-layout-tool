@@ -1,5 +1,30 @@
 # Changelog
 
+## [4.555.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.554.0...gridfinity-layout-tool-v4.555.0) (2026-11-27)
+
+
+### Features
+
+* **baseplate:** add a New baseplate button to the baseplate header ([#5278](https://github.com/andymai/gridfinity-layout-tool/issues/5278)) ([dd72363](https://github.com/andymai/gridfinity-layout-tool/commit/dd72363e850ce6a1da893343614e6844a353a01f))
+* **supporters:** count a maker's 2026 from their drawers and designs ([#5275](https://github.com/andymai/gridfinity-layout-tool/issues/5275)) ([2368b96](https://github.com/andymai/gridfinity-layout-tool/commit/2368b965e543040e9223c2e4be6591984840a776))
+* **supporters:** give Your 2026 its own soft-synth tune ([#5285](https://github.com/andymai/gridfinity-layout-tool/issues/5285)) ([90dc0a3](https://github.com/andymai/gridfinity-layout-tool/commit/90dc0a33145023d9198aa3cac1de20f7ed82cd13))
+* **supporters:** play a sample year at /your-2026?demo ([#5289](https://github.com/andymai/gridfinity-layout-tool/issues/5289)) ([6230840](https://github.com/andymai/gridfinity-layout-tool/commit/6230840e8eb9314b3ff75fde97d4f228a5ce9d44))
+* **supporters:** play Your 2026 as story cards that end in the credits ([#5277](https://github.com/andymai/gridfinity-layout-tool/issues/5277)) ([06a41a9](https://github.com/andymai/gridfinity-layout-tool/commit/06a41a901018de0ec5f6739d964469c72133669e))
+* **supporters:** read the year's drawers and designs for Your 2026 ([#5276](https://github.com/andymai/gridfinity-layout-tool/issues/5276)) ([887d2a3](https://github.com/andymai/gridfinity-layout-tool/commit/887d2a37ef8e2dcf305ba05bb49ba33cf2831612))
+* **supporters:** save any Your 2026 card as a 9:16 image ([#5287](https://github.com/andymai/gridfinity-layout-tool/issues/5287)) ([a5ecbfc](https://github.com/andymai/gridfinity-layout-tool/commit/a5ecbfc85bb3e4dcb169d6a1464284174d4e7537))
+* **supporters:** show a Your 2026 row above the user dock ([#5283](https://github.com/andymai/gridfinity-layout-tool/issues/5283)) ([a14d439](https://github.com/andymai/gridfinity-layout-tool/commit/a14d43972021ecb352a5016c1cb2e330fff96468))
+* **supporters:** turn the real bin on the Your 2026 print cards ([#5282](https://github.com/andymai/gridfinity-layout-tool/issues/5282)) ([bcd4371](https://github.com/andymai/gridfinity-layout-tool/commit/bcd4371e525a31d33cc221fddbd2037856266f98))
+* **whats-new:** ship the Your 2026 entry ahead of its day with a start date ([#5286](https://github.com/andymai/gridfinity-layout-tool/issues/5286)) ([3644543](https://github.com/andymai/gridfinity-layout-tool/commit/3644543d3ec74adfbe8cbe52d06c0abf05bdb137))
+
+
+### Bug Fixes
+
+* **deps:** fail a Draco model load when the decoder cannot be fetched ([#5279](https://github.com/andymai/gridfinity-layout-tool/issues/5279)) ([7ff9388](https://github.com/andymai/gridfinity-layout-tool/commit/7ff9388563b54824dec11009e589b88cf9717fbb))
+* **deps:** stop idb's transaction done promise echoing a handled request error ([#5280](https://github.com/andymai/gridfinity-layout-tool/issues/5280)) ([3fac7ba](https://github.com/andymai/gridfinity-layout-tool/commit/3fac7ba1849469eaa2cd30dd715d1f2b946fcfa2))
+* **generation:** keep large magnet holes off the side of a bin foot ([#5288](https://github.com/andymai/gridfinity-layout-tool/issues/5288)) ([f989e7a](https://github.com/andymai/gridfinity-layout-tool/commit/f989e7a868da781e5a17aee788506c7460d382a7))
+* **generation:** put every corner-only hole of a half-unit bin 8 mm from its edge ([#5281](https://github.com/andymai/gridfinity-layout-tool/issues/5281)) ([ff08a01](https://github.com/andymai/gridfinity-layout-tool/commit/ff08a01e10840f9fc4857439bec51bbdd8a72f62))
+* **shell:** keep the sidebar dock on screen in tablet panels ([#5284](https://github.com/andymai/gridfinity-layout-tool/issues/5284)) ([c1ee043](https://github.com/andymai/gridfinity-layout-tool/commit/c1ee043d9baa3c4cb27f7cdc4bd2dc07e6fe7288))
+
 ## [4.554.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.553.0...gridfinity-layout-tool-v4.554.0) (2026-11-27)
 
 
