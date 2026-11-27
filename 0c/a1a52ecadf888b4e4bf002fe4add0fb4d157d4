@@ -1,29 +1,29 @@
-src/features/supporters/year/hooks/useYearSoundtrack.test.ts
-  s_cbdce95362cca9::t_4c88fc75529b02 1-50
+src/features/supporters/year/audio/yearTune.test.ts
+  s_cbdce95362cca9::t_a2d2f292c38544 1-31
+  s_b9897fb2c6735b::t_e47e4a03573f76 32-33
+src/features/supporters/year/audio/yearTune.ts
+  s_cbdce95362cca9::t_2af0de891496b5 35,37-38,43,49-50
+  s_cbdce95362cca9::t_bfbe6db2626b90 1-34,36,39-42,44-48,51-72
 src/features/supporters/year/audio/yearSoundtrack.ts
   s_cbdce95362cca9::t_1c9fa74841e13a 1-50
 src/features/supporters/year/hooks/useYearSoundtrack.ts
   s_cbdce95362cca9::t_2af0de891496b5 1-2,13,31
   s_cbdce95362cca9::t_54cb4082cc4dd6 3-12,14-30,32
-src/features/supporters/year/audio/yearTune.ts
-  s_cbdce95362cca9::t_2af0de891496b5 35,37-38,43,49-50
-  s_cbdce95362cca9::t_bfbe6db2626b90 1-34,36,39-42,44-48,51-72
+src/features/supporters/year/hooks/useYearSoundtrack.test.ts
+  s_cbdce95362cca9::t_4c88fc75529b02 1-50
+src/features/supporters/README.md
+  s_cbdce95362cca9::t_ea657a63d236e0 226-227
+src/features/supporters/year/audio/padSynth.ts
+  s_cbdce95362cca9::t_20140777f9be5c 1-185
+  s_cbdce95362cca9::t_713741774398f4 186-191
 src/features/supporters/year/audio/yearSoundtrack.test.ts
   s_cbdce95362cca9::t_631bd14f632a0a 1-34,37,39-105,110-111
   s_cbdce95362cca9::t_2af0de891496b5 35-36,38
   s_cbdce95362cca9::t_2e89833455fad9 106-109
-src/features/supporters/year/audio/yearTune.test.ts
-  s_cbdce95362cca9::t_a2d2f292c38544 1-31
-  s_b9897fb2c6735b::t_2e6634c412cc47 32-33
-src/features/supporters/year/audio/padSynth.ts
-  s_cbdce95362cca9::t_20140777f9be5c 1-185
-  s_cbdce95362cca9::t_d2368d38d27f83 186-191
-src/features/supporters/README.md
-  s_cbdce95362cca9::t_ea657a63d236e0 226-227
 src/features/supporters/year/components/Your2026Page/Your2026Page.tsx
-  s_cbdce95362cca9::t_1493b998476211 14-15,17,110-120,179-180
+  s_cbdce95362cca9::t_5b25a1d265461a 14-15,17,110-120,179-180
 src/features/supporters/year/components/StoryPlayer/StoryPlayer.tsx
-  s_104937da236c06::t_7c1972e55120e5 26-29,58-59,91-94,194-206
+  s_104937da236c06::t_b141b6b49e4e90 26-29,58-59,91-94,194-206
 ---
 {
   "schema_version": "authorship/3.0.0",
