@@ -109,3 +109,43 @@ describe('YearSoundtrack', () => {
     expect(Math.min(...starts)).toBeGreaterThanOrEqual(30);
   });
 });
+
+class RecordingNode extends FakeNode {
+  readonly targets: unknown[] = [];
+  ramps = 0;
+  constructor() {
+    super();
+    this.gain.linearRampToValueAtTime = () => {
+      this.ramps++;
+      return this.gain;
+    };
+  }
+  override connect(target?: unknown): void {
+    this.targets.push(target);
+  }
+}
+
+describe('PadSynth', () => {
+  it('sends the reverb through the music gain, so a fade reaches the whole tune', () => {
+    const { ctx } = fakeContext();
+    const gains: RecordingNode[] = [];
+    const reverbs: RecordingNode[] = [];
+    const recording = Object.assign(Object.create(ctx) as typeof ctx, {
+      createGain: () => {
+        const node = new RecordingNode();
+        gains.push(node);
+        return node;
+      },
+      createConvolver: () => {
+        const node = new RecordingNode();
+        reverbs.push(node);
+        return node;
+      },
+    });
+    const synth = new PadSynth(recording);
+    synth.fade(0, 0, 1);
+    const faded = gains.find((node) => node.ramps > 0);
+    expect(faded).toBeDefined();
+    expect(reverbs[0]?.targets).toContain(faded);
+  });
+});

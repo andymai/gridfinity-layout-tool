@@ -2,10 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useYearSoundtrack } from './useYearSoundtrack';
 
-const created: { closed: boolean }[] = [];
+const created: { closed: boolean; state: AudioContextState }[] = [];
 
 class FakeAudioContext {
   closed = false;
+  state: AudioContextState = 'running';
   constructor() {
     created.push(this);
   }
@@ -19,6 +20,7 @@ class FakeAudioContext {
 }
 
 vi.mock('../audio/yearSoundtrack', () => ({
+  STOP_FADE_S: 0.8,
   YearSoundtrack: class {
     tick(): void {}
     stop(): void {}
@@ -29,6 +31,7 @@ describe('useYearSoundtrack', () => {
   afterEach(() => {
     created.length = 0;
     vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   it('touches no audio while sound is off', () => {
@@ -44,7 +47,18 @@ describe('useYearSoundtrack', () => {
     });
     rerender({ paused: true });
     expect(created).toHaveLength(1);
+    if (created[0]) created[0].state = 'suspended';
     unmount();
+    expect(created[0]?.closed).toBe(true);
+  });
+
+  it('lets a playing tune fade out before it closes the context', () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    const { unmount } = renderHook(() => useYearSoundtrack(true, false));
+    unmount();
+    expect(created[0]?.closed).toBe(false);
+    vi.advanceTimersByTime(1000);
     expect(created[0]?.closed).toBe(true);
   });
 });

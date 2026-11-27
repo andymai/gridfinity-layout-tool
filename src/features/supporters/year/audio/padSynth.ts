@@ -35,7 +35,8 @@ export class PadSynth {
 
     const reverb = ctx.createConvolver();
     reverb.buffer = this.impulse();
-    reverb.connect(this.filter);
+    // Through the music gain, so a fade or the pause dip reaches the tail too.
+    reverb.connect(this.music);
     this.reverbSend = ctx.createGain();
     this.reverbSend.gain.value = 0.45;
     this.reverbSend.connect(reverb);

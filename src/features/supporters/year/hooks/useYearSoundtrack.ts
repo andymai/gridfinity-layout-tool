@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLatestRef } from '@/shared/hooks';
-import { YearSoundtrack } from '../audio/yearSoundtrack';
+import { STOP_FADE_S, YearSoundtrack } from '../audio/yearSoundtrack';
 
 const TICK_MS = 25;
 
@@ -26,7 +26,10 @@ export function useYearSoundtrack(enabled: boolean, paused: boolean): void {
       window.removeEventListener('pointerdown', resume);
       window.removeEventListener('keydown', resume);
       track.stop();
-      void ctx.close();
+      // Closing at once would cut the stop fade mid-note. A suspended context
+      // plays nothing, so it closes now.
+      if (ctx.state === 'running') setTimeout(() => void ctx.close(), STOP_FADE_S * 1000 + 100);
+      else void ctx.close();
     };
   }, [enabled, pausedRef]);
 }

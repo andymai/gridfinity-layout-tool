@@ -1,6 +1,8 @@
 import { PadSynth } from './padSynth';
 import { STEPS_PER_SECOND, notesBetween } from './yearTune';
 
+export const STOP_FADE_S = 0.8;
+
 const LOOKAHEAD_SECONDS = 0.15;
 
 /**
@@ -46,6 +48,6 @@ export class YearSoundtrack {
   }
 
   stop(): void {
-    this.synth.fade(0, this.ctx.currentTime, 0.8);
+    this.synth.fade(0, this.ctx.currentTime, STOP_FADE_S);
   }
 }
