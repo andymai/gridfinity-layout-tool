@@ -239,6 +239,28 @@ export async function listAllDesignVersions(): Promise<Result<DesignVersion[], S
   }
 }
 
+/**
+ * Each version's design and capture time. A cursor keeps one record in memory
+ * at a time, so a long history's bodies and thumbnails are never held together.
+ */
+export async function listDesignVersionDates(): Promise<
+  Result<{ readonly designId: DesignId; readonly createdAt: string }[], StorageError>
+> {
+  try {
+    const db = await getDb();
+    const dates: { designId: DesignId; createdAt: string }[] = [];
+    let cursor = await db.transaction(DESIGN_VERSIONS_STORE).store.openCursor();
+    while (cursor) {
+      const version = cursor.value as DesignVersion;
+      dates.push({ designId: version.designId, createdAt: version.createdAt });
+      cursor = await cursor.continue();
+    }
+    return ok(dates);
+  } catch (e) {
+    return err(storageUnavailable('indexedDB', e));
+  }
+}
+
 /** One whole version record including its compressed body. */
 export async function getDesignVersionRecord(
   versionId: string

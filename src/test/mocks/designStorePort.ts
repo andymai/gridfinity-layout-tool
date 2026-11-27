@@ -1,4 +1,6 @@
-import type { PreparedBinParams } from '@/core/storage/designStorePort';
+import { ok } from '@/core/result';
+import type { Result, StorageError } from '@/core/result';
+import type { DesignSummary, PreparedBinParams } from '@/core/storage/designStorePort';
 
 /**
  * `DesignStorePort.prepareBinParams` for a fake port: objects pass as they are,
@@ -8,4 +10,9 @@ export async function prepareBinParamsAsIs(params: unknown): Promise<PreparedBin
   if (typeof params !== 'object' || params === null || Array.isArray(params)) return null;
   const { width, depth, height } = params as Partial<Record<'width' | 'depth' | 'height', number>>;
   return { params, width: width ?? 1, depth: depth ?? 1, height: height ?? 1 };
+}
+
+/** `DesignStorePort.listDesignSummaries` for a fake port with no saved designs. */
+export async function listNoDesignSummaries(): Promise<Result<DesignSummary[], StorageError>> {
+  return ok([]);
 }

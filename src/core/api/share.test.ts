@@ -22,7 +22,7 @@ import {
   meshCloudSession,
 } from '@/shared/generation/meshCloud';
 import type * as MeshCloud from '@/shared/generation/meshCloud';
-import { prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
+import { listNoDesignSummaries, prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
 
 vi.mock('@/shared/generation/meshCloud', async (importOriginal) => ({
   ...(await importOriginal<typeof MeshCloud>()),
@@ -357,6 +357,7 @@ describe('linked designs travelling with a share', () => {
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
       prepareBinParams: prepareBinParamsAsIs,
+      listDesignSummaries: listNoDesignSummaries,
     };
     registerDesignStorePort(port);
   };
@@ -456,6 +457,7 @@ describe('linked designs over the server per-design cap', () => {
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
       prepareBinParams: prepareBinParamsAsIs,
+      listDesignSummaries: listNoDesignSummaries,
     });
   };
 
@@ -584,6 +586,7 @@ describe('linked designs naming mesh files', () => {
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
       prepareBinParams: prepareBinParamsAsIs,
+      listDesignSummaries: listNoDesignSummaries,
     });
   };
 
@@ -710,6 +713,7 @@ describe('linked designs naming mesh files', () => {
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
       prepareBinParams: prepareBinParamsAsIs,
+      listDesignSummaries: listNoDesignSummaries,
     });
 
     expectOk(await createShare('abc123xyz789', layout, 'view'));

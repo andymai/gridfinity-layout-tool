@@ -24,7 +24,7 @@ import {
   resetDesignStorePort,
   type DesignStorePort,
 } from '@/core/storage/designStorePort';
-import { prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
+import { listNoDesignSummaries, prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
 
 // === Mocks ===
 
@@ -57,6 +57,7 @@ const fakePort: DesignStorePort = {
   registryEdgeFields: () => Promise.resolve({}),
   registryPlacementFields: () => Promise.resolve({}),
   prepareBinParams: prepareBinParamsAsIs,
+  listDesignSummaries: listNoDesignSummaries,
 };
 
 // === Fixtures ===

@@ -10,6 +10,7 @@ import {
   setDesignVersionPinned,
   deleteDesignVersion,
   deleteVersionsForDesign,
+  listDesignVersionDates,
 } from './DesignVersionService';
 import { closeDesignerDb } from './designerDb';
 import { saveDesign, deleteDesign } from './DesignerStorage';
@@ -250,5 +251,30 @@ describe('DesignVersionService', () => {
       expect(expectOk(await listDesignVersions(DESIGN))).toEqual([]);
       expect(expectOk(await listDesignVersions(OTHER))).toHaveLength(1);
     });
+  });
+});
+
+describe('listDesignVersionDates', () => {
+  beforeEach(async () => {
+    closeDesignerDb();
+    await new Promise<void>((resolve) => {
+      const request = indexedDB.deleteDatabase('gridfinity-designer-v1');
+      request.onsuccess = () => resolve();
+      request.onerror = () => resolve();
+      request.onblocked = () => resolve();
+    });
+  });
+
+  it('lists each version with its design and capture time only', async () => {
+    const first = await save('first');
+    const theirs = expectOk(await createDesignVersion(OTHER, 'theirs', content(), null));
+    const dates = expectOk(await listDesignVersionDates());
+    expect(dates).toHaveLength(2);
+    expect(dates).toEqual(
+      expect.arrayContaining([
+        { designId: DESIGN, createdAt: first.version.createdAt },
+        { designId: OTHER, createdAt: theirs.version.createdAt },
+      ])
+    );
   });
 });

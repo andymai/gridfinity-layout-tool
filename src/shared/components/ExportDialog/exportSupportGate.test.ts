@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { recordExportAndShouldPromptSupport } from './exportSupportGate';
+import { readExportCount, recordExportAndShouldPromptSupport } from './exportSupportGate';
 
 const KEY = 'gridfinity-export-support-v1';
 
@@ -51,5 +51,23 @@ describe('recordExportAndShouldPromptSupport', () => {
     localStorage.setItem(KEY, JSON.stringify(state));
 
     expect(recordExportAndShouldPromptSupport()).toBe(true);
+  });
+});
+
+describe('readExportCount', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('reads zero before any export, then every recorded export', () => {
+    expect(readExportCount()).toBe(0);
+    recordExportAndShouldPromptSupport();
+    recordExportAndShouldPromptSupport();
+    expect(readExportCount()).toBe(2);
+  });
+
+  it('reads zero from a malformed record', () => {
+    localStorage.setItem(KEY, JSON.stringify({ exportCount: 'many' }));
+    expect(readExportCount()).toBe(0);
   });
 });
