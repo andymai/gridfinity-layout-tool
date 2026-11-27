@@ -150,6 +150,7 @@ const en: Record<string, string> = {
   'your2026.controls.close': 'Close',
   'your2026.controls.pause': 'Pause',
   'your2026.controls.play': 'Play',
+  'your2026.controls.save': 'Save image',
   'your2026.controls.slide': 'Card {index} of {total}',
   'your2026.controls.hint': 'Tap, click or use the arrow keys to move between cards. Space pauses.',
   'your2026.intro.line': 'Your year, in 42 mm steps.',

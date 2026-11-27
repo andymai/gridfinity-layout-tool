@@ -5783,5 +5783,6 @@
   "loading.your2026": "Chargement de votre 2026",
   "your2026.complicated.title": "Le plus compliqué : « {name} »",
   "your2026.complicated.line": "{triangles} triangles. Ton slicer s’en souvient encore.",
-  "your2026.complicated.lineNoCount": "Ton slicer s’en souvient encore."
+  "your2026.complicated.lineNoCount": "Ton slicer s’en souvient encore.",
+  "your2026.controls.save": "Enregistrer l’image"
 }

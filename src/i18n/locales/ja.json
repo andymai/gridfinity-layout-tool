@@ -5622,5 +5622,6 @@
   "loading.your2026": "あなたの2026年を読み込み中",
   "your2026.complicated.title": "いちばん複雑：「{name}」",
   "your2026.complicated.line": "三角形 {triangles} 個。スライサーはまだ覚えています。",
-  "your2026.complicated.lineNoCount": "スライサーはまだ覚えています。"
+  "your2026.complicated.lineNoCount": "スライサーはまだ覚えています。",
+  "your2026.controls.save": "画像を保存"
 }

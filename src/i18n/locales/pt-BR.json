@@ -5783,5 +5783,6 @@
   "loading.your2026": "Carregando seu 2026",
   "your2026.complicated.title": "O mais complicado: “{name}”",
   "your2026.complicated.line": "{triangles} triângulos. Seu fatiador ainda se lembra.",
-  "your2026.complicated.lineNoCount": "Seu fatiador ainda se lembra."
+  "your2026.complicated.lineNoCount": "Seu fatiador ainda se lembra.",
+  "your2026.controls.save": "Salvar imagem"
 }

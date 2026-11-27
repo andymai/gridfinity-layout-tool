@@ -5783,5 +5783,6 @@
   "loading.your2026": "Laster ditt 2026",
   "your2026.complicated.title": "Mest komplisert: «{name}»",
   "your2026.complicated.line": "{triangles} trekanter. Sliceren din husker denne.",
-  "your2026.complicated.lineNoCount": "Sliceren din husker denne."
+  "your2026.complicated.lineNoCount": "Sliceren din husker denne.",
+  "your2026.controls.save": "Lagre bilde"
 }
