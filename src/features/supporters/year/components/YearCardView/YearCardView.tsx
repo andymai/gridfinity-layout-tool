@@ -1,15 +1,18 @@
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import { Button } from '@/design-system';
 import type { LayoutPreview } from '@/core/types';
 import { useTranslation, type TFunction } from '@/i18n';
 import type { LengthUnit } from '@/shared/utils/lengthUnit';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
+import type { YearMesh } from '../../hooks/useYearMeshes';
+import type { ComplicatedPick } from '../../utils/complicatedPick';
 import { PIXEL_FONT } from '../../../components/CreditsRoll/creditsRollItems';
 import type { YearStats } from '../../types';
 import type { YearCard } from '../../utils/yearCards';
 import { formatCount, pizzaBoxes, spools } from '../../utils/yearFormat';
 import { readableAccent } from '../../utils/readableAccent';
 import { cardCopy, summaryRows } from './cardCopy';
-import { countUp, rise } from './cardMotion';
+import { countUp, fraction, rise } from './cardMotion';
 import {
   BinGrid,
   BoxGrid,
@@ -28,6 +31,39 @@ import { typeName } from './typeCopy';
 
 const SITE_HOST = 'gridfinitylayouttool.com';
 
+/** Lazy, so a device with no mesh never downloads the 3D viewer. */
+const SpinningBin = lazyWithRetry(() =>
+  import('../SpinningBin').then(namedExport('SpinningBin'))
+);
+
+interface BinShowcaseProps {
+  readonly mesh: YearMesh | undefined;
+  readonly thumbnail: string | null;
+  readonly name: string;
+  readonly elapsed: number;
+  readonly reduced: boolean;
+  readonly accent: string;
+}
+
+/** The saved thumbnail until the mesh is ready, then the real bin turning. */
+function BinShowcase({ mesh, thumbnail, name, elapsed, reduced, accent }: BinShowcaseProps) {
+  const thumb = <HeroThumb elapsed={elapsed} reduced={reduced} accent={accent} src={thumbnail} />;
+  if (!mesh) return thumb;
+  return (
+    <div
+      className="h-[18em] w-[18em]"
+      style={{
+        opacity: fraction(elapsed, 0.2, 0.9, reduced),
+        filter: `drop-shadow(0 0 2em ${accent}33)`,
+      }}
+    >
+      <Suspense fallback={thumb}>
+        <SpinningBin mesh={mesh.mesh} spin={!reduced} label={name} />
+      </Suspense>
+    </div>
+  );
+}
+
 export interface YearCardViewProps {
   readonly card: YearCard;
   /** Seconds since the card began. */
@@ -39,6 +75,8 @@ export interface YearCardViewProps {
   readonly reducedMotion: boolean;
   readonly supporterCount: number;
   readonly drawerPreview: LayoutPreview | null;
+  readonly meshes: ReadonlyMap<string, YearMesh>;
+  readonly complicated: ComplicatedPick | null;
   readonly onRollCredits: () => void;
   readonly onSupport: () => void;
 }
@@ -140,6 +178,8 @@ interface VisualInput {
   readonly locale: string;
   readonly supporterCount: number;
   readonly drawerPreview: LayoutPreview | null;
+  readonly meshes: ReadonlyMap<string, YearMesh>;
+  readonly complicated: ComplicatedPick | null;
   readonly t: TFunction;
 }
 
@@ -189,7 +229,27 @@ function cardVisual(card: YearCard, input: VisualInput): ReactNode {
     case 'filament':
       return stats.filament && <SpoolRow {...motion} count={spools(stats.filament.grams)} />;
     case 'longest':
-      return stats.longestPrint && <HeroThumb {...motion} src={stats.longestPrint.thumbnail} />;
+      return (
+        stats.longestPrint && (
+          <BinShowcase
+            {...motion}
+            mesh={input.meshes.get(stats.longestPrint.id)}
+            thumbnail={stats.longestPrint.thumbnail}
+            name={stats.longestPrint.name}
+          />
+        )
+      );
+    case 'complicated':
+      return (
+        input.complicated && (
+          <BinShowcase
+            {...motion}
+            mesh={input.meshes.get(input.complicated.design.id)}
+            thumbnail={input.complicated.design.thumbnail}
+            name={input.complicated.design.name}
+          />
+        )
+      );
     case 'exports':
       return <FileStack {...motion} count={stats.exports} />;
     case 'type':
@@ -223,12 +283,14 @@ export function YearCardView({
   reducedMotion: reduced,
   supporterCount,
   drawerPreview,
+  meshes,
+  complicated,
   onRollCredits,
   onSupport,
 }: YearCardViewProps) {
   const t = useTranslation();
   const accentText = readableAccent(accent);
-  const input = { t, stats, locale, unit, supporterCount };
+  const input = { t, stats, locale, unit, supporterCount, complicated };
 
   if (card.kind === 'summary') {
     return (
@@ -269,6 +331,8 @@ export function YearCardView({
         locale,
         supporterCount,
         drawerPreview,
+        meshes,
+        complicated,
         t,
       })}
       kicker={copy.kicker}

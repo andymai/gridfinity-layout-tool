@@ -255,9 +255,15 @@ let sessionStarted = false;
  * One-shot per session: scan IndexedDB for designs needing thumbnails and
  * regenerate them in the background. Mount in the top-level app shell.
  */
-export function useBackgroundThumbnailRegen(): void {
+export function useBackgroundThumbnailRegen(
+  /**
+   * False keeps the pass off, and stops one already running, while another
+   * surface needs the generation worker to itself.
+   */
+  enabled = true
+): void {
   useEffect(() => {
-    if (sessionStarted) return;
+    if (!enabled || sessionStarted) return;
     sessionStarted = true;
 
     const controller = new AbortController();
@@ -314,7 +320,7 @@ export function useBackgroundThumbnailRegen(): void {
       cancelScheduled();
       // Don't reset `sessionStarted` — one-shot per page load.
     };
-  }, []);
+  }, [enabled]);
 }
 
 /** Test-only: reset the one-shot guard between cases. */

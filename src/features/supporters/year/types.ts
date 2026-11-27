@@ -1,5 +1,6 @@
 import type { Layout } from '@/core/types';
 import type { PrintSettings } from '@/shared/printSettings';
+import type { BinParams } from '@/shared/types/bin';
 
 export interface YearLayoutSource {
   readonly id: string;
@@ -48,11 +49,16 @@ export interface YearDrawer {
   readonly depthMm: number;
 }
 
-export interface YearPrintedDesign extends YearDesignRef {
+/** A bin design the 3D cards can generate. */
+export interface YearBinRef extends YearDesignRef {
+  readonly params: BinParams;
+}
+
+export interface YearPrintedDesign extends YearBinRef {
   readonly minutes: number;
 }
 
-export interface YearShortlistEntry extends YearDesignRef {
+export interface YearShortlistEntry extends YearBinRef {
   readonly score: number;
 }
 

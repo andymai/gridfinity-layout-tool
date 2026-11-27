@@ -5941,5 +5941,8 @@
   "your2026.empty.start": "Naplánovat zásuvku",
   "your2026.error.title": "Tvůj rok 2026 se nenačetl.",
   "your2026.error.retry": "Zkusit znovu",
-  "loading.your2026": "Načítání tvého roku 2026"
+  "loading.your2026": "Načítání tvého roku 2026",
+  "your2026.complicated.title": "Nejsložitější: „{name}“",
+  "your2026.complicated.line": "{triangles} trojúhelníků. Tohle si tvůj slicer pamatuje.",
+  "your2026.complicated.lineNoCount": "Tohle si tvůj slicer pamatuje."
 }

@@ -21,6 +21,8 @@ export interface StoryPlayerProps {
   readonly onClose: () => void;
   /** Called once, when the last card first shows. */
   readonly onReachEnd: () => void;
+  /** Called each time a different card shows. */
+  readonly onCardChange?: (card: YearCard) => void;
   readonly renderCard: (card: YearCard, position: StoryPosition) => ReactNode;
   /**
    * The card's final words, announced once when it shows. The card itself
@@ -55,6 +57,7 @@ export function StoryPlayer({
   accent,
   onClose,
   onReachEnd,
+  onCardChange,
   renderCard,
   describeCard,
 }: StoryPlayerProps) {
@@ -87,6 +90,11 @@ export function StoryPlayer({
     reachedEnd.current = true;
     onReachEnd();
   }, [position.index, lastIndex, onReachEnd]);
+
+  const card = cards.at(position.index);
+  useEffect(() => {
+    if (card) onCardChange?.(card);
+  }, [card, onCardChange]);
 
   // A paused step lands where the card has settled; at its start the entrance
   // has not run, and the card would sit empty until play resumes.
@@ -185,7 +193,6 @@ export function StoryPlayer({
     clock.setPaused(start.wasPaused);
   };
 
-  const card = cards.at(position.index);
   const pauseLabel = paused ? t('your2026.controls.play') : t('your2026.controls.pause');
 
   return (

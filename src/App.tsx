@@ -165,7 +165,7 @@ export default function App() {
 
   usePlaceBinFromURL();
   useOwnedShareSync();
-  useBackgroundThumbnailRegen();
+  useBackgroundThumbnailRegen(!isYour2026Route);
   useCommunityPublishReturn();
   useCommunityLikeReturn();
   useCommunityDigestCheck();

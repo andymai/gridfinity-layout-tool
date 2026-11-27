@@ -207,6 +207,24 @@ describe('useBackgroundThumbnailRegen', () => {
     restoreIdle();
   });
 
+  it('stays off while disabled, then starts once enabled', async () => {
+    vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok([makeDesign({ thumbnail: null })]));
+
+    const { rerender } = renderHook(({ enabled }) => useBackgroundThumbnailRegen(enabled), {
+      initialProps: { enabled: false },
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+    expect(DesignerStorage.listDesigns).not.toHaveBeenCalled();
+
+    rerender({ enabled: true });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+    expect(DesignerStorage.listDesigns).toHaveBeenCalled();
+  });
+
   it('does nothing when no designs need regeneration', async () => {
     vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(
       ok([

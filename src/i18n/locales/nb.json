@@ -5778,5 +5778,8 @@
   "your2026.empty.start": "Planlegg en skuff",
   "your2026.error.title": "Ditt 2026 ble ikke lastet inn.",
   "your2026.error.retry": "Prøv igjen",
-  "loading.your2026": "Laster ditt 2026"
+  "loading.your2026": "Laster ditt 2026",
+  "your2026.complicated.title": "Mest komplisert: «{name}»",
+  "your2026.complicated.line": "{triangles} trekanter. Sliceren din husker denne.",
+  "your2026.complicated.lineNoCount": "Sliceren din husker denne."
 }

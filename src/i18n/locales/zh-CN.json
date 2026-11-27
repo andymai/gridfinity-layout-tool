@@ -5617,5 +5617,8 @@
   "your2026.empty.start": "规划一个抽屉",
   "your2026.error.title": "你的 2026 没能加载。",
   "your2026.error.retry": "重试",
-  "loading.your2026": "正在加载你的 2026"
+  "loading.your2026": "正在加载你的 2026",
+  "your2026.complicated.title": "最复杂：“{name}”",
+  "your2026.complicated.line": "{triangles} 个三角形。切片软件至今记得它。",
+  "your2026.complicated.lineNoCount": "切片软件至今记得它。"
 }

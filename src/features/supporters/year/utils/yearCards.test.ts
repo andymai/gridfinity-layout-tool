@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { YearStats } from '../types';
 import { buildYearCards } from './yearCards';
 
@@ -13,7 +14,13 @@ const full: YearStats = {
   busiestMonth: { month: 2, count: 3 },
   monthCounts: [0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0],
   filament: { grams: 2400, printMinutes: 4000 },
-  longestPrint: { id: 'd1', name: 'Caddy', thumbnail: null, minutes: 300 },
+  longestPrint: {
+    id: 'd1',
+    name: 'Caddy',
+    thumbnail: null,
+    params: DEFAULT_BIN_PARAMS,
+    minutes: 300,
+  },
   complexityShortlist: [],
   exports: 9,
   type: { id: 'standardIssue', values: {} },
@@ -37,6 +44,17 @@ describe('buildYearCards', () => {
       'summary',
       'thanks',
     ]);
+  });
+
+  it('adds the most complicated card after the longest print when there are bin designs', () => {
+    const withShortlist: YearStats = {
+      ...full,
+      complexityShortlist: [
+        { id: 'd2', name: 'Grid', thumbnail: null, params: DEFAULT_BIN_PARAMS, score: 9 },
+      ],
+    };
+    const kinds = buildYearCards(withShortlist).map((card) => card.kind);
+    expect(kinds.indexOf('complicated')).toBe(kinds.indexOf('longest') + 1);
   });
 
   it('leaves out cards with no numbers behind them', () => {

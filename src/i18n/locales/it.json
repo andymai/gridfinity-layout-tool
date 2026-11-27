@@ -5778,5 +5778,8 @@
   "your2026.empty.start": "Pianifica un cassetto",
   "your2026.error.title": "Il tuo 2026 non si è caricato.",
   "your2026.error.retry": "Riprova",
-  "loading.your2026": "Caricamento del tuo 2026"
+  "loading.your2026": "Caricamento del tuo 2026",
+  "your2026.complicated.title": "Il più complicato: «{name}»",
+  "your2026.complicated.line": "{triangles} triangoli. Il tuo slicer se lo ricorda ancora.",
+  "your2026.complicated.lineNoCount": "Il tuo slicer se lo ricorda ancora."
 }
