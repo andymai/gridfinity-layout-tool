@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { err, ok } from '@/core/result';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
-import { baseplateDesignId } from '@/core/types';
+import { useLayoutStore } from '@/core/store/layout';
+import { baseplateDesignId, layoutId } from '@/core/types';
 import { useNewBaseplate } from './useNewBaseplate';
 
 const mocks = vi.hoisted(() => ({
@@ -28,9 +29,20 @@ vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const created = { id: baseplateDesignId('bp-new'), params: { magnetHoles: true } };
 
+function deferSave(): (value: unknown) => void {
+  let resolveSave: (value: unknown) => void = () => undefined;
+  mocks.saveCurrentAsNew.mockReturnValue(
+    new Promise((resolve) => {
+      resolveSave = resolve;
+    })
+  );
+  return (value) => resolveSave(value);
+}
+
 describe('useNewBaseplate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useLayoutStore.setState({ activeLayoutId: layoutId('layout-a') });
     mocks.list = [
       { id: 'bp-1', name: 'Baseplate 1', updatedAt: '2024-01-01' },
       { id: 'bp-3', name: 'Baseplate 3', updatedAt: '2024-01-03' },
@@ -88,6 +100,71 @@ describe('useNewBaseplate', () => {
       resolveSave(ok(created));
       await pending;
     });
+    expect(result.current.creating).toBe(false);
+  });
+
+  // The phone menu unmounts its items on click, so a reopened menu is a fresh mount.
+  it('keeps the save pending across a remount and starts no second save', async () => {
+    const resolveSave = deferSave();
+    const first = renderHook(() => useNewBaseplate());
+    let pending: Promise<boolean> = Promise.resolve(false);
+    act(() => {
+      pending = first.result.current.createBaseplate();
+    });
+    first.unmount();
+
+    const second = renderHook(() => useNewBaseplate());
+    expect(second.result.current.creating).toBe(true);
+    let overlap: Promise<boolean> = Promise.resolve(false);
+    act(() => {
+      overlap = second.result.current.createBaseplate();
+    });
+    expect(mocks.saveCurrentAsNew).toHaveBeenCalledOnce();
+
+    await act(async () => {
+      resolveSave(ok(created));
+      await pending;
+    });
+    await expect(overlap).resolves.toBe(true);
+    expect(mocks.setActiveBaseplate).toHaveBeenCalledOnce();
+    expect(second.result.current.creating).toBe(false);
+  });
+
+  it('shows the pending save in every mounted entry point', async () => {
+    const resolveSave = deferSave();
+    const header = renderHook(() => useNewBaseplate());
+    const libraryModal = renderHook(() => useNewBaseplate());
+
+    let pending: Promise<boolean> = Promise.resolve(false);
+    act(() => {
+      pending = header.result.current.createBaseplate();
+    });
+    expect(libraryModal.result.current.creating).toBe(true);
+
+    await act(async () => {
+      resolveSave(ok(created));
+      await pending;
+    });
+    expect(libraryModal.result.current.creating).toBe(false);
+  });
+
+  it('does not activate the plate when another layout opens during the save', async () => {
+    const resolveSave = deferSave();
+    const { result } = renderHook(() => useNewBaseplate());
+    let pending: Promise<boolean> = Promise.resolve(false);
+    act(() => {
+      pending = result.current.createBaseplate();
+    });
+    useLayoutStore.setState({ activeLayoutId: layoutId('layout-b') });
+
+    let succeeded: boolean | undefined;
+    await act(async () => {
+      resolveSave(ok(created));
+      succeeded = await pending;
+    });
+
+    expect(succeeded).toBe(false);
+    expect(mocks.setActiveBaseplate).not.toHaveBeenCalled();
     expect(result.current.creating).toBe(false);
   });
 });
