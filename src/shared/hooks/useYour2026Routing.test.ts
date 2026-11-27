@@ -27,4 +27,13 @@ describe('useYour2026Routing', () => {
     expect(window.location.pathname).toBe('/');
     expect(result.current.isYour2026Route).toBe(false);
   });
+
+  it('replaces its own history entry when it only redirects home', () => {
+    window.history.replaceState(null, '', '/your-2026');
+    const before = window.history.length;
+    const { result } = renderHook(() => useYour2026Routing());
+    act(() => result.current.replaceWithHome());
+    expect(window.location.pathname).toBe('/');
+    expect(window.history.length).toBe(before);
+  });
 });

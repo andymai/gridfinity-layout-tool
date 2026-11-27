@@ -115,6 +115,8 @@ export function StoryPlayer({
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (ownsInput(event.target) || event.button !== 0) return;
+    // Capture, so a press dragged off the card still ends here and resumes.
+    event.currentTarget.setPointerCapture(event.pointerId);
     press.current = {
       x: event.clientX,
       y: event.clientY,
@@ -192,6 +194,7 @@ export function StoryPlayer({
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel}
+        onLostPointerCapture={onPointerCancel}
       >
         {card && (
           <section

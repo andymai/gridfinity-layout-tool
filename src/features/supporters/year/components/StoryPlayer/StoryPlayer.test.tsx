@@ -75,4 +75,22 @@ describe('StoryPlayer', () => {
     });
     expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument();
   });
+
+  it('resumes after a press that ends outside the card', () => {
+    const capture = vi.spyOn(Element.prototype, 'setPointerCapture').mockImplementation(() => {});
+    renderPlayer();
+    const surface = screen.getByRole('region', { name: 'Card 1 of 3' }).parentElement;
+    if (!surface) throw new Error('no surface');
+    act(() => {
+      fireEvent.pointerDown(surface, { button: 0, pointerId: 1, clientX: 10, clientY: 10 });
+    });
+    expect(capture).toHaveBeenCalledWith(1);
+    act(() => {
+      fireEvent(surface, new Event('lostpointercapture', { bubbles: true }));
+      // A stray release after capture was lost must not count as a tap.
+      fireEvent.pointerUp(surface, { button: 0, pointerId: 1, clientX: 10, clientY: 10 });
+    });
+    expect(screen.getByText('card:intro')).toBeInTheDocument();
+    capture.mockRestore();
+  });
 });

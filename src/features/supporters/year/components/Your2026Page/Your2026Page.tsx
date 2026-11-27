@@ -47,7 +47,7 @@ export function Your2026Page() {
   const t = useTranslation();
   const locale = useCurrentLocale();
   const reducedMotion = usePrefersReducedMotion();
-  const { navigateHome } = useYour2026Routing();
+  const { navigateHome, replaceWithHome } = useYour2026Routing();
   const { navigateToSupporters } = useSupportersRouting();
   const [params] = useState(() => new URLSearchParams(window.location.search));
   const allowed = params.has('preview') || isYearReviewOpen();
@@ -61,8 +61,8 @@ export function Your2026Page() {
   const accent = getSupportersPalette('dark', accentName).accent;
 
   useEffect(() => {
-    if (!allowed) navigateHome();
-  }, [allowed, navigateHome]);
+    if (!allowed) replaceWithHome();
+  }, [allowed, replaceWithHome]);
 
   useEffect(() => {
     if (!allowed || startOnThanks) return;

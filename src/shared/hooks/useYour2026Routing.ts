@@ -26,5 +26,12 @@ export function useYour2026Routing() {
     dispatchSyntheticPopstate();
   }, []);
 
-  return { isYour2026Route, navigateToYour2026, navigateHome };
+  /** Leaves without a history entry, so Back skips a route that only redirects. */
+  const replaceWithHome = useCallback(() => {
+    window.history.replaceState(null, '', '/');
+    setIsYour2026Route(false);
+    dispatchSyntheticPopstate();
+  }, []);
+
+  return { isYour2026Route, navigateToYour2026, navigateHome, replaceWithHome };
 }
