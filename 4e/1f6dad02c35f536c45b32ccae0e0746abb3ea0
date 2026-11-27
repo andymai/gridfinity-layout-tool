@@ -295,6 +295,7 @@ src/features/supporters/year/components/Your2026Page/Your2026Page.tsx
   s_cbdce95362cca9::t_c688999105b114 17,23-25,40-41,158,161,168-184,189-190,193-194,197
   s_cbdce95362cca9::t_4cffb85c62a925 198-208,284,286-291
   s_cbdce95362cca9::t_6da212c4959606 16,32-33,38,47-51,55-56,59,64-76,82-89,91-100,104,107-108,112-113,127-128,132,136,138-146,149-155,162-163,166,237,269-270
+  s_cbdce95362cca9::t_524c7da04f0850 111
 src/features/supporters/year/index.ts
   s_cbdce95362cca9::t_3438235dd02c22 1
 src/i18n/locales/nl.json
