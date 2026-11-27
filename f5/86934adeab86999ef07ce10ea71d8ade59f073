@@ -127,6 +127,7 @@ src/features/supporters/year/components/YearCardView/YearCardView.test.tsx
   s_cbdce95362cca9::t_e1eccccc3e4cd6 107-111
   s_cbdce95362cca9::t_c917a90f7e80a9 113
   s_4408a8684775ad::t_7a97b255f80fee 26-28,52-53
+  s_cbdce95362cca9::t_309a99813eda53 145-152
 scripts/i18n-values-allowlist.json
   s_cbdce95362cca9::t_6082c51982bf22 188-189
 src/features/supporters/year/utils/storyTimeline.test.ts
@@ -226,6 +227,7 @@ src/features/supporters/year/components/Your2026Page/Your2026Page.tsx
   s_cbdce95362cca9::t_aee37b42026618 15,123,130-133
   s_cbdce95362cca9::t_43f2daf027065a 14,16-17,24-29,70,84-88,92-93,95-102
   s_4408a8684775ad::t_3bd8c620254b9d 167,189
+  s_cbdce95362cca9::t_9d279ac092093a 89-91,94,175,190
 src/features/supporters/year/index.ts
   s_cbdce95362cca9::t_3438235dd02c22 1
 src/i18n/locales/nl.json
@@ -241,6 +243,7 @@ src/features/supporters/year/components/YearCardView/YearCardView.tsx
   s_cbdce95362cca9::t_d5fe569e1560d9 21
   s_cbdce95362cca9::t_a8208d25722406 99-103,105-106,107-108
   s_cbdce95362cca9::t_5e7a711e5e6349 1,6-8,15,34,38-66,78-79
+  s_cbdce95362cca9::t_3f878887aaeb6e 35-37,181-182,233-240,242,244-251,286-287,293,334-335
 src/i18n/locales/ja.json
   s_cbdce95362cca9::t_658cf41fa5dff4 5534-5601,5603-5619
   s_cbdce95362cca9::t_047d617d2c35cc 5602
@@ -285,6 +288,8 @@ src/features/supporters/year/components/SpinningBin/SpinningBin.test.tsx
   s_cbdce95362cca9::t_593432621064b7 1-28
 src/features/supporters/year/hooks/useYearMeshes.test.ts
   s_cbdce95362cca9::t_ab0d0887259660 1-99
+src/features/supporters/year/components/YearCardView/cardCopy.ts
+  s_cbdce95362cca9::t_ede9310bd0fb2d 4,34,121-134,188
 ---
 {
   "schema_version": "authorship/3.0.0",
