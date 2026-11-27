@@ -29,6 +29,7 @@ import { withSocketNozzle } from '../src/shared/generation/socketNozzle';
 import { DEFAULT_PRINT_SETTINGS } from '../src/shared/printSettings';
 import { estimateCommunityPrint } from '../src/shared/utils/communityPrintCost';
 import { knifeRestMatedOffset, planKnifeRest } from '../src/shared/utils/knifeRestPlan';
+import { TEXT_FONT_FILES, loadTestFonts } from '../src/test/loadTestFonts';
 import { bounds, pad4, simplifyEdgeLines } from './lib/meshBake';
 
 interface GltfPipeline {
@@ -268,6 +269,8 @@ async function main(): Promise<void> {
   mkdirSync(OUT, { recursive: true });
   console.error('initializing occt-wasm kernel...');
   await initOcctWasmKernel();
+  // Without the bundled faces, text silently drops out and an engraved design bakes bare.
+  await loadTestFonts(Object.keys(TEXT_FONT_FILES));
   const { generateBin } = await import('../src/features/generation/worker/generators/binGenerator');
   const { generateKnifeRest } =
     await import('../src/features/generation/worker/generators/knifeRestBuilder');
