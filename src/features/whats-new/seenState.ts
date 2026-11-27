@@ -96,8 +96,8 @@ export function seedIfFirstRun(): boolean {
   return true;
 }
 
-export function markAllSeen(): void {
-  write({ ...cache, lastSeenId: latestEntryId() });
+export function markAllSeen(day: string = localDay()): void {
+  write({ ...cache, lastSeenId: latestEntryId(day) });
 }
 
 export function recordAutoOpen(): void {

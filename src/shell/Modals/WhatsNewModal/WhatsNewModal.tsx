@@ -47,13 +47,15 @@ function WhatsNewContent({ close }: { close: () => void }) {
   const day = useLocalDay();
   const entries = useMemo(() => shownEntries(WHATS_NEW_ENTRIES, day), [day]);
 
-  // Captured before markAllSeen() below empties the unseen list: the digest
-  // must not blank out underneath the reader.
-  const [digest] = useState(() => buildDigest(entries, getSeenState().lastSeenId));
+  // The marker as it stood on opening, before markAllSeen() below moves it: the
+  // digest must not blank out underneath the reader. The digest itself follows
+  // the day, so an entry that appears while the modal is open joins it.
+  const [seenAtOpen] = useState(() => getSeenState().lastSeenId);
+  const digest = useMemo(() => buildDigest(entries, seenAtOpen), [entries, seenAtOpen]);
 
   useEffect(() => {
-    markAllSeen();
-  }, []);
+    markAllSeen(day);
+  }, [day]);
 
   const activate = useEntryActivation(close);
   const lead = useMemo(() => splitLead(digest.entries), [digest]);

@@ -19,7 +19,6 @@ export function shownEntries<T extends { readonly showFrom?: string }>(
   return entries.filter((entry) => isShown(entry.showFrom, day));
 }
 
-/** Milliseconds until the next local midnight, when `localDay` next changes. */
 export function msUntilNextDay(now: Date = new Date()): number {
   const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
   return next.getTime() - now.getTime();

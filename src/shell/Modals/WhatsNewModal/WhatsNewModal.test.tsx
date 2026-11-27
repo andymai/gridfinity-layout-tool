@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WhatsNewModal } from './WhatsNewModal';
 import { WHATS_NEW_ENTRIES } from '@/features/whats-new/entries';
@@ -21,7 +21,14 @@ vi.mock('@/i18n', () => ({
   useCurrentLocale: () => 'en' as const,
 }));
 
-/** What a user sees today: an entry scheduled ahead does not exist yet. */
+/**
+ * Every test runs on this day unless it sets its own. A fixed day keeps the shown
+ * entries and their labels the same whenever the suite runs: Your 2026's button,
+ * for one, exists only inside its window.
+ */
+const TODAY = new Date(2026, 11, 2, 10);
+
+/** What a user sees on `TODAY`: an entry scheduled after it does not exist yet. */
 let shown: WhatsNewEntry[] | undefined;
 const entries = (): WhatsNewEntry[] => (shown ??= shownEntries(WHATS_NEW_ENTRIES));
 const SCHEDULED = WHATS_NEW_ENTRIES.find((entry) => entry.showFrom !== undefined);
@@ -73,12 +80,15 @@ function rowNamed(title: string): { name: (name: string) => boolean } {
 
 describe('WhatsNewModal', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(TODAY);
     resetAllStores();
     localStorage.clear();
     reloadSeenState();
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -248,13 +258,8 @@ describe('WhatsNewModal', () => {
     const showFrom = SCHEDULED?.showFrom ?? '';
     const title = SCHEDULED?.title.en ?? '';
 
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
     it('is not in the digest or the archive before its day', async () => {
       const user = userEvent.setup();
-      vi.useFakeTimers({ toFake: ['Date'] });
       vi.setSystemTime(onDay(showFrom, -1));
       open();
       render(<WhatsNewModal />);
@@ -265,7 +270,6 @@ describe('WhatsNewModal', () => {
     });
 
     it('leads the digest on its day for a user who was caught up the day before', () => {
-      vi.useFakeTimers({ toFake: ['Date'] });
       vi.setSystemTime(onDay(showFrom, -1));
       markAllSeen();
 
@@ -274,6 +278,23 @@ describe('WhatsNewModal', () => {
       open();
       render(<WhatsNewModal />);
       expect(within(leadCard()).getByRole('heading', { level: 3 })).toHaveTextContent(title);
+    });
+
+    it('joins a digest left open across midnight, and counts as seen', async () => {
+      const lastMinute = onDay(showFrom, -1);
+      lastMinute.setHours(23, 59, 0);
+      vi.useRealTimers();
+      vi.useFakeTimers({ now: lastMinute, toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+      markAllSeen();
+      open();
+      render(<WhatsNewModal />);
+      expect(screen.queryByText(title)).not.toBeInTheDocument();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2 * 60 * 1000);
+      });
+      expect(within(leadCard()).getByRole('heading', { level: 3 })).toHaveTextContent(title);
+      expect(hasUnseen(getSeenState())).toBe(false);
     });
   });
 
