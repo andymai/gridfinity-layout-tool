@@ -1,0 +1,127 @@
+src/features/whats-new/hooks/useLocalDay.test.ts
+  s_cbdce95362cca9::t_b571105a2590a5 1-32
+src/shell/Modals/WhatsNewModal/WhatsNewModal.tsx
+  s_cbdce95362cca9::t_a68957477178f2 91
+  s_cbdce95362cca9::t_1a34f3c8819de4 7
+  s_cbdce95362cca9::t_9f42bb7450f6e4 84
+  s_cbdce95362cca9::t_8957f2f03f9004 47-49,52
+  s_cbdce95362cca9::t_68df27a9eeee36 121
+src/shell/Modals/WhatsNewModal/whatsNewShared.test.tsx
+  s_cbdce95362cca9::t_8240a2a5016d7d 119-150,152-155
+  s_cbdce95362cca9::t_b2c9612f21e136 151
+  s_cbdce95362cca9::t_04506564af19fe 1
+src/features/whats-new/seenState.ts
+  s_cbdce95362cca9::t_b36e6dcb6b1a00 95
+  s_cbdce95362cca9::t_8fb2d2bdac9d84 100
+  s_cbdce95362cca9::t_1a31cb5fca2d8d 2-4
+  s_cbdce95362cca9::t_0b84409008e02c 78,80-85
+src/features/whats-new/index.ts
+  s_cbdce95362cca9::t_f1a8655a13a6e1 5-6
+  s_cbdce95362cca9::t_092d9e6bae0938 8
+src/i18n/locales/uk.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5711
+src/shell/Modals/WhatsNewModal/whatsNewShared.ts
+  s_cbdce95362cca9::t_00016e9b8012cb 66
+  s_cbdce95362cca9::t_9847637ca971b3 120
+  s_cbdce95362cca9::t_b60c533e3e55e2 109-111
+  s_cbdce95362cca9::t_48ee2c1a2bed14 8-9
+  s_cbdce95362cca9::t_308bd595938558 43-46
+src/i18n/locales/fr.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5433
+src/i18n/locales/sv.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5433
+src/shell/Modals/WhatsNewModal/WhatsNewModal.test.tsx
+  s_cbdce95362cca9::t_baa14042ae2b0a 24,27-33,247-277
+  s_cbdce95362cca9::t_729d209573e5b3 25-26,42,53,97,148,158,194,208
+  s_cbdce95362cca9::t_fef43cc3671649 7-13,221
+  s_cbdce95362cca9::t_88a0f3f81e5557 278-279
+scripts/check-whats-new.sh
+  s_cbdce95362cca9::t_cf6d7950c32093 25,27,29
+  s_cbdce95362cca9::t_348c1d5aafce49 9
+src/features/whats-new/hooks/useLocalDay.ts
+  s_cbdce95362cca9::t_bc027aafdcd129 1-33
+src/features/whats-new/seenState.test.ts
+  s_cbdce95362cca9::t_2d87d5e09e7ed7 44-65
+  s_cbdce95362cca9::t_d3ed08f4c113c0 11-17
+apps/docs/sharing/your-2026.md
+  s_cbdce95362cca9::t_cb9c6150ed4d50 1-50
+src/i18n/locales/de.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5433
+src/features/whats-new/schedule.test.ts
+  s_cbdce95362cca9::t_32329e3ace6e16 1-39
+src/features/whats-new/entries.ts
+  s_cbdce95362cca9::t_30412ac9fdca5a 17-27
+  s_cbdce95362cca9::t_3903cddb1955c7 16
+src/features/whats-new/README.md
+  s_cbdce95362cca9::t_18e0e63655ac8a 27
+  s_cbdce95362cca9::t_4b94215160c301 7
+  s_cbdce95362cca9::t_036958af5e00b3 10
+  s_cbdce95362cca9::t_91a8d1b08b23ec 11
+src/i18n/locales/en.ts
+  s_cbdce95362cca9::t_3369e86b3c36ac 6610
+src/i18n/locales/it.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5433
+src/i18n/locales/cs.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5574
+src/features/whats-new/latest.ts
+  s_cbdce95362cca9::t_3b980a3ca21692 1-7,9-12,14,17-39
+src/i18n/locales/ja.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5294
+src/i18n/locales/ka.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5289
+src/i18n/locales/nb.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5433
+src/i18n/locales/ko.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5294
+src/i18n/locales/nl.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5433
+src/features/whats-new/types.ts
+  s_cbdce95362cca9::t_795642d6267aee 22-24,31-36
+src/features/whats-new/schedule.ts
+  s_cbdce95362cca9::t_cb3905d3e0537f 1-26
+src/i18n/locales/pt-BR.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5433
+src/i18n/locales/zh-CN.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5294
+src/features/whats-new/latest.test.ts
+  s_cbdce95362cca9::t_7ca4788ca980dc 3,5-34
+src/shared/components/AppVersionButton/AppVersionButton.test.tsx
+  s_cbdce95362cca9::t_198960ffe419cf 2
+  s_cbdce95362cca9::t_67a3bf442b4339 43-58
+src/i18n/locales/pl.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5711
+apps/docs/.vitepress/navigation.ts
+  s_cbdce95362cca9::t_9771565191518c 130
+src/i18n/locales/es.json
+  s_cbdce95362cca9::t_3369e86b3c36ac 5433
+src/shell/Modals/WhatsNewModal/WhatsNewArchive.tsx
+  s_cbdce95362cca9::t_7b13d0d8e20fe1 20
+  s_cbdce95362cca9::t_48751abbbd4814 58
+  s_cbdce95362cca9::t_006adb554a95d3 16,34,39
+  s_cbdce95362cca9::t_df50fb78741d60 53-57,59-61,65,67
+src/features/whats-new/hooks/useWhatsNewAutoOpen.test.ts
+  s_cbdce95362cca9::t_b91477b24f546f 40-44,46-58
+  s_cbdce95362cca9::t_944d33a6708ffb 45
+  s_cbdce95362cca9::t_0082e5252d29de 1,6-14
+  s_cbdce95362cca9::t_68354bd6ff7052 97
+  s_cbdce95362cca9::t_ff8f1fdd2b668e 68,72
+src/shared/components/AppVersionButton/AppVersionButton.tsx
+  s_cbdce95362cca9::t_906e67467f612c 20
+  s_cbdce95362cca9::t_d8e43792a687b2 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "41bc8ba665c35876fbfa7c76cc39fd07624d5e89",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
