@@ -38,3 +38,18 @@ export function wrapText(
   push();
   return lines.map((each) => each.trim());
 }
+
+/** Keeps at most `max` lines; a cut ends the last kept line with an ellipsis. */
+export function clampLines(
+  lines: readonly string[],
+  max: number,
+  maxWidth: number,
+  measure: (text: string) => number
+): string[] {
+  if (lines.length <= max) return [...lines];
+  const kept = lines.slice(0, max);
+  let last = kept[max - 1] ?? '';
+  while (last && measure(`${last}…`) > maxWidth) last = last.slice(0, -1);
+  kept[max - 1] = `${last.trimEnd()}…`;
+  return kept;
+}

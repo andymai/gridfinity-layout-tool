@@ -115,7 +115,6 @@ function visualFor(card: YearCard, input: ShareInput): ShareVisual {
   }
 }
 
-/** What the share image of a card shows: its final words and one visual. */
 export function shareSpecFor(card: YearCard, input: ShareInput): ShareSpec | null {
   const copy = cardCopy(card.kind, { ...input, shown: (value) => value });
   if (!copy) return null;

@@ -9,6 +9,7 @@ import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { useYour2026Routing } from '@/shared/hooks/useYour2026Routing';
 import { markYearReviewSeen } from '@/shared/yearReview/dockRow';
 import { isYearReviewOpen, YEAR_REVIEW_YEAR } from '@/shared/yearReview/window';
+import { useLatestRef } from '@/shared/hooks';
 import { useSupportersData } from '../../../hooks/useSupportersData';
 import { getSupportersPalette } from '../../../scene/palette';
 import { getSupporterCount } from '../../../utils/supportersData';
@@ -110,14 +111,17 @@ export function Your2026Page() {
   );
   const shownComplicated = complicated ?? liveComplicated;
   const [settledCard, setSettledCard] = useState<YearCard | null>(null);
+  // Read through a ref: a new handler makes the player call it again with no
+  // card change, which would clear the image the settled card prepared.
+  const liveComplicatedRef = useLatestRef(liveComplicated);
   const onCardChange = useCallback(
     (card: YearCard) => {
       setSettledCard(null);
       if (card.kind !== 'complicated' || frozenComplicated) return;
-      frozenComplicated = liveComplicated;
-      setComplicated(liveComplicated);
+      frozenComplicated = liveComplicatedRef.current;
+      setComplicated(liveComplicatedRef.current);
     },
-    [liveComplicated]
+    [liveComplicatedRef]
   );
   const supporterCount = getSupporterCount(supporters);
   const shareSpec = useMemo(

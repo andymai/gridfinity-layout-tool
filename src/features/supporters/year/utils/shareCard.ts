@@ -1,5 +1,5 @@
 import type { ShareSpec, ShareVisual } from '../components/YearCardView/shareSpec';
-import { wrapText } from './shareText';
+import { clampLines, wrapText } from './shareText';
 
 export const SHARE_WIDTH = 1080;
 export const SHARE_HEIGHT = 1920;
@@ -7,6 +7,8 @@ const MARGIN = 96;
 const TEXT_WIDTH = SHARE_WIDTH - MARGIN * 2;
 const VISUAL_TOP = 260;
 const VISUAL_SIZE = 800;
+const MAX_TITLE_LINES = 3;
+const MAX_BODY_LINES = 4;
 
 export interface ShareTheme {
   readonly accent: string;
@@ -250,7 +252,6 @@ function drawVisual(
   }
 }
 
-/** Draws one card at 1080 × 1920: the same layout the card has on screen. */
 export function drawShareCard(
   ctx: CanvasRenderingContext2D,
   spec: ShareSpec,
@@ -264,13 +265,23 @@ export function drawShareCard(
   ctx.fillStyle = theme.accentText;
   ctx.fillText(theme.kicker.toUpperCase(), MARGIN, 150);
 
+  ctx.save();
   drawVisual(ctx, spec.visual, theme, images);
+  ctx.restore();
 
   const measure = (text: string): number => ctx.measureText(text).width;
   ctx.font = `700 84px ${theme.appFont}`;
-  const title = spec.title ? wrapText(spec.title, TEXT_WIDTH, measure) : [];
+  // Design names have no length limit; capped lines keep the text below the visual.
+  const title = spec.title
+    ? clampLines(wrapText(spec.title, TEXT_WIDTH, measure), MAX_TITLE_LINES, TEXT_WIDTH, measure)
+    : [];
   ctx.font = `400 44px ${theme.appFont}`;
-  const lines = spec.lines.flatMap((line) => wrapText(line, TEXT_WIDTH, measure));
+  const lines = clampLines(
+    spec.lines.flatMap((line) => wrapText(line, TEXT_WIDTH, measure)),
+    MAX_BODY_LINES,
+    TEXT_WIDTH,
+    measure
+  );
 
   const kickerHeight = spec.kicker ? 70 : 0;
   const blockHeight =

@@ -1,6 +1,6 @@
 import { IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { triggerDownload } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 
 const SAVE_ICON = 'M12 4v11m0 0l-4-4m4 4l4-4M5 19h14';
 
@@ -10,7 +10,7 @@ export interface ShareButtonProps {
   readonly fileName: string;
 }
 
-/** The phone share sheet where the browser can share a file, else a download. */
+/** The phone share sheet where the browser can share a file, else the user's export destination. */
 export function ShareButton({ blob, fileName }: ShareButtonProps) {
   const t = useTranslation();
   const label = t('your2026.controls.save');
@@ -22,7 +22,7 @@ export function ShareButton({ blob, fileName }: ShareButtonProps) {
       navigator.share({ files: [file] }).catch(() => undefined);
       return;
     }
-    triggerDownload(blob, fileName);
+    void deliverExport(blob, fileName);
   };
 
   return (

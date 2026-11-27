@@ -23,11 +23,13 @@ async function loadImage(visual: ShareVisual): Promise<CanvasImageSource | undef
 async function render(spec: ShareSpec, theme: ShareTheme): Promise<Blob | null> {
   // Canvas text uses whatever font is ready; load both first or the image
   // falls back to a system font.
+  // A font or image that fails to load still leaves a card worth saving: the
+  // text falls back to a system font and the visual to the drawn bin.
   await Promise.all([
     document.fonts.load(`400 34px ${theme.pixelFont}`),
     document.fonts.load(`700 84px ${theme.appFont}`),
-  ]);
-  const image = await loadImage(spec.visual);
+  ]).catch(() => undefined);
+  const image = await loadImage(spec.visual).catch(() => undefined);
   const canvas = document.createElement('canvas');
   canvas.width = SHARE_WIDTH;
   canvas.height = SHARE_HEIGHT;

@@ -3,8 +3,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { ShareButton } from './ShareButton';
 
 const download = vi.fn();
-vi.mock('@/shared/generation/exportUtils', () => ({
-  triggerDownload: (...args: unknown[]) => download(...args),
+vi.mock('@/shared/exportDestination/deliverExport', () => ({
+  deliverExport: (...args: unknown[]) => download(...args),
 }));
 
 const blob = new Blob(['png'], { type: 'image/png' });
