@@ -7,6 +7,7 @@ import { KOFI_URL } from '@/shared/constants/links';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { useYour2026Routing } from '@/shared/hooks/useYour2026Routing';
+import { markYearReviewSeen } from '@/shared/yearReview/dockRow';
 import { isYearReviewOpen, YEAR_REVIEW_YEAR } from '@/shared/yearReview/window';
 import { useSupportersData } from '../../../hooks/useSupportersData';
 import { getSupportersPalette } from '../../../scene/palette';
@@ -63,6 +64,11 @@ export function Your2026Page() {
   useEffect(() => {
     if (!allowed) replaceWithHome();
   }, [allowed, replaceWithHome]);
+
+  useEffect(() => {
+    // A preview before the window must not clear the dot the user sees on the day.
+    if (isYearReviewOpen()) markYearReviewSeen();
+  }, []);
 
   useEffect(() => {
     if (!allowed || startOnThanks) return;

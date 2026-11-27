@@ -3570,6 +3570,8 @@
   "dock.savedOnDeviceCount_other": "Zapisano na tym urządzeniu · {count} układów",
   "dock.settings": "Ustawienia",
   "dock.signInTooltip": "Praca lokalna · Zaloguj się, aby synchronizować",
+  "dock.yearReview.ready": "Twój rok 2026 jest gotowy.",
+  "dock.yearReview.hide": "Ukryj Twój rok 2026",
   "dock.syncStatusError": "Błąd synchronizacji",
   "dock.syncStatusIdle": "Wszystkie zmiany zsynchronizowane",
   "dock.syncStatusOffline": "Offline",

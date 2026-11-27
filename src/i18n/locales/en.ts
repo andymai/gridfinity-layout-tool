@@ -377,6 +377,8 @@ const en: Record<string, string> = {
   'dock.savedOnDeviceCount_other': 'Saved on this device · {count} layouts',
   'dock.readyWhenYouAre': 'Ready when you are',
   'dock.signInTooltip': 'Working locally · Sign in to sync',
+  'dock.yearReview.ready': 'Your 2026 is ready.',
+  'dock.yearReview.hide': 'Hide Your 2026',
 
   // Settings → Account tab
   'settings.tabs.account': 'Account',

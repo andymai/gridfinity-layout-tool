@@ -13,6 +13,7 @@ import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { BinGridIdenticon } from './BinGridIdenticon';
 import { StatusBadge } from './StatusBadge';
 import { useDockMenu } from './useDockMenu';
+import { YearReviewRow } from './YearReviewRow';
 import { PROVIDER_INFO } from './providers';
 
 const LOGOUT_ICON: readonly string[] = [
@@ -29,9 +30,11 @@ const SYNC_STATUS_KEYS: Record<SyncState, string> = {
 interface UserDockProps {
   variant?: 'default' | 'compact';
   onOpenSettings?: () => void;
+  /** Runs before the dock opens Your 2026, so a sheet holding the dock can close. */
+  onOpenYearReview?: () => void;
 }
 
-export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps) {
+export function UserDock({ variant = 'default', onOpenSettings, onOpenYearReview }: UserDockProps) {
   const t = useTranslation();
   const { status, user } = useSessionStore(useShallow((s) => ({ status: s.status, user: s.user })));
   const syncState = useSyncStatusStore((s) => s.state);
@@ -67,6 +70,7 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
 
   return (
     <>
+      {!isCompact && <YearReviewRow onOpen={onOpenYearReview} />}
       <div ref={rootRef} className="border-t border-stroke-subtle bg-surface-secondary">
         {hairline && <div aria-hidden="true" className="h-px" style={{ background: hairline }} />}
 

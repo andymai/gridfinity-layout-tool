@@ -3375,6 +3375,8 @@
   "dock.savedOnDeviceCount_other": "이 기기에 저장됨 · 레이아웃 {count}개",
   "dock.settings": "설정",
   "dock.signInTooltip": "로컬에서 작업 중 · 로그인하여 동기화",
+  "dock.yearReview.ready": "나의 2026이 준비됐어요.",
+  "dock.yearReview.hide": "나의 2026 숨기기",
   "dock.syncStatusError": "동기화 오류",
   "dock.syncStatusIdle": "모든 변경 사항 동기화됨",
   "dock.syncStatusOffline": "오프라인",

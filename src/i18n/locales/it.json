@@ -3440,6 +3440,8 @@
   "dock.savedOnDeviceCount_other": "Salvati su questo dispositivo · {count} layout",
   "dock.settings": "Impostazioni",
   "dock.signInTooltip": "Lavoro in locale · Accedi per sincronizzare",
+  "dock.yearReview.ready": "Il tuo 2026 è pronto.",
+  "dock.yearReview.hide": "Nascondi il tuo 2026",
   "dock.syncStatusError": "Errore di sincronizzazione",
   "dock.syncStatusIdle": "Tutte le modifiche sincronizzate",
   "dock.syncStatusOffline": "Offline",

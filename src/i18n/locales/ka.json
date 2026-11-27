@@ -261,6 +261,8 @@
   "dock.savedOnDeviceCount_other": "ამ მოწყობილობაზე შენახულია · {count} განლაგება",
   "dock.readyWhenYouAre": "ყველაფერი მზადაა",
   "dock.signInTooltip": "მუშაობა ლოკალურად · სინქრონიზაციისთვის შედით",
+  "dock.yearReview.ready": "თქვენი 2026 მზადაა.",
+  "dock.yearReview.hide": "თქვენი 2026-ის დამალვა",
   "settings.tabs.account": "ანგარიში",
   "account.identity.heading": "ანგარიში",
   "account.identity.signedInVia": "შესული ხართ {provider}-ით",
