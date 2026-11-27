@@ -3,6 +3,7 @@ import type { BinParams, CompartmentConfig, LabelTabConfig } from '@/shared/type
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import {
   blankCaptionSlot,
+  engravedCaptions,
   placementCaption,
   takesPlacedTabCaption,
   withPlacedCaption,
@@ -118,5 +119,28 @@ describe('placementCaption', () => {
   it('trims a label and reads a blank one as none', () => {
     expect(placementCaption(' Screws ')).toBe('Screws');
     expect(placementCaption('  ')).toBeNull();
+  });
+});
+
+describe('engravedCaptions', () => {
+  it('reads compartment text when each compartment has its own tab', () => {
+    const params = design(
+      { cols: 2, rows: 1, cells: [0, 1], compartmentTexts: ['M3', 'M4'] },
+      { rowTexts: ['stale'] }
+    );
+    expect(engravedCaptions(params)).toEqual(['M3', 'M4']);
+  });
+
+  it('reads row text when socket plates fall back to one per row', () => {
+    const params = design(
+      { ...NARROW_COLUMNS, compartmentTexts: ['a', 'b', 'c', 'd'] },
+      { ...SOCKET, rowTexts: ['Drill bits'] }
+    );
+    expect(engravedCaptions(params)).toEqual(['Drill bits']);
+  });
+
+  it('reads nothing when the bin builds no label tabs', () => {
+    const params = design({ compartmentTexts: ['M3'] }, { enabled: false });
+    expect(engravedCaptions(params)).toEqual([]);
   });
 });
