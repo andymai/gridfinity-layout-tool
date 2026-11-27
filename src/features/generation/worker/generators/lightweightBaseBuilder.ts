@@ -56,7 +56,11 @@ import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
 import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
-import { cornerHoleCandidates } from '@/shared/generation/magnetPositions';
+import {
+  cornerHoleCandidates,
+  footHoleMouthRadius,
+  keepFootHolesOffFlank,
+} from '@/shared/generation/magnetPositions';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { PLAIN_MAGNET_HOLE, magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetAnchor } from '@/core/types';
@@ -398,20 +402,24 @@ export function buildLightweightBase(
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
           // Fit-or-center magnet positions so a non-square/small foot's pads and
           // drills stay inside the foot instead of breaching its side.
-          cellPositions.push(
-            cornersOnly
-              ? cornerHoleCandidates(
-                  cell,
-                  holeRadius,
-                  unitX,
-                  unitY,
-                  anchor,
-                  gridW,
-                  gridD,
-                  withMagnet && chamfer
-                )
-              : magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor)
+          const positions = cornersOnly
+            ? cornerHoleCandidates(
+                cell,
+                holeRadius,
+                unitX,
+                unitY,
+                anchor,
+                gridW,
+                gridD,
+                withMagnet && chamfer
+              )
+            : magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
+          const mouth = footHoleMouthRadius(
+            withMagnet ? magnetRadius : 0,
+            withScrew ? screwRadius : 0,
+            withMagnet && chamfer
           );
+          cellPositions.push(keepFootHolesOffFlank(positions, cell, mouth, unitX, unitY));
         },
         fractionalEdge
       );

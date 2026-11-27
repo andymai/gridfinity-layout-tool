@@ -9,7 +9,10 @@ import {
 } from './detachableFeetPlan';
 import { MAX_FOOT_SPAN_MM } from '@/features/bin-designer/types';
 import { buildFullMask, type CellMask } from '@/shared/utils/cellMask';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import {
+  GRIDFINITY_SPEC,
+  magnetInsetFromCellEdgeMm,
+} from '@/shared/printSettings/gridfinityGeometry';
 
 /** How much narrower a foot's bottom face is than its top, per side (mm). */
 const SOCKET_TAPER_WIDTH_MM = GRIDFINITY_SPEC.SOCKET_SMALL_TAPER + GRIDFINITY_SPEC.SOCKET_BIG_TAPER;
@@ -355,5 +358,59 @@ describe('corner-only holes', () => {
 
   it('offers every corner a foot covers when off', () => {
     expect(resolveCorners(false).magnet?.positions.length).toBeGreaterThan(4);
+  });
+});
+
+describe('magnets wider than the foot allows at the spec corner', () => {
+  const resolveMagnet = (magnetDiameter: number) =>
+    resolveDetachableFeet({
+      width: 1,
+      depth: 1,
+      gridUnitMm: 42,
+      fractionalEdgeX: 'end',
+      fractionalEdgeY: 'end',
+      base: { style: 'magnet', magnetDiameter, magnetDepth: 2, screwDiameter: 3 },
+    });
+
+  it('keeps the spec corners for a magnet that leaves the flank its wall', () => {
+    expect(resolveMagnet(8).magnet?.positions.map(([x, y]) => [Math.abs(x), Math.abs(y)])).toEqual(
+      Array.from({ length: 4 }, () => [13, 13])
+    );
+  });
+
+  it('pulls a 10mm magnet in and grows the arm by the same amount', () => {
+    const plain = resolveMagnet(8);
+    const large = resolveMagnet(10);
+    for (const [x, y] of large.magnet?.positions ?? []) {
+      expect(Math.abs(x)).toBeCloseTo(12.4, 9);
+      expect(Math.abs(y)).toBeCloseTo(12.4, 9);
+    }
+    // The arm reaches the far side of the magnet plus the embed margin.
+    expect(large.armMm - plain.armMm).toBeCloseTo(1 + 0.6, 9);
+  });
+
+  it('keeps its corners and arm on a grid too small to pull them in', () => {
+    const small = resolveDetachableFeet({
+      width: 1,
+      depth: 1,
+      gridUnitMm: 25,
+      fractionalEdgeX: 'end',
+      fractionalEdgeY: 'end',
+      base: { style: 'magnet', magnetDiameter: 10, magnetDepth: 2, screwDiameter: 3 },
+    });
+    const positions = small.magnet?.positions ?? [];
+    for (const [ax, ay] of positions) {
+      for (const [bx, by] of positions) {
+        if (ax === bx && ay === by) continue;
+        expect(Math.hypot(ax - bx, ay - by)).toBeGreaterThanOrEqual(10);
+      }
+    }
+    expect(small.armMm).toBe(
+      footArmMm({
+        pinDiameterMm: small.pinDiameterMm,
+        magnetDiameterMm: 10,
+        magnetInsetFromEdgeMm: magnetInsetFromCellEdgeMm(25),
+      })
+    );
   });
 });

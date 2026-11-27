@@ -46,14 +46,10 @@ import {
 } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
-import {
-  cellHostsAttachmentHoles,
-  chamferFitsCell,
-  magnetPositionsForCell,
-} from './baseplateMagnets';
+import { cellHostsAttachmentHoles } from './baseplateMagnets';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
 import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
-import { cornerHoleCandidates } from '@/shared/generation/magnetPositions';
+import { socketFootHoles, type SocketFootHoleSpec } from '@/shared/generation/magnetPositions';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { PLAIN_MAGNET_HOLE, magnetHoleStyleKey } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetAnchor } from '@/core/types';
@@ -589,6 +585,15 @@ export function buildBaseSocket(
       // Cutter bounding radius (magnet is wider than the screw; both concentric).
       const holeRadius = Math.max(withMagnet ? magnetRadius : 0, withScrew ? screwRadius : 0);
 
+      const footHoles: SocketFootHoleSpec = {
+        magnetRadius: withMagnet ? magnetRadius : 0,
+        screwRadius: withScrew ? screwRadius : 0,
+        chamfer: holeStyle.chamfer,
+        pitchX: unitX,
+        pitchY: unitY,
+        anchor,
+        ...(cornersOnly ? { cornersOf: { width: gridW, depth: gridD } } : {}),
+      };
       const holeCells: Array<{ positions: Array<[number, number]>; chamfer: boolean }> = [];
       forEachCell(
         gridW,
@@ -599,17 +604,7 @@ export function buildBaseSocket(
           // Standard ±13mm 4-corner pattern on a normal foot; a non-square/small
           // foot (e.g. a 25mm-wide cell) gets the corners that fit, else a single
           // centered hole — so magnet/screw holes never breach the foot's side.
-          const positions = magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
-          // Judged on the cell's full pattern: `chamferFitsCell` compares it
-          // position by position against the widened one.
-          const chamfer =
-            withMagnet &&
-            holeStyle.chamfer &&
-            chamferFitsCell(cell, holeRadius, unitX, unitY, anchor, positions);
-          const drilled = cornersOnly
-            ? cornerHoleCandidates(cell, holeRadius, unitX, unitY, anchor, gridW, gridD, chamfer)
-            : positions;
-          holeCells.push({ positions: drilled, chamfer });
+          holeCells.push(socketFootHoles(cell, footHoles));
         },
         { gridUnitMm, fractionalEdgeX: fractionalEdge.x, fractionalEdgeY: fractionalEdge.y }
       );

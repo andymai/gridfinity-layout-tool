@@ -209,6 +209,22 @@ describe('planFloorPattern keep-outs', () => {
     expect(centres.sort()).toEqual(['-34,-34', '-34,34', '10.5,34', '34,-34', '34,10.5']);
   });
 
+  it('reserves a 10mm pocket where the foot drills it, pulled in from the flank', () => {
+    const params = makeParams({
+      width: 1,
+      depth: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', magnetDiameter: 10 },
+    });
+    const centres = (plan(params)?.windows ?? []).flatMap((w) =>
+      w.keepOuts.map((k) => [w.x + (k.uMin + k.uMax) / 2, w.y + (k.zMin + k.zMax) / 2])
+    );
+    expect(centres).toHaveLength(4);
+    for (const [x, y] of centres) {
+      expect(Math.abs(x)).toBeCloseTo(12.4, 6);
+      expect(Math.abs(y)).toBeCloseTo(12.4, 6);
+    }
+  });
+
   it("reserves a half foot's corner pocket 8mm from the bin's edge", () => {
     const params = makeParams({
       width: 1.5,

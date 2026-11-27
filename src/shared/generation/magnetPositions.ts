@@ -8,14 +8,12 @@
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
-import { MAGNET_CHAMFER_MM } from './magnetHoleStyle';
 import {
-  SIZE,
-  HOLE_OFFSET,
-  CLEARANCE,
-  FOOT_INSET_BOT,
-  SOCKET_TAPER_WIDTH,
-} from './generatorConstants';
+  FOOT_UNDERSIDE_INSET_MM,
+  footHoleOffsetMm,
+} from '@/shared/printSettings/gridfinityGeometry';
+import { MAGNET_CHAMFER_MM } from './magnetHoleStyle';
+import { SIZE, HOLE_OFFSET, CLEARANCE, SOCKET_TAPER_WIDTH } from './generatorConstants';
 import type { CellInfo } from './cellDecomposition';
 
 /**
@@ -211,7 +209,46 @@ function fullCellAtEdge(
  * where a bore comes closest to the tapered flank.
  */
 function footUndersideHalfSpan(units: number, pitch: number): number {
-  return (units * pitch - CLEARANCE) / 2 - FOOT_INSET_BOT;
+  return (units * pitch) / 2 - FOOT_UNDERSIDE_INSET_MM;
+}
+
+/**
+ * How wide a foot's attachment holes open at its underside: the magnet's
+ * mouth, widened by the chamfer when the cell takes it, or the screw bore
+ * drilled from the same face. Pass 0 for an attachment the base leaves out.
+ */
+export function footHoleMouthRadius(
+  magnetRadius: number,
+  screwRadius: number,
+  chamfer: boolean
+): number {
+  const magnetMouth = magnetRadius > 0 && chamfer ? magnetRadius + MAGNET_CHAMFER_MM : magnetRadius;
+  return Math.max(magnetMouth, screwRadius);
+}
+
+/**
+ * The holes of one bin foot, each pulled toward the foot's centre just far
+ * enough that a mouth of `mouthRadius` keeps a printable wall to the tapered
+ * flank ({@link footHoleOffsetMm}). A hole that keeps it already comes back
+ * as the same numbers. Only feet take this: a baseplate or a lid top drills
+ * into a pocket floor, which has solid plate around it rather than a flank.
+ */
+export function keepFootHolesOffFlank(
+  positions: ReadonlyArray<readonly [number, number]>,
+  cell: CellInfo,
+  mouthRadius: number,
+  pitchX: number,
+  pitchY: number
+): Array<[number, number]> {
+  const pull = (value: number, centre: number, spanMm: number): number => {
+    const offset = value - centre;
+    const kept = footHoleOffsetMm(offset, spanMm, mouthRadius);
+    return kept === offset ? value : centre + kept;
+  };
+  return positions.map(([x, y]) => [
+    pull(x, cell.centerX, cell.widthUnits * pitchX),
+    pull(y, cell.centerY, cell.depthUnits * pitchY),
+  ]);
 }
 
 /**
@@ -261,6 +298,55 @@ export function cornerHoleCandidates(
     ([px, py]) => Math.abs(px - cell.centerX) <= spanX && Math.abs(py - cell.centerY) <= spanY
   );
   return borrowed.length > 0 && fits ? borrowed : own;
+}
+
+export interface SocketFootHoleSpec {
+  /** 0 when the base carries no magnets. */
+  readonly magnetRadius: number;
+  /** 0 when the base carries no screws. */
+  readonly screwRadius: number;
+  /** Whether the base asks for a chamfered magnet mouth. */
+  readonly chamfer: boolean;
+  readonly pitchX: number;
+  readonly pitchY: number;
+  readonly anchor: MagnetAnchor | undefined;
+  /** The bin's size in units when it keeps only its outer corners. */
+  readonly cornersOf?: { readonly width: number; readonly depth: number };
+}
+
+/**
+ * The holes a socketed foot drills, and whether they open with the chamfer:
+ * the cell's own pattern, or its outer-corner candidates when the bin keeps
+ * only those, each kept off the flank. The floor keep-outs call this too, so
+ * they land on the holes the socket drills.
+ */
+export function socketFootHoles(
+  cell: CellInfo,
+  spec: SocketFootHoleSpec
+): { positions: Array<[number, number]>; chamfer: boolean } {
+  const { pitchX, pitchY, anchor, cornersOf } = spec;
+  const holeRadius = Math.max(spec.magnetRadius, spec.screwRadius);
+  const own = magnetPositionsForCell(cell, holeRadius, pitchX, pitchY, anchor);
+  // Judged on the cell's full pattern: `chamferFitsCell` compares it position
+  // by position against the widened one.
+  const chamfer =
+    spec.magnetRadius > 0 &&
+    spec.chamfer &&
+    chamferFitsCell(cell, holeRadius, pitchX, pitchY, anchor, own);
+  const drilled = cornersOf
+    ? cornerHoleCandidates(
+        cell,
+        holeRadius,
+        pitchX,
+        pitchY,
+        anchor,
+        cornersOf.width,
+        cornersOf.depth,
+        chamfer
+      )
+    : own;
+  const mouth = footHoleMouthRadius(spec.magnetRadius, spec.screwRadius, chamfer);
+  return { positions: keepFootHolesOffFlank(drilled, cell, mouth, pitchX, pitchY), chamfer };
 }
 
 /**
