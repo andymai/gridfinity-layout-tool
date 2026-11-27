@@ -1,1 +1,1 @@
-export { BaseplateSelector } from './BaseplateSelector';
+export { BaseplateMenuItems, BaseplateSelector } from './BaseplateSelector';
