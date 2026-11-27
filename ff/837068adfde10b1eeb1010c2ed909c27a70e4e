@@ -1,0 +1,21 @@
+src/features/supporters/year/hooks/useYearMeshes.test.ts
+  s_cbdce95362cca9::t_0810f8c4404bc0 113-137
+src/features/supporters/year/hooks/useYearMeshes.ts
+  s_cbdce95362cca9::t_7cbf27205ad8bd 33-38,54-55,58-60,63-69,72,87,106,139-144,154,163
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ff837068adfde10b1eeb1010c2ed909c27a70e4e",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
