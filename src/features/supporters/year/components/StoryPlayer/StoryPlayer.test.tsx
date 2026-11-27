@@ -93,4 +93,27 @@ describe('StoryPlayer', () => {
     expect(screen.getByText('card:intro')).toBeInTheDocument();
     capture.mockRestore();
   });
+
+  it('lands on a settled card when stepping while paused', () => {
+    renderPlayer({
+      renderCard: (card, position) => (
+        <p>
+          {card.kind}@{position.elapsed.toFixed(1)}
+        </p>
+      ),
+    });
+    key(' ');
+    key('ArrowRight');
+    expect(screen.getByText('drawers@2.5')).toBeInTheDocument();
+    key('ArrowLeft');
+    expect(screen.getByText('intro@2.5')).toBeInTheDocument();
+  });
+
+  it('announces the final words once, outside the animated card', () => {
+    renderPlayer({ describeCard: (card) => `final ${card.kind}` });
+    expect(screen.getByText('final intro')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByRole('region', { name: 'Card 1 of 3' })).not.toHaveAttribute('aria-live');
+    key('ArrowRight');
+    expect(screen.getByText('final drawers')).toBeInTheDocument();
+  });
 });

@@ -69,4 +69,15 @@ describe('useYearReviewData', () => {
     await waitFor(() => expect(second.result.current.status).toBe('ready'));
     expect(listDesignSummaries).toHaveBeenCalledTimes(1);
   });
+
+  it('reads an empty year again on the next visit', async () => {
+    seed(new Date(2025, 3, 1).getTime());
+    const first = renderHook(() => useYearReviewData(2026));
+    await waitFor(() => expect(first.result.current.status).toBe('ready'));
+    first.unmount();
+
+    const second = renderHook(() => useYearReviewData(2026));
+    await waitFor(() => expect(second.result.current.status).toBe('ready'));
+    expect(listDesignSummaries).toHaveBeenCalledTimes(2);
+  });
 });

@@ -22,8 +22,15 @@ export interface StoryPlayerProps {
   /** Called once, when the last card first shows. */
   readonly onReachEnd: () => void;
   readonly renderCard: (card: YearCard, position: StoryPosition) => ReactNode;
+  /**
+   * The card's final words, announced once when it shows. The card itself
+   * counts its numbers up, which a live region would read frame by frame.
+   */
+  readonly describeCard?: (card: YearCard) => string;
 }
 
+/** By this many seconds into a card, every entrance animation has finished. */
+const SETTLED_S = 2.5;
 /** A press shorter than this is a tap; longer is a hold that only pauses. */
 const TAP_MS = 300;
 const SWIPE_PX = 50;
@@ -49,6 +56,7 @@ export function StoryPlayer({
   onClose,
   onReachEnd,
   renderCard,
+  describeCard,
 }: StoryPlayerProps) {
   const t = useTranslation();
   const timeline = useMemo(() => buildTimeline(cards.map((card) => card.duration)), [cards]);
@@ -74,11 +82,23 @@ export function StoryPlayer({
     onReachEnd();
   }, [position.index, lastIndex, onReachEnd]);
 
-  const goNext = useCallback(() => clock.seek(nextTime(timeline, clock.time)), [clock, timeline]);
-  const goPrevious = useCallback(
-    () => clock.seek(previousTime(timeline, clock.time)),
-    [clock, timeline]
+  // A paused step lands where the card has settled; at its start the entrance
+  // has not run, and the card would sit empty until play resumes.
+  const settled = useCallback(
+    (index: number) =>
+      startOf(timeline, index) + Math.min(SETTLED_S, (timeline.durations.at(index) ?? 1) - 0.05),
+    [timeline]
   );
+  const goNext = useCallback(() => {
+    const { index } = positionAt(timeline, clock.time);
+    if (clock.isPaused && index < timeline.starts.length - 1) clock.seek(settled(index + 1));
+    else clock.seek(nextTime(timeline, clock.time));
+  }, [clock, timeline, settled]);
+  const goPrevious = useCallback(() => {
+    const { index } = positionAt(timeline, clock.time);
+    if (clock.isPaused) clock.seek(settled(Math.max(0, index - 1)));
+    else clock.seek(previousTime(timeline, clock.time));
+  }, [clock, timeline, settled]);
   const togglePause = useCallback(() => setPaused(!clock.isPaused), [clock, setPaused]);
 
   useEffect(() => {
@@ -189,6 +209,9 @@ export function StoryPlayer({
       }
     >
       <p className="sr-only">{t('your2026.controls.hint')}</p>
+      <p className="sr-only" aria-live="polite">
+        {card && describeCard ? describeCard(card) : ''}
+      </p>
       <div
         className="flex min-h-0 flex-1 touch-pan-y select-none flex-col"
         onPointerDown={onPointerDown}
@@ -204,7 +227,6 @@ export function StoryPlayer({
               index: position.index + 1,
               total: cards.length,
             })}
-            aria-live="polite"
             className="flex min-h-0 flex-1 flex-col"
           >
             {renderCard(card, position)}

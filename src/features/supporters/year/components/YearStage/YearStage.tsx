@@ -4,6 +4,7 @@ import { IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { PIXEL_FONT } from '../../../components/CreditsRoll/creditsRollItems';
+import { readableAccent } from '../../utils/readableAccent';
 
 export const STAGE_BACKGROUND = '#07070b';
 
@@ -43,7 +44,7 @@ export function YearStage({ accent, onClose, header, controls, children }: YearS
           <div className="flex items-center justify-between">
             <span
               className="text-[0.7em] uppercase tracking-[0.2em]"
-              style={{ fontFamily: PIXEL_FONT, color: accent }}
+              style={{ fontFamily: PIXEL_FONT, color: readableAccent(accent) }}
             >
               {t('your2026.kicker')}
             </span>

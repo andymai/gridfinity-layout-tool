@@ -15,7 +15,7 @@ import { useYearReviewData } from '../../hooks/useYearReviewData';
 import { buildYearCards } from '../../utils/yearCards';
 import { hasYearActivity } from '../../utils/yearStats';
 import { StoryPlayer } from '../StoryPlayer';
-import { YearCardView } from '../YearCardView';
+import { YearCardView, describeCard } from '../YearCardView';
 import { YearStage } from '../YearStage';
 
 /** Doors that pass `?from=`; anything else is a direct visit. */
@@ -135,6 +135,15 @@ export function Your2026Page() {
       accent={accent}
       onClose={navigateHome}
       onReachEnd={onReachEnd}
+      describeCard={(card) =>
+        describeCard(card, {
+          t,
+          stats,
+          locale,
+          unit,
+          supporterCount: getSupporterCount(supporters),
+        })
+      }
       renderCard={(card, position) => (
         <YearCardView
           card={card}

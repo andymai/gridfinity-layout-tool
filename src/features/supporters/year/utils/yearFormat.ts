@@ -13,10 +13,20 @@ export function formatCount(locale: string, value: number): string {
   return number(locale, value);
 }
 
-/** Square metres, or square feet for a user who measures in inches. */
+const MM2_PER_CM2 = 100;
+const MM2_PER_IN2 = 645.16;
+
+/**
+ * Square metres, or square feet for a user who measures in inches. A small
+ * drawer drops to cm² or in², so a real area never reads as zero.
+ */
 export function formatArea(locale: string, mm2: number, unit: LengthUnit): string {
-  if (unit === 'in') return `${number(locale, mm2 / MM2_PER_FT2, 1)} ft²`;
-  return `${number(locale, mm2 / MM2_PER_M2, 2)} m²`;
+  if (unit === 'in') {
+    const ft2 = mm2 / MM2_PER_FT2;
+    return ft2 >= 1 ? `${number(locale, ft2, 1)} ft²` : `${number(locale, mm2 / MM2_PER_IN2)} in²`;
+  }
+  const m2 = mm2 / MM2_PER_M2;
+  return m2 >= 0.1 ? `${number(locale, m2, 2)} m²` : `${number(locale, mm2 / MM2_PER_CM2)} cm²`;
 }
 
 const LENGTH_DIGITS: Readonly<Record<LengthUnit, number>> = { mm: 0, cm: 1, in: 1 };

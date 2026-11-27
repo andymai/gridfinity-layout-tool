@@ -19,6 +19,11 @@ describe('yearFormat', () => {
     expect(formatArea('de', 1_412_000, 'cm')).toBe('1,41 m²');
   });
 
+  it('keeps a one-cell drawer above zero', () => {
+    expect(formatArea('en', 42 * 42, 'mm')).toBe('18 cm²');
+    expect(formatArea('en', 42 * 42, 'in')).toBe('3 in²');
+  });
+
   it('shows a drawer size in the chosen unit', () => {
     expect(formatSize('en', 612, 455, 'mm')).toBe('612 × 455 mm');
     expect(formatSize('en', 612, 455, 'cm')).toBe('61.2 × 45.5 cm');

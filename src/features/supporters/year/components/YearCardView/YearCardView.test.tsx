@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { useTranslation } from '@/i18n';
 import { gridUnits, heightUnits } from '@/core/types';
 import type { YearStats } from '../../types';
 import type { YearCardKind } from '../../utils/yearCards';
+import { describeCard } from './cardCopy';
 import { YearCardView } from './YearCardView';
 
 const stats: YearStats = {
@@ -98,5 +100,20 @@ describe('YearCardView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Support on Ko-fi' }));
     expect(props.onRollCredits).toHaveBeenCalledTimes(1);
     expect(props.onSupport).toHaveBeenCalledTimes(1);
+  });
+
+  it('lightens a dark accent for small text', () => {
+    show('month', { accent: '#7c3aed' });
+    const kicker = screen.getByText('Your busiest month');
+    expect(kicker.style.color).not.toBe('rgb(124, 58, 237)');
+  });
+
+  it('describes a card with its final numbers for screen readers', () => {
+    const t = renderHook(() => useTranslation()).result.current;
+    const input = { t, stats, locale: 'en', unit: 'mm' as const, supporterCount: 312 };
+    expect(describeCard({ kind: 'drawers', duration: 5 }, input)).toBe(
+      'You planned 3 drawers. 3 fewer places where things go to vanish.'
+    );
+    expect(describeCard({ kind: 'summary', duration: 5 }, input)).toContain('Drawers: 3');
   });
 });
