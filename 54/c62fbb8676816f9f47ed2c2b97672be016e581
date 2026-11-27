@@ -1,0 +1,160 @@
+src/features/supporters/year/components/YearStage/index.ts
+  s_cbdce95362cca9::t_1480a3fbbf3e2c 1-2
+src/features/supporters/year/utils/yearCards.test.ts
+  s_cbdce95362cca9::t_179bce53092257 1-63
+src/i18n/locales/en.ts
+  s_cbdce95362cca9::t_7819a6148702de 46-48,147-252
+  s_cbdce95362cca9::t_e4031dba651f13 253,5430
+docker/nginx.conf
+  s_cbdce95362cca9::t_6107428c79de19 166,171
+src/features/supporters/year/components/StoryPlayer/StoryPlayer.tsx
+  s_cbdce95362cca9::t_5f001ccf62165b 1-151,153-161,166-213
+  s_cbdce95362cca9::t_ca502f0609dcaa 152
+  s_cbdce95362cca9::t_90c69171da8ffa 162-165
+src/i18n/locales/zh-CN.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5534-5620
+src/features/supporters/year/components/YearStage/YearStage.tsx
+  s_cbdce95362cca9::t_7bd74f20a85784 1,3-61,69-79
+  s_cbdce95362cca9::t_d5fe569e1560d9 2,62-68
+src/features/supporters/year/components/YearCardView/YearCardView.test.tsx
+  s_cbdce95362cca9::t_2c42a06d828512 1-102
+scripts/i18n-values-allowlist.json
+  s_cbdce95362cca9::t_6082c51982bf22 188-189
+src/features/supporters/year/utils/storyTimeline.test.ts
+  s_cbdce95362cca9::t_692b4b888fbab5 1-33
+src/shared/hooks/useRouteMeta.test.ts
+  s_cbdce95362cca9::t_02b589300cff34 8,18
+src/features/supporters/year/components/Your2026Page/Your2026Page.test.tsx
+  s_cbdce95362cca9::t_92f2ef42567c98 1-123
+src/i18n/locales/ko.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5534-5596,5598-5601,5603-5620
+  s_cbdce95362cca9::t_047d617d2c35cc 5602
+  s_cbdce95362cca9::t_ae302bde68811c 5597
+src/features/supporters/year/components/YearCardView/cardMotion.ts
+  s_cbdce95362cca9::t_9ca50fd221cbfe 1-25
+src/i18n/locales/pt-BR.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5674-5781
+src/shared/hooks/useYour2026Routing.test.ts
+  s_cbdce95362cca9::t_06648e8f9ea7e1 1-30
+src/shared/hooks/useYour2026Routing.ts
+  s_cbdce95362cca9::t_b6bc7885116243 1-30
+scripts/check-docker-parity.test.ts
+  s_cbdce95362cca9::t_6107428c79de19 165
+src/features/supporters/year/components/StoryPlayer/StoryPlayer.test.tsx
+  s_cbdce95362cca9::t_0c58253842bef5 1-78
+src/i18n/locales/sv.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5674-5781
+src/App.lazyComponents.ts
+  s_cbdce95362cca9::t_fb33240244a900 41-43
+src/i18n/locales/it.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5674-5760,5762-5781
+  s_cbdce95362cca9::t_047d617d2c35cc 5761
+src/i18n/locales/cs.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5816-5921,5923-5944
+  s_cbdce95362cca9::t_047d617d2c35cc 5922
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_cbdce95362cca9::t_3438235dd02c22 89-92,94,316-318
+src/i18n/locales/es.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5674-5760,5762-5781
+  s_cbdce95362cca9::t_047d617d2c35cc 5761
+src/features/supporters/README.md
+  s_cbdce95362cca9::t_a6c976a0bf8a52 209-211,214
+  s_cbdce95362cca9::t_4c55d8c9d8fb7f 212-213,215-222
+docker/smoke.sh
+  s_cbdce95362cca9::t_6107428c79de19 50
+src/features/supporters/year/components/YearCardView/typeCopy.ts
+  s_cbdce95362cca9::t_58aec27a9faee1 1-98
+src/i18n/locales/de.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5674-5760,5762-5781
+  s_cbdce95362cca9::t_047d617d2c35cc 5761
+src/shared/hooks/useSupportersRouting.ts
+  s_cbdce95362cca9::t_6107428c79de19 24-25
+src/features/supporters/year/utils/yearFormat.ts
+  s_cbdce95362cca9::t_f8d7268b1d910c 1-86
+src/features/supporters/year/utils/storyTimeline.ts
+  s_cbdce95362cca9::t_c30d1d9b3aeaeb 1-51
+vercel.json
+  s_cbdce95362cca9::t_6107428c79de19 591-593
+  s_cbdce95362cca9::t_f6a1e7e91a995e 590
+src/features/supporters/year/utils/yearStats.test.ts
+  s_cbdce95362cca9::t_5068548714d762 173-175
+src/features/supporters/year/components/YearCardView/index.ts
+  s_cbdce95362cca9::t_e91843ac860e28 1-2
+src/i18n/locales/fr.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5674-5760,5762-5781
+  s_cbdce95362cca9::t_047d617d2c35cc 5761
+src/features/supporters/year/components/YearStage/YearStage.test.tsx
+  s_cbdce95362cca9::t_58b196fddd9289 1-19
+src/App.tsx
+  s_cbdce95362cca9::t_fb33240244a900 42,81,111,125,143,234,310-312
+src/i18n/locales/nb.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5674-5781
+src/features/supporters/year/components/StoryPlayer/index.ts
+  s_cbdce95362cca9::t_abbe6912bfaa00 1-2
+src/features/supporters/year/components/Your2026Page/index.ts
+  s_cbdce95362cca9::t_3438235dd02c22 1
+src/i18n/locales/pl.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5954-6103
+src/features/supporters/year/components/YearCardView/cardVisuals.tsx
+  s_cbdce95362cca9::t_e7c647ffcd547c 16-23,32,61-62,64-68,74,76,78-80,83,101,105-109,124,126-130,136,140-141,144-187,204,206-210,222,248-249,252-253,256,259-260,286-297,302-305,307-312,315,318-322,346,352,355,362,378-379,381-382,388-393,399,422,430-434,448
+  s_cbdce95362cca9::t_cdb568929e284e 1-15,24-27,29-31,33-57,59-60,63,69-73,75,77,81-82,84-95,97-100,102-104,110-120,122-123,125,131-135,137-139,142-143,188-198,200-203,205,211-221,223-231,233-244,246-247,250-251,254-255,257-258,261-278,280-285,298-300,306,313-314,316-317,323-335,337-345,347-351,353-354,356-361,363-375,377,380,383-387,394-398,400-416,418-421,423-425,427-429,435-442,444-447,449-461
+  s_639abd980ed67f::t_b5b5e8e3a53ce3 28,58,96,121,199,232,245,279,301,336,376,417,426,443
+src/features/supporters/year/utils/yearStats.ts
+  s_cbdce95362cca9::t_5068548714d762 105
+  s_cbdce95362cca9::t_be06ac9df06d4b 88,92-93,95,103-104,106,108,261-262,290-291
+src/i18n/locales/uk.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5954-6103
+src/features/supporters/year/components/Your2026Page/Your2026Page.tsx
+  s_cbdce95362cca9::t_3a8e667fa46ffe 1-13,15-93,95-100,105-155
+  s_cbdce95362cca9::t_aee37b42026618 14,94,101-104
+src/features/supporters/year/index.ts
+  s_cbdce95362cca9::t_3438235dd02c22 1
+src/i18n/locales/nl.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5674-5781
+src/features/supporters/components/SupportersPage/SupportersPage.test.tsx
+  s_cbdce95362cca9::t_99538c814cb3b3 192-203
+src/features/supporters/year/utils/yearCards.ts
+  s_cbdce95362cca9::t_f22ea7f147dd7c 1-63
+src/features/supporters/year/components/YearCardView/YearCardView.tsx
+  s_cbdce95362cca9::t_a16e8d5fc52e48 1-26,28-66,78-95,100-143,146-149,151-153,157-160,162-164,166-167,169-172,174-201,205-208,211-215,217-219,221-223,225-248,250-253,255-273,276-278,281-283,285-298,305,310-342,348-355,360-371
+  s_cbdce95362cca9::t_d5fe569e1560d9 27,216,279
+  s_cbdce95362cca9::t_a8208d25722406 67-77,96-99,144-145,150,154-156,161,165,168,173,202-204,209-210,220,224,249,254,274-275,280,284,299-304,306-309,343-347,356-359
+src/i18n/locales/ja.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5534-5601,5603-5620
+  s_cbdce95362cca9::t_047d617d2c35cc 5602
+src/features/supporters/year/utils/yearFormat.test.ts
+  s_cbdce95362cca9::t_e8048cf52474fe 1-60
+src/i18n/locales/ka.json
+  s_cbdce95362cca9::t_54a4a89642327f 5674-5759,5761-5781
+  s_cbdce95362cca9::t_b71ca37b85fb87 5760
+src/shared/hooks/useRouteMeta.ts
+  s_cbdce95362cca9::t_b2f36d8f44ec46 8,30,42,59,69-75,88
+scripts/doc-budget.json
+  s_cbdce95362cca9::t_3b45aad9ac282b 75
+src/features/supporters/year/types.ts
+  s_cbdce95362cca9::t_3e424ef9cf153b 97-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "54c62fbb8676816f9f47ed2c2b97672be016e581",
+  "prompts": {},
+  "sessions": {
+    "s_639abd980ed67f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5a9cf40f-4e7f-4361-93cd-0a21babd6047",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
