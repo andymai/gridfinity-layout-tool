@@ -681,6 +681,24 @@ describe('envelope fetch failure', () => {
     expect(third.applied).toBe(1);
   });
 
+  it('records a pull only once no download waits for a retry', async () => {
+    fetchMock
+      .mockResolvedValueOnce(oneLayout())
+      .mockResolvedValueOnce(new Response(null, { status: 503 }))
+      .mockResolvedValueOnce(oneLayout())
+      .mockResolvedValueOnce(
+        envelopeResponse(
+          { layout: { v: 1 }, modifiedAt: 1000, schemaVersion: 1 },
+          { modifiedAt: 1000, sizeBytes: 100 }
+        )
+      );
+
+    await pullNow(adapters);
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeUndefined();
+    await pullNow(adapters);
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeTypeOf('number');
+  });
+
   it('moves past a 404, so a blob the index lists but storage lacks is not fetched every poll', async () => {
     fetchMock
       .mockResolvedValueOnce(oneLayout())

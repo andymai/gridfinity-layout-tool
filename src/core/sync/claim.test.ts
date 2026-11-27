@@ -373,13 +373,14 @@ describe('runClaim — diff quadrants', () => {
     expect(enqueueMock).toHaveBeenCalledTimes(2);
   });
 
-  it('counts a merge as a pull, since it read the whole manifest', async () => {
+  it('leaves the first complete pull to the poller, since a merge can skip a failed download', async () => {
     fetchMock.mockResolvedValueOnce(
       manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 0 })
     );
 
     await runClaim(ctx());
-    expect(useSyncStatusStore.getState().lastPulledAt).toBeTypeOf('number');
+    expect(useSyncStatusStore.getState().lastSyncedAt).toBeTypeOf('number');
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeUndefined();
   });
 
   it('only-cloud: fetches and applies each cloud item not present locally', async () => {

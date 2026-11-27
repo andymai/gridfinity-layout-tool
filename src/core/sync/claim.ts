@@ -238,7 +238,9 @@ async function executeInner(ctx: ClaimContext, guard: ClaimGuard): Promise<Claim
 
   guard.check();
   persistLastSignedInUserId(ctx.userId);
-  useSyncStatusStore.getState().succeed('pull');
+  // Not a complete pull: the merge can skip a download that failed. The
+  // poller's next complete pull records it.
+  useSyncStatusStore.getState().succeed();
 
   return {
     status: 'merged',

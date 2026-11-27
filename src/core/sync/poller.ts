@@ -234,7 +234,8 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   // make the next pull read the manifest again and fetch the item.
   if (retry.pending) pullState.lastIndexUpdatedAt = 0;
   else if (!skippedHeld) pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
-  useSyncStatusStore.getState().succeed('pull');
+  // A download still to retry leaves the device short of the account's items.
+  useSyncStatusStore.getState().succeed(retry.pending ? undefined : 'pull');
   return { status: 'applied', applied, indexUpdatedAt: manifest.indexUpdatedAt };
 }
 
