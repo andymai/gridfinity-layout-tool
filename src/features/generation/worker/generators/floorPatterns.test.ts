@@ -206,8 +206,36 @@ describe('planFloorPattern keep-outs', () => {
     const centres = (planFloorPattern(params, dim)?.windows ?? []).flatMap((w) =>
       w.keepOuts.map((k) => `${w.x + (k.uMin + k.uMax) / 2},${w.y + (k.zMin + k.zMax) / 2}`)
     );
-    expect(centres).toContain('31.5,10.5');
-    expect(centres).toContain('10.5,31.5');
+    expect(centres.sort()).toEqual(['-34,-34', '-34,34', '10.5,34', '34,-34', '34,10.5']);
+  });
+
+  it("reserves a half foot's corner pocket 8mm from the bin's edge", () => {
+    const params = makeParams({
+      width: 1.5,
+      depth: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet', cornerHolesOnly: true },
+    });
+    const centres = (plan(params)?.windows ?? []).flatMap((w) =>
+      w.keepOuts.map((k) => `${w.x + (k.uMin + k.uMax) / 2},${w.y + (k.zMin + k.zMax) / 2}`)
+    );
+    expect(centres.sort()).toEqual(['-23.5,-13', '-23.5,13', '23.5,-13', '23.5,13']);
+  });
+
+  it("reserves the half foot's centred pocket when a chamfer there would thin its wall", () => {
+    const params = makeParams({
+      width: 1.5,
+      depth: 1,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'magnet',
+        cornerHolesOnly: true,
+        magnetChamfer: true,
+      },
+    });
+    const centres = (plan(params)?.windows ?? []).flatMap((w) =>
+      w.keepOuts.map((k) => `${w.x + (k.uMin + k.uMax) / 2},${w.y + (k.zMin + k.zMax) / 2}`)
+    );
+    expect(centres.sort()).toEqual(['-23.5,-13', '-23.5,13', '21,-13', '21,13']);
   });
 
   it("keeps an L-shaped bin's five corner pockets, not the removed cell's", () => {

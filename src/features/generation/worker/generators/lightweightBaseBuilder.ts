@@ -56,6 +56,7 @@ import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
 import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
+import { cornerHoleCandidates } from '@/shared/generation/magnetPositions';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { PLAIN_MAGNET_HOLE, magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetAnchor } from '@/core/types';
@@ -76,6 +77,14 @@ import { UNDERSIDE_RELIEF_BORDER_MM } from '@/shared/types/bin';
 
 /** Solid margin of plastic around each magnet/screw hole in a retained pad. */
 const PAD_MARGIN = 1.2;
+
+/**
+ * Whether a pad's bore opens with the chamfer. A pad keeps only PAD_MARGIN of
+ * wall around the bore, too thin for the chamfer to open into.
+ */
+export function padTakesChamfer(style: MagnetHoleStyle): boolean {
+  return style.chamfer && magnetChamferFits(PAD_MARGIN);
+}
 
 /** Cross-web thickness that limits each underside bridge to half a cell. */
 export const UNDERSIDE_SUPPORT_RIB_MM = 1.2;
@@ -377,6 +386,7 @@ export function buildLightweightBase(
       const pads: Shape3D[] = [];
       const drills: Shape3D[] = [];
       const cellPositions: Array<Array<[number, number]>> = [];
+      const chamfer = padTakesChamfer(holeStyle);
       forEachSocketCell(
         gridW,
         gridD,
@@ -388,7 +398,20 @@ export function buildLightweightBase(
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
           // Fit-or-center magnet positions so a non-square/small foot's pads and
           // drills stay inside the foot instead of breaching its side.
-          cellPositions.push(magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor));
+          cellPositions.push(
+            cornersOnly
+              ? cornerHoleCandidates(
+                  cell,
+                  holeRadius,
+                  unitX,
+                  unitY,
+                  anchor,
+                  gridW,
+                  gridD,
+                  withMagnet && chamfer
+                )
+              : magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor)
+          );
         },
         fractionalEdge
       );
@@ -414,12 +437,7 @@ export function buildLightweightBase(
                     buildMagnetHoleCutter({
                       radius: magnetRadius,
                       height: magnetDepth,
-                      // A pad is PAD_MARGIN of wall around the bore, too thin
-                      // for the chamfer to open into; the ribs still apply.
-                      style: {
-                        crushRibs: holeStyle.crushRibs,
-                        chamfer: holeStyle.chamfer && magnetChamferFits(PAD_MARGIN),
-                      },
+                      style: { crushRibs: holeStyle.crushRibs, chamfer },
                     })
                   ),
                   [x, y, -socketHeight]

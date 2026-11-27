@@ -9,7 +9,13 @@ import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { MAGNET_CHAMFER_MM } from './magnetHoleStyle';
-import { SIZE, HOLE_OFFSET, CLEARANCE, SOCKET_TAPER_WIDTH } from './generatorConstants';
+import {
+  SIZE,
+  HOLE_OFFSET,
+  CLEARANCE,
+  FOOT_INSET_BOT,
+  SOCKET_TAPER_WIDTH,
+} from './generatorConstants';
 import type { CellInfo } from './cellDecomposition';
 
 /**
@@ -176,6 +182,85 @@ export function magnetPositionsForCell(
     );
   }
   return positions;
+}
+
+const EDGE_EPS = 1e-4;
+
+/**
+ * Centre of the full cell that ends on the same bin edge as this short cell,
+ * or `undefined` when the cell is full, lies inside the bin, or the bin is
+ * shorter than a full cell on this axis.
+ */
+function fullCellAtEdge(
+  center: number,
+  units: number,
+  binUnits: number,
+  pitch: number
+): number | undefined {
+  if (units >= 1 - EDGE_EPS || binUnits < 1 - EDGE_EPS) return undefined;
+  const edge = (binUnits * pitch) / 2;
+  const reach = (units * pitch) / 2;
+  if (Math.abs(center + reach - edge) < EDGE_EPS) return edge - pitch / 2;
+  if (Math.abs(center - reach + edge) < EDGE_EPS) return pitch / 2 - edge;
+  return undefined;
+}
+
+/**
+ * Half the foot's flat underside across one axis. The foot only widens going
+ * up, and a hole and its chamfer open widest on the underside, so this is
+ * where a bore comes closest to the tapered flank.
+ */
+function footUndersideHalfSpan(units: number, pitch: number): number {
+  return (units * pitch - CLEARANCE) / 2 - FOOT_INSET_BOT;
+}
+
+/**
+ * The holes a cell offers when the bin keeps only its outer corners
+ * (`outerCornerHoleFilter`).
+ *
+ * A foot cut short by the bin's edge (the half foot of a 1.5u bin) centres its
+ * holes across that edge, so its corner would sit further in than the corner
+ * of a full foot. Here it takes the holes a full foot ending on the same edge
+ * drills, where they fall inside it, and every corner sits the same distance
+ * from the bin's edge. The every-foot pattern keeps the centred hole, which
+ * is what a baseplate's half pocket and a lid's half cell mate with.
+ *
+ * A borrowed hole must keep the wall {@link cellHostsAttachmentHoles} demands
+ * of a centred one, between its mouth (widened when `chamfer`) and the edge of
+ * the foot's flat underside. If one does not, the cell keeps its own placement.
+ */
+export function cornerHoleCandidates(
+  cell: CellInfo,
+  holeRadius: number,
+  pitchX: number,
+  pitchY: number,
+  anchor: MagnetAnchor | undefined,
+  binWidthUnits: number,
+  binDepthUnits: number,
+  chamfer: boolean
+): Array<[number, number]> {
+  const own = magnetPositionsForCell(cell, holeRadius, pitchX, pitchY, anchor);
+  const x = fullCellAtEdge(cell.centerX, cell.widthUnits, binWidthUnits, pitchX);
+  const y = fullCellAtEdge(cell.centerY, cell.depthUnits, binDepthUnits, pitchY);
+  if (x === undefined && y === undefined) return own;
+  const full: CellInfo = {
+    centerX: x ?? cell.centerX,
+    widthUnits: x === undefined ? cell.widthUnits : 1,
+    centerY: y ?? cell.centerY,
+    depthUnits: y === undefined ? cell.depthUnits : 1,
+  };
+  const halfW = (cell.widthUnits * pitchX) / 2 + EDGE_EPS;
+  const halfD = (cell.depthUnits * pitchY) / 2 + EDGE_EPS;
+  const borrowed = magnetPositionsForCell(full, holeRadius, pitchX, pitchY, anchor).filter(
+    ([px, py]) => Math.abs(px - cell.centerX) <= halfW && Math.abs(py - cell.centerY) <= halfD
+  );
+  const reach = holeRadius + (chamfer ? MAGNET_CHAMFER_MM : 0) + MAGNET_EDGE_CLEARANCE;
+  const spanX = footUndersideHalfSpan(cell.widthUnits, pitchX) - reach + EDGE_EPS;
+  const spanY = footUndersideHalfSpan(cell.depthUnits, pitchY) - reach + EDGE_EPS;
+  const fits = borrowed.every(
+    ([px, py]) => Math.abs(px - cell.centerX) <= spanX && Math.abs(py - cell.centerY) <= spanY
+  );
+  return borrowed.length > 0 && fits ? borrowed : own;
 }
 
 /**

@@ -53,6 +53,7 @@ import {
 } from './baseplateMagnets';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
 import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
+import { cornerHoleCandidates } from '@/shared/generation/magnetPositions';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { PLAIN_MAGNET_HOLE, magnetHoleStyleKey } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetAnchor } from '@/core/types';
@@ -605,7 +606,10 @@ export function buildBaseSocket(
             withMagnet &&
             holeStyle.chamfer &&
             chamferFitsCell(cell, holeRadius, unitX, unitY, anchor, positions);
-          holeCells.push({ positions, chamfer });
+          const drilled = cornersOnly
+            ? cornerHoleCandidates(cell, holeRadius, unitX, unitY, anchor, gridW, gridD, chamfer)
+            : positions;
+          holeCells.push({ positions: drilled, chamfer });
         },
         { gridUnitMm, fractionalEdgeX: fractionalEdge.x, fractionalEdgeY: fractionalEdge.y }
       );
