@@ -223,3 +223,5 @@ lazy entry (`year/index.ts`). It reuses this slice's clock, pixel font and palet
 - **3D:** `useYearMeshes` reads the mesh cache first, then generates on the
   shared worker only when the kernel is cached; the route turns off
   `useBackgroundThumbnailRegen` so nothing else uses the worker.
+- **Sound:** `YearSoundtrack` takes only a paused flag, never the story clock,
+  so a card skip cannot lurch the tune. It shares the credits' sound setting.
