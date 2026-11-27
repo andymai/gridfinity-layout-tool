@@ -12,7 +12,10 @@ import { isYearReviewOpen, YEAR_REVIEW_YEAR } from '@/shared/yearReview/window';
 import { useSupportersData } from '../../../hooks/useSupportersData';
 import { getSupportersPalette } from '../../../scene/palette';
 import { getSupporterCount } from '../../../utils/supportersData';
+import { SoundToggle } from '../../../components/SoundToggle';
+import { readSoundOn, saveSoundOn } from '../../../utils/soundPreference';
 import { useYearMeshes } from '../../hooks/useYearMeshes';
+import { useYearSoundtrack } from '../../hooks/useYearSoundtrack';
 import { useYearReviewData } from '../../hooks/useYearReviewData';
 import { meshCandidates, pickComplicated, type ComplicatedPick } from '../../utils/complicatedPick';
 import type { YearCard } from '../../utils/yearCards';
@@ -111,6 +114,17 @@ export function Your2026Page() {
 
   const onReachEnd = useCallback(() => trackEvent('your_2026_finished'), []);
 
+  // One sound choice for Your 2026 and the credits, so sound stays on into the roll.
+  const [soundOn, setSoundOn] = useState(readSoundOn);
+  const [paused, setPaused] = useState(false);
+  useYearSoundtrack(soundOn && stats !== null && hasYearActivity(stats), paused);
+  const toggleSound = useCallback(() => {
+    setSoundOn((on) => {
+      saveSoundOn(!on);
+      return !on;
+    });
+  }, []);
+
   const rollCredits = useCallback(() => {
     // Back from the credits should land on this card, not on the first one.
     const here = new URLSearchParams(window.location.search);
@@ -170,6 +184,8 @@ export function Your2026Page() {
       onClose={navigateHome}
       onReachEnd={onReachEnd}
       onCardChange={onCardChange}
+      onPausedChange={setPaused}
+      extraControls={<SoundToggle on={soundOn} onToggle={toggleSound} />}
       describeCard={(card) =>
         describeCard(card, {
           t,

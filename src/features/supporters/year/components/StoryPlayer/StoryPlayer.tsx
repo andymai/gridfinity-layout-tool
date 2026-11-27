@@ -23,6 +23,10 @@ export interface StoryPlayerProps {
   readonly onReachEnd: () => void;
   /** Called each time a different card shows. */
   readonly onCardChange?: (card: YearCard) => void;
+  /** Called when the viewer pauses or resumes; a held press is not a pause. */
+  readonly onPausedChange?: (paused: boolean) => void;
+  /** Controls beside the pause button, such as the sound toggle. */
+  readonly extraControls?: ReactNode;
   readonly renderCard: (card: YearCard, position: StoryPosition) => ReactNode;
   /**
    * The card's final words, announced once when it shows. The card itself
@@ -58,6 +62,8 @@ export function StoryPlayer({
   onClose,
   onReachEnd,
   onCardChange,
+  onPausedChange,
+  extraControls,
   renderCard,
   describeCard,
 }: StoryPlayerProps) {
@@ -95,6 +101,10 @@ export function StoryPlayer({
   useEffect(() => {
     if (card) onCardChange?.(card);
   }, [card, onCardChange]);
+
+  useEffect(() => {
+    onPausedChange?.(paused);
+  }, [paused, onPausedChange]);
 
   // A paused step lands where the card has settled; at its start the entrance
   // has not run, and the card would sit empty until play resumes.
@@ -217,16 +227,19 @@ export function StoryPlayer({
         </div>
       }
       controls={
-        <IconButton
-          size="sm"
-          variant="ghost"
-          aria-label={pauseLabel}
-          title={pauseLabel}
-          onClick={togglePause}
-          className="text-white/80 hover:text-white"
-        >
-          <PauseIcon paused={paused} />
-        </IconButton>
+        <>
+          {extraControls}
+          <IconButton
+            size="sm"
+            variant="ghost"
+            aria-label={pauseLabel}
+            title={pauseLabel}
+            onClick={togglePause}
+            className="text-white/80 hover:text-white"
+          >
+            <PauseIcon paused={paused} />
+          </IconButton>
+        </>
       }
     >
       <p className="sr-only">{t('your2026.controls.hint')}</p>
