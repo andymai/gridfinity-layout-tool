@@ -57,8 +57,10 @@ export const CHUNK_WARMERS: ChunkWarmers = {
  *   by pointer-intent prefetch instead (`useIntentPrefetch`), which spends
  *   bandwidth only on a destination someone is already reaching for.
  * - Data-saver mode or slow connections (2G / slow-2G)
+ * - Pages that never edit (`enabled` false), so a visitor who only watches
+ *   Your 2026 or the credits never downloads the kernel
  */
-export function usePrefetchChunks(): void {
+export function usePrefetchChunks(enabled = true): void {
   const { isMobile, isTablet } = useResponsive();
 
   // Every device: phones and tablets warm on intent, not on idle.
@@ -66,7 +68,7 @@ export function usePrefetchChunks(): void {
 
   useEffect(() => {
     // Skip on mobile/tablet — they have limited CPU and memory
-    if (isMobile || isTablet) return;
+    if (!enabled || isMobile || isTablet) return;
 
     // Skip on data-saver or very slow connections
     if (shouldSkipPrefetch()) return;
@@ -111,5 +113,5 @@ export function usePrefetchChunks(): void {
       clearTimeout(timer);
       idleHandles.forEach((handle) => cancelIdleCallback(handle));
     };
-  }, [isMobile, isTablet]);
+  }, [enabled, isMobile, isTablet]);
 }

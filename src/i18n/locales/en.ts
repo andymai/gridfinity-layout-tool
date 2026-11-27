@@ -252,6 +252,8 @@ const en: Record<string, string> = {
   'your2026.empty.title': 'Nothing from 2026 on this device yet.',
   'your2026.empty.line': 'Your year shows here once you plan a drawer or design a bin.',
   'your2026.empty.start': 'Plan a drawer',
+  'your2026.empty.sample': 'Watch the sample',
+  'your2026.sample.drawer': 'Workbench',
   'your2026.error.title': 'Your 2026 did not load.',
   'your2026.error.retry': 'Try again',
 

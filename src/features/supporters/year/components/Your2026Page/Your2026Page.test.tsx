@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { readDockRowState, resetDockRowCache } from '@/shared/yearReview/dockRow';
+import type { SampleYearData } from '../../hooks/useSampleYear';
 import type { YearReviewData } from '../../hooks/useYearReviewData';
 import type { YearStats } from '../../types';
 import { Your2026Page } from './Your2026Page';
@@ -10,6 +12,17 @@ vi.mock('@/shared/analytics/posthog', () => ({ trackEvent: vi.fn() }));
 const review: { data: YearReviewData } = { data: { status: 'loading' } };
 vi.mock('../../hooks/useYearReviewData', () => ({
   useYearReviewData: () => review.data,
+}));
+
+const idleSample: SampleYearData = {
+  data: { status: 'loading' },
+  drawerPreview: null,
+  meshes: new Map(),
+  triangles: new Map(),
+};
+const sample: { value: SampleYearData } = { value: idleSample };
+vi.mock('../../hooks/useSampleYear', () => ({
+  useSampleYear: (enabled: boolean) => (enabled ? sample.value : idleSample),
 }));
 
 const supportersState = { settled: true };
@@ -47,6 +60,7 @@ beforeEach(() => {
   supportersState.settled = true;
   vi.mocked(trackEvent).mockClear();
   review.data = { status: 'ready', stats: active };
+  sample.value = { ...idleSample, data: { status: 'ready', stats: { ...active, drawers: 6 } } };
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date(2026, 11, 5, 12));
 });
@@ -84,6 +98,33 @@ describe('Your2026Page', () => {
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Plan a drawer' }));
     expect(window.location.pathname).toBe('/');
+  });
+
+  it('plays the sample with ?demo at any date, and says so in the opening', () => {
+    vi.setSystemTime(new Date(2026, 10, 27, 12));
+    visit('/your-2026?demo');
+    expect(screen.getByRole('heading', { name: 'Your year, in 42 mm steps.' })).toBeInTheDocument();
+    expect(trackEvent).toHaveBeenCalledWith('your_2026_opened', { source: 'direct', demo: true });
+  });
+
+  it('leaves the dock dot for the own year when only the sample plays', () => {
+    localStorage.clear();
+    resetDockRowCache();
+    visit('/your-2026?demo');
+    expect(readDockRowState().seen).toBe(false);
+    visit('/your-2026');
+    expect(readDockRowState().seen).toBe(true);
+  });
+
+  it('offers the sample from the empty state', () => {
+    review.data = { status: 'ready', stats: empty };
+    visit('/your-2026');
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Watch the sample' }));
+    });
+    expect(window.location.pathname + window.location.search).toBe('/your-2026?demo');
+    expect(screen.getByRole('heading', { name: 'Your year, in 42 mm steps.' })).toBeInTheDocument();
+    expect(trackEvent).toHaveBeenCalledWith('your_2026_opened', { source: 'direct', demo: true });
   });
 
   it('reports the opening and where it came from', () => {

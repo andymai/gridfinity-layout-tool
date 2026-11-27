@@ -95,6 +95,19 @@ describe('usePrefetchChunks', () => {
     expect(mockScheduleIdle).toHaveBeenCalledTimes(4);
   });
 
+  it('waits until the page can edit, then starts the delay', () => {
+    const { rerender } = renderHook(({ enabled }) => usePrefetchChunks(enabled), {
+      initialProps: { enabled: false },
+    });
+    vi.advanceTimersByTime(10_000);
+    expect(mockScheduleIdle).not.toHaveBeenCalled();
+    expect(preloadOcctWasm).not.toHaveBeenCalled();
+
+    rerender({ enabled: true });
+    vi.advanceTimersByTime(3000);
+    expect(preloadOcctWasm).toHaveBeenCalledTimes(1);
+  });
+
   it('skips prefetch on mobile', () => {
     mockUseResponsive.mockReturnValue({
       isMobile: true,

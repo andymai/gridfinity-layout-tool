@@ -1,8 +1,8 @@
 /**
  * Post-build step: emit static HTML entry points for SPA routes that earn
- * search impressions (/designer, /baseplate) so crawlers and social scrapers
- * see route-specific titles, descriptions, OG tags, and structured data
- * instead of the homepage's. Each entry is the built dist/index.html with
+ * search impressions or shares (/designer, /baseplate, /your-2026) so
+ * crawlers and social scrapers see route-specific titles, descriptions, OG
+ * tags, and structured data instead of the homepage's. Each entry is the built dist/index.html with
  * head metadata and the crawler fallback content swapped; the JS bundle and
  * inline boot scripts are byte-identical (CSP hashes stay valid).
  *
@@ -255,6 +255,29 @@ const ROUTES: RouteEntry[] = [
           <a href="/gridfinity-label-maker">Gridfinity Label Maker</a> ·
           <a href="/docs/printing/label-maker">Label maker docs</a> ·
           <a href="/">Layout Planner</a>
+        </p>`,
+  },
+  {
+    // Seasonal: a shared link (often the sample, `?demo`) unfurls as Your 2026
+    // rather than as the home page.
+    slug: 'your-2026',
+    title: 'Your 2026 | Gridfinity Layout Tool',
+    description:
+      'Your year in Gridfinity: the drawers you planned, the bins you designed, and the people who kept the tool free.',
+    keywords:
+      'gridfinity year in review, gridfinity 2026, your 2026, gridfinity layout tool, gridfinity bins',
+    ogImage: `${SITE_URL}/og/your-2026.jpg`,
+    ogImageAlt:
+      'Three Your 2026 story cards: a drawer plan, a honeycomb caddy in 3D, and the type Night Shift Supervisor',
+    structuredData: [breadcrumbs('your-2026', 'Your 2026')],
+    fallbackHtml: `
+        <h1>Your 2026</h1>
+        <p>Your year in bins: drawers, prints, the most complicated thing you made, and the people who kept it free. Your 2026 reads the drawers and bin designs on your device, and the data stays there.</p>
+        <p>
+          <a href="/your-2026?demo">Watch the sample</a> ·
+          <a href="/">Layout Planner</a> ·
+          <a href="/designer">Bin Designer</a> ·
+          <a href="/supporters">Supporters</a>
         </p>`,
   },
 ];

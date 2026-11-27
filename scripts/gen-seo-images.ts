@@ -837,6 +837,108 @@ async function renderOgCards(browser: Browser): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Your 2026 card
+// ---------------------------------------------------------------------------
+
+/** Sample cards on the image, by position in the story: biggest drawer, most complicated, type. */
+const YOUR_2026_CARDS = [4, 10, 12];
+const MOST_COMPLICATED_CARD = 10;
+
+/**
+ * The /your-2026 share card: three cards of the sample year (`?demo`), fanned
+ * on the story's dark stage. Seasonal, so it stays out of OG_CARDS and their
+ * shared template.
+ */
+async function renderYour2026Og(browser: Browser): Promise<void> {
+  const context = await browser.newContext({
+    viewport: { width: 360, height: 640 },
+    deviceScaleFactor: 2,
+    reducedMotion: 'reduce',
+  });
+  const shots: string[] = [];
+  try {
+    const page = await context.newPage();
+    await page.goto(`${BASE}/your-2026?demo`);
+    await page.waitForSelector('section[aria-roledescription="slide"]', {
+      timeout: 120000,
+    });
+    // Paused, so no card moves on by itself between the key presses.
+    await page.keyboard.press(' ');
+    // The control row (save, sound, play, close) is player chrome, and a paused
+    // player shows its play icon, which reads as a stalled story in a share card.
+    await page.evaluate(() => {
+      const row = document.querySelector('button[aria-label="Close"]')?.parentElement;
+      if (row) row.style.visibility = 'hidden';
+    });
+    let at = 0;
+    for (const index of YOUR_2026_CARDS) {
+      for (; at < index; at++) await page.keyboard.press('ArrowRight');
+      if (index === MOST_COMPLICATED_CARD) {
+        await page.waitForSelector('section[aria-roledescription="slide"] canvas', {
+          timeout: 60000,
+        });
+      }
+      await page.waitForTimeout(1500);
+      const png = await page.screenshot({ type: 'png' });
+      shots.push(`data:image/png;base64,${png.toString('base64')}`);
+    }
+  } finally {
+    await context.close();
+  }
+
+  const [left, middle, right] = shots;
+  const html = `<!doctype html>
+<html><head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Press+Start+2P&display=block" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden; position: relative;
+    background:
+      radial-gradient(circle at 88% 0%, rgba(245,158,11,0.35), rgba(245,158,11,0) 55%),
+      linear-gradient(160deg, #16161f, #0d0d14 60%, #0a0a0f);
+    color: #fafafa; font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  .text { position: absolute; left: 64px; top: 56px; bottom: 56px; width: 470px; display: flex; flex-direction: column; }
+  .kicker { font-family: 'Press Start 2P', monospace; font-size: 54px; line-height: 1.25; color: #f59e0b; text-shadow: 0 0 32px rgba(245,158,11,0.55); margin-top: 72px; }
+  .subtitle { font-size: 26px; line-height: 1.45; color: #d4d4d8; margin-top: 32px; }
+  .domain { margin-top: auto; font-size: 18px; font-weight: 600; color: #f59e0b; }
+  .card { position: absolute; width: 210px; height: 373px; border-radius: 18px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 28px 70px rgba(0,0,0,0.6);
+    background-size: cover; background-position: center; }
+  .left { left: 580px; top: 150px; transform: rotate(-7deg); }
+  .right { left: 980px; top: 150px; transform: rotate(7deg); }
+  .middle { left: 760px; top: 96px; width: 240px; height: 427px; z-index: 1; }
+</style>
+</head><body>
+  <div class="text">
+    <div class="kicker">YOUR<br>2026</div>
+    <div class="subtitle">Your year in bins: drawers, prints, the most complicated thing you made, and the people who kept it free.</div>
+    <div class="domain">GridfinityLayoutTool.com</div>
+  </div>
+  <div class="card left" style="background-image:url(${left})"></div>
+  <div class="card right" style="background-image:url(${right})"></div>
+  <div class="card middle" style="background-image:url(${middle})"></div>
+</body></html>`;
+
+  const page = await browser.newPage({
+    viewport: OG_VIEWPORT,
+    deviceScaleFactor: 1,
+  });
+  try {
+    await page.setContent(html, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+    // JPEG: the glow and the 3D render make a PNG over three times larger.
+    const outFile = resolve(OG_OUT, 'your-2026.jpg');
+    writeFileSync(outFile, await page.screenshot({ type: 'jpeg', quality: 90 }));
+    console.log(`wrote ${outFile}`);
+  } finally {
+    await page.close();
+  }
+}
+// ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
   mkdirSync(LANDING_OUT, { recursive: true });
@@ -931,6 +1033,9 @@ async function main(): Promise<void> {
     }
     if (want('og')) {
       await renderOgCards(browser);
+    }
+    if (want('your2026')) {
+      await renderYour2026Og(browser);
     }
   } finally {
     await browser.close();

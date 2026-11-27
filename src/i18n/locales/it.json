@@ -5778,6 +5778,8 @@
   "your2026.empty.title": "Ancora niente del 2026 su questo dispositivo.",
   "your2026.empty.line": "Il tuo anno apparirà qui quando pianificherai un cassetto o progetterai un bin.",
   "your2026.empty.start": "Pianifica un cassetto",
+  "your2026.empty.sample": "Guarda l'esempio",
+  "your2026.sample.drawer": "Banco da lavoro",
   "your2026.error.title": "Il tuo 2026 non si è caricato.",
   "your2026.error.retry": "Riprova",
   "loading.your2026": "Caricamento del tuo 2026",

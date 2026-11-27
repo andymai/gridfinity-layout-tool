@@ -6100,6 +6100,8 @@
   "your2026.empty.title": "Na tym urządzeniu nie ma jeszcze nic z 2026 roku.",
   "your2026.empty.line": "Twój rok pojawi się tutaj, gdy zaplanujesz szufladę lub zaprojektujesz bin.",
   "your2026.empty.start": "Zaplanuj szufladę",
+  "your2026.empty.sample": "Obejrzyj przykład",
+  "your2026.sample.drawer": "Stół warsztatowy",
   "your2026.error.title": "Nie udało się wczytać Twojego roku 2026.",
   "your2026.error.retry": "Spróbuj ponownie",
   "loading.your2026": "Wczytywanie Twojego roku 2026",
