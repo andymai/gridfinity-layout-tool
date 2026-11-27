@@ -62,7 +62,7 @@ export function TabletPanelOverlay({ isOpen, onClose, side, children }: TabletPa
 
       {/* Panel container */}
       <div
-        className="fixed top-0 bottom-0 z-50 transition-transform duration-300 ease-out"
+        className="fixed top-0 bottom-0 z-50 flex transition-transform duration-300 ease-out"
         style={{
           [side]: 0,
           transform: translateX,
