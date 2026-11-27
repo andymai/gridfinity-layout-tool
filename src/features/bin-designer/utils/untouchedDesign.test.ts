@@ -29,6 +29,38 @@ describe('isUntouchedDefault', () => {
   });
 });
 
+describe('isUntouchedDefault, for fields written without an edit', () => {
+  it('ignores the layout units, as the unit sync writes them', () => {
+    expect(
+      isUntouchedDefault({
+        ...DEFAULT_BIN_PARAMS,
+        gridUnitMm: 40,
+        gridUnitMmY: 41,
+        heightUnitMm: 6,
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: false, heightUnits: 2 },
+      })
+    ).toBe(true);
+  });
+
+  it('ignores text defaults, which migration fills on an older design', () => {
+    expect(
+      isUntouchedDefault({
+        ...DEFAULT_BIN_PARAMS,
+        textDefaults: { ...DEFAULT_BIN_PARAMS.textDefaults, font: 'atkinson' },
+      })
+    ).toBe(true);
+  });
+
+  it('still sees an enabled lid as an edit', () => {
+    expect(
+      isUntouchedDefault({
+        ...DEFAULT_BIN_PARAMS,
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+      })
+    ).toBe(false);
+  });
+});
+
 describe('isUntouchedDefault, for edits outside the obvious fields', () => {
   it('sees an interior fillet as an edit', () => {
     expect(isUntouchedDefault({ ...DEFAULT_BIN_PARAMS, interiorFilletMm: 2 })).toBe(false);
