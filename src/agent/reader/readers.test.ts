@@ -124,6 +124,36 @@ describe('browser reads', () => {
     });
   });
 
+  it('gives the ids that propose_changes names, and formats an older read without them', async () => {
+    const run = await runReaderTool(source(library, { old: desk }), 'read_my_layout', {});
+    const data = isOk(run) ? readMyLayoutData.parse(run.value) : null;
+    const layout = data?.layout;
+    if (!layout) throw new Error('no layout');
+    expect(layout.bins.map((bin) => bin.id)).toEqual(['b1', 'b2']);
+    // A stashed bin needs its id too, to go back on the grid or be changed.
+    expect(layout.stashed.map((bin) => bin.id)).toEqual(['b3']);
+    expect(layout.layers[0]?.id).toBe(desk.layers[0]?.id);
+    expect(layout.categories).toEqual(
+      desk.categories.map((category) => ({ id: category.id, name: category.name }))
+    );
+    const text = formatReadMyLayout({ layout });
+    expect(text).toContain('"M3 screws" (id "b1")');
+    expect(text).toContain('In the stash: "Case" (id "b3", ');
+    expect(text).toContain(
+      `Categories: "${desk.categories[0]?.name}" (id "${desk.categories[0]?.id}")`
+    );
+    const { categories: _categories, ...older } = layout;
+    const stored = {
+      ...older,
+      layers: older.layers.map(({ id: _id, ...layer }) => layer),
+      bins: older.bins.map(({ id: _id, ...bin }) => bin),
+      stashed: older.stashed.map(({ id: _id, ...bin }) => bin),
+    };
+    const plain = formatReadMyLayout(readMyLayoutData.parse({ layout: stored }));
+    expect(plain).not.toContain('(id ');
+    expect(plain).not.toContain('Categories:');
+  });
+
   it('answers a layout id that the reader does not have with no layout', async () => {
     const run = await runReaderTool(source(library, { old: desk }), 'read_my_layout', {
       layoutId: 'nope',

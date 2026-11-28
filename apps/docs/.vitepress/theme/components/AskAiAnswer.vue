@@ -36,6 +36,7 @@ const NOUNS: Readonly<Record<StepKind, [string, string]>> = {
   check: ['check', 'checks'],
   plan: ['plan', 'plans'],
   yours: ['read of your data', 'reads of your data'],
+  change: ['change set', 'change sets'],
 };
 
 const summary = computed(() => {

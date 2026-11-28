@@ -6,6 +6,7 @@ vi.mock('@vercel/functions', () => ({ waitUntil: (promise: Promise<unknown>) => 
 
 const trace: AskTrace = {
   traceId: 'trace-1',
+  door: 'docs',
   sessionId: 'chat-1',
   question: 'How do layers work?',
   page: '/layouts/layers',

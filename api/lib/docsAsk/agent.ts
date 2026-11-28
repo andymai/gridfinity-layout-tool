@@ -4,7 +4,7 @@ import type { ClientTools } from './clientTools.js';
 import type { AskCorpus } from './corpus.js';
 import { SYSTEM_PROMPT } from './prompt.js';
 import { costUsd } from './spend.js';
-import { PLACEHOLDER_LABELS, STEP_KINDS, toolResult } from './tools.js';
+import { PLACEHOLDER_LABELS, STEP_KINDS, placeholderText, toolResult } from './tools.js';
 import type { StepKind, ToolName, ToolRunner } from './tools.js';
 import type { Generation } from './traces.js';
 import type { PlanView } from '../agent/index.js';
@@ -32,6 +32,9 @@ export type AgentEvent =
       /** waiting: a browser call that the reader has yet to allow. */
       state: 'running' | 'waiting' | 'done' | 'error';
       label: string;
+      /** The label as a key and values, for a panel that translates it. */
+      key?: string;
+      vars?: Readonly<Record<string, string>>;
     }
   | { type: 'thinking'; text: string }
   | { type: 'text'; text: string }
@@ -116,7 +119,14 @@ function placeholderStep(
   clientTools: ClientTools = CLIENT_TOOLS
 ): StepEvent {
   const kind = clientTools.get(call.name)?.kind ?? kindOf(call.name);
-  return { type: 'step', id: call.id, kind, state, label: PLACEHOLDER_LABELS[kind] };
+  return {
+    type: 'step',
+    id: call.id,
+    kind,
+    state,
+    label: PLACEHOLDER_LABELS[kind],
+    ...placeholderText(kind),
+  };
 }
 
 function textOf(content: readonly ContentBlock[]): string {
@@ -352,6 +362,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
         kind: kindOf(call.name),
         state: run.isError ? 'error' : 'done',
         label: run.label,
+        ...run.step,
       });
       if (run.plan) options.send({ type: 'plan', plan: run.plan });
       return toolResult(call.id, run);
@@ -361,9 +372,17 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
       browser.length > 0 && overClientLimit(options.clientResults ?? 0, browser.length);
     if (overLimit) {
       for (const call of browser) {
-        const label = clientTools.get(call.name)?.label(call.input) ?? call.name;
+        const tool = clientTools.get(call.name);
+        const label = tool?.label(call.input) ?? call.name;
         steps.push(label);
-        options.send({ type: 'step', id: call.id, kind: kindOf(call.name), state: 'error', label });
+        options.send({
+          type: 'step',
+          id: call.id,
+          kind: tool?.kind ?? kindOf(call.name),
+          state: 'error',
+          label,
+          ...tool?.step,
+        });
         results[calls.indexOf(call)] = toolResult(call.id, {
           isError: true,
           label,
@@ -376,7 +395,14 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
         if (tool === undefined) continue;
         const label = tool.label(call.input);
         steps.push(label);
-        options.send({ type: 'step', id: call.id, kind: tool.kind, state: 'waiting', label });
+        options.send({
+          type: 'step',
+          id: call.id,
+          kind: tool.kind,
+          state: 'waiting',
+          label,
+          ...tool.step,
+        });
       }
       const pending = {
         calls: browser.map((call) => ({ id: call.id, name: call.name, input: call.input })),

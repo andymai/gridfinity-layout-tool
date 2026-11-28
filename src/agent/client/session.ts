@@ -15,14 +15,26 @@ import {
 import type { Conversation, StoredTurn } from './history';
 import { readEvents } from './stream';
 
-export type StepKind = 'read' | 'search' | 'check' | 'plan' | 'yours';
+export type StepKind = 'read' | 'search' | 'check' | 'plan' | 'yours' | 'change';
 
 export interface Step {
   readonly id: string;
   readonly kind: StepKind;
   readonly state: 'running' | 'waiting' | 'done' | 'error';
+  /** The label in English, as the server wrote it. */
   readonly label: string;
+  /** The label as a key and its values, for a panel that translates it. */
+  readonly key?: string;
+  readonly vars?: Readonly<Record<string, string>>;
 }
+
+/** Which panel asks: the docs site, or the app, where Ask AI can also change a layout. */
+export type Door = 'docs' | 'app';
+
+/** What the browser sends back for one call. */
+export type CallResult =
+  | { readonly callId: string; readonly status: 'shared'; readonly data: unknown }
+  | { readonly callId: string; readonly status: 'declined' | 'unavailable' };
 
 /** A browser call as the server asked for it. */
 export interface BrowserCall {
@@ -31,14 +43,25 @@ export interface BrowserCall {
   readonly input: unknown;
 }
 
-/** One browser call, run before the reader decides, with exactly what Allow would send. */
+/**
+ * One browser call, run before the reader decides. For a read, `data` is
+ * exactly what Allow sends. For a change, `data` is what the panel previews,
+ * and Apply sends what the host's `apply` returns.
+ */
 export interface PreparedCall {
   readonly id: string;
+  /** A read of the reader's data (the default), or a change to their layout. */
+  readonly kind?: 'read' | 'change';
   readonly title: string;
   /** The text that the model would read, shown in the panel before the reader allows it. */
   readonly preview: string | null;
   readonly data: unknown;
   readonly unavailable: boolean;
+  /**
+   * Data that goes back whatever the reader does, such as a change that the
+   * app refused. A request of only such calls goes back at once.
+   */
+  readonly settled?: unknown;
 }
 
 /** Browser calls that wait for the reader to allow or decline them. */
@@ -83,6 +106,8 @@ export interface SessionState {
 }
 
 export interface SessionHost {
+  /** Absent for the docs panel. */
+  readonly door?: Door;
   readonly state: SessionState;
   /** Called after each change to the state, for a panel that does not track writes itself. */
   readonly changed: () => void;
@@ -93,8 +118,10 @@ export interface SessionHost {
   readonly settings: () => { readonly analytics: boolean; readonly locale: string };
   /** Runs each call in the browser. It must resolve, with a call marked unavailable when it cannot run. */
   readonly prepareCalls: (calls: readonly BrowserCall[]) => Promise<PreparedCall[]>;
-  /** The step label of a read that the reader did not allow. */
-  readonly declinedLabel: string;
+  /** Applies a change that the reader approved, and gives the data that goes back. */
+  readonly apply?: (call: PreparedCall) => Promise<unknown>;
+  /** The step label of a call that the reader did not allow. */
+  readonly declinedLabel: (call: PreparedCall) => string;
   readonly newId: () => string;
 }
 
@@ -172,14 +199,23 @@ export function createSession(host: SessionHost): Session {
   let conversation: Conversation | null = null;
   let controller: AbortController | null = null;
   let nextId = 1;
+  // A request that needs no decision, held until the request that brought it ends.
+  let settledRequest: Exchange | null = null;
+  // Stop and New chat end every preparation and queued resume that is still
+  // out, so none can restart the model or answer into another chat.
+  let generation = 0;
+  const door = host.door === 'app' ? { door: 'app' } : {};
 
+  // Every op names the door, so the door's own switch covers feedback too.
   const post = (body: Record<string, unknown>, signal?: AbortSignal): Promise<Response> =>
     fetch(host.endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...body, ...door }),
       signal,
     });
+
+  const inChat = (target: Exchange): boolean => state.exchanges.includes(target);
 
   function chat(): Conversation {
     conversation ??= loadConversation(host.storage(), host.storageKey, host.newId);
@@ -199,6 +235,7 @@ export function createSession(host: SessionHost): Session {
   }
 
   async function prepare(current: Exchange, calls: unknown[]): Promise<void> {
+    const started = generation;
     const asked = calls.filter(isCall);
     let prepared: PreparedCall[];
     try {
@@ -212,11 +249,16 @@ export function createSession(host: SessionHost): Session {
         unavailable: true,
       }));
     }
+    if (started !== generation || !inChat(current)) return;
     const request = current.request;
     if (request === null || request.state !== 'loading') return;
     request.calls = prepared;
     request.state = 'asking';
     changed();
+    if (prepared.length > 0 && prepared.every((call) => call.settled !== undefined)) {
+      if (controller) settledRequest = current;
+      else void answerRequest(current, true);
+    }
   }
 
   /** Reads one response stream into the exchange: a whole turn, or the rest of one after a resume. */
@@ -320,6 +362,9 @@ export function createSession(host: SessionHost): Session {
     settleSteps(target);
     controller = null;
     changed();
+    const next = settledRequest;
+    settledRequest = null;
+    if (next !== null) void answerRequest(next, true);
   }
 
   async function ask(question: string, page: string): Promise<void> {
@@ -363,27 +408,28 @@ export function createSession(host: SessionHost): Session {
 
   async function answerRequest(target: Exchange, allow: boolean): Promise<void> {
     const request = target.request;
-    if (request === null || request.state !== 'asking' || controller) return;
+    if (request === null || request.state !== 'asking' || controller || !inChat(target)) return;
     request.state = 'sending';
-    // A read that this browser could not run goes as unavailable either way.
-    const results = request.calls.map((call) => {
-      if (call.unavailable) return { callId: call.id, status: 'unavailable' };
-      return allow
-        ? { callId: call.id, status: 'shared', data: call.data }
-        : { callId: call.id, status: 'declined' };
-    });
-    const asked = new Set(request.calls.map((call) => call.id));
-    target.steps = target.steps.map((step) =>
-      asked.has(step.id)
-        ? { ...step, state: 'done', label: allow ? step.label : host.declinedLabel }
-        : step
+    const abort = new AbortController();
+    controller = abort;
+    changed();
+    const results = await Promise.all(request.calls.map((call) => resultOf(call, allow)));
+    const declined = new Set(
+      results.filter((result) => result.status === 'declined').map((result) => result.callId)
     );
+    const asked = new Map(request.calls.map((call) => [call.id, call]));
+    target.steps = target.steps.map((step) => {
+      const call = asked.get(step.id);
+      if (call === undefined) return step;
+      if (!declined.has(step.id)) return { ...step, state: 'done' };
+      // The host's label replaces the server's, key and values with it.
+      const { key: _key, vars: _vars, ...rest } = step;
+      return { ...rest, state: 'done', label: host.declinedLabel(call) };
+    });
     if (results.some((result) => result.status === 'shared')) target.personal = true;
     target.status = 'waiting';
     const { analytics } = host.settings();
     const before = chat();
-    const abort = new AbortController();
-    controller = abort;
     changed();
     try {
       const response = await post(
@@ -412,7 +458,24 @@ export function createSession(host: SessionHost): Session {
     }
   }
 
+  // A call that this browser could not run goes as unavailable either way.
+  async function resultOf(call: PreparedCall, allow: boolean): Promise<CallResult> {
+    if (call.settled !== undefined)
+      return { callId: call.id, status: 'shared', data: call.settled };
+    if (call.unavailable) return { callId: call.id, status: 'unavailable' };
+    if (!allow) return { callId: call.id, status: 'declined' };
+    if (call.kind !== 'change') return { callId: call.id, status: 'shared', data: call.data };
+    if (host.apply === undefined) return { callId: call.id, status: 'unavailable' };
+    try {
+      return { callId: call.id, status: 'shared', data: await host.apply(call) };
+    } catch {
+      return { callId: call.id, status: 'unavailable' };
+    }
+  }
+
   function stop(): void {
+    generation++;
+    settledRequest = null;
     controller?.abort();
   }
 

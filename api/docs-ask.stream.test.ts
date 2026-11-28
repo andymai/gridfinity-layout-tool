@@ -40,10 +40,17 @@ vi.mock('./lib/docsAsk/clientTools.js', async (importOriginal) => {
   const layoutTool: ClientToolsModule.ClientTool = {
     kind: 'read',
     label: () => 'Reading your layout',
+    step: { key: 'readLayout' },
     output: z.object({ name: z.string() }).strict(),
     format: (data) => `The layout is ${(data as { name: string }).name}.`,
   };
-  return { ...actual, CLIENT_TOOLS: new Map([['read_my_layout', layoutTool]]) };
+  const docs = new Map([['read_my_layout', layoutTool]]);
+  const app = new Map([...docs, ['propose_changes', { ...layoutTool, kind: 'change' as const }]]);
+  return {
+    ...actual,
+    CLIENT_TOOLS: docs,
+    clientToolsFor: (door: string) => (door === 'app' ? app : docs),
+  };
 });
 
 vi.mock('./lib/docsAsk/traces.js', () => ({
@@ -158,6 +165,14 @@ const result = (answer: string): AgentResult => ({
 });
 
 const key = (purpose: string): string => createHmac('sha256', 'salt').update(purpose).digest('hex');
+const questionFor = (door: string) => ({
+  door,
+  sessionId: 'abc12345-tab',
+  question: 'Add a bin for M3 screws.',
+  page: door === 'app' ? 'app/layout' : '/layouts/layers',
+  locale: 'en',
+  turns: [],
+});
 const browserCall = { type: 'tool_use', id: 'toolu_b', name: 'read_my_layout', input: {} };
 
 describe('docs-ask streaming', () => {
@@ -307,5 +322,57 @@ describe('docs-ask streaming', () => {
     expect(mocks.sendAskTrace).toHaveBeenCalledWith(
       expect.objectContaining({ links: ['/layouts/layers'], answer: 'Layers stack bins.' })
     );
+  });
+
+  describe('the app door', () => {
+    it('stays off until its own switch is on, apart from the docs switch', async () => {
+      const off = await post({ ...questionFor('app'), op: 'ask' });
+      expect(off.status).toBe(503);
+      vi.stubEnv('APP_ASSISTANT_ENABLED', 'true');
+      vi.stubEnv('DOCS_ASSISTANT_ENABLED', 'false');
+      mocks.runAgent.mockResolvedValueOnce(result('Done.'));
+      expect((await post({ ...questionFor('app'), op: 'ask' })).status).toBe(200);
+      expect((await post({ ...questionFor('docs'), op: 'ask' })).status).toBe(503);
+    });
+
+    it('lists propose_changes, runs the app client tools, and signs with its own keys', async () => {
+      vi.stubEnv('APP_ASSISTANT_ENABLED', 'true');
+      const content = [{ type: 'text', text: 'Added.' }];
+      let seen: AgentOptions | null = null;
+      mocks.runAgent.mockImplementationOnce((options: AgentOptions) => {
+        seen = options;
+        options.send({ type: 'message', content } as never);
+        return Promise.resolve(result('Added.'));
+      });
+      const { events } = await post({ ...questionFor('app'), op: 'ask' });
+      const options = seen as AgentOptions | null;
+      expect(options?.tools.map((tool) => ('name' in tool ? tool.name : ''))).toContain(
+        'propose_changes'
+      );
+      expect(options?.clientTools?.has('propose_changes')).toBe(true);
+      expect(JSON.stringify(options?.messages.at(-1))).toContain('The reader is in the app');
+      const turn = events.find((e) => e.event === 'done')?.data.turn as StoredTurn;
+      const signed = { ...turn, messages: [content] };
+      expect(turnSigned(key('app-ask turn signature'), signed)).toBe(true);
+      expect(turnSigned(key('docs-ask turn signature'), signed)).toBe(false);
+    });
+
+    it('drops a docs turn from an app chat, so a turn cannot cross doors', async () => {
+      vi.stubEnv('APP_ASSISTANT_ENABLED', 'true');
+      const content = [{ type: 'text', text: 'Layers stack bins.' }];
+      mocks.runAgent.mockImplementationOnce((options: AgentOptions) => {
+        options.send({ type: 'message', content } as never);
+        return Promise.resolve(result('Layers stack bins.'));
+      });
+      const docsTurn = (await ask()).find((e) => e.event === 'done')?.data.turn as StoredTurn;
+      let length = -1;
+      mocks.runAgent.mockImplementationOnce((options: AgentOptions) => {
+        length = options.messages.length;
+        return Promise.resolve(result('Fresh.'));
+      });
+      const replay = { ...docsTurn, messages: [content] };
+      expect((await post({ ...questionFor('app'), op: 'ask', turns: [replay] })).status).toBe(200);
+      expect(length).toBe(2);
+    });
   });
 });

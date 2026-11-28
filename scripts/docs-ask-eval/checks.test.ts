@@ -95,8 +95,19 @@ describe('the golden set', () => {
     expect(new Set(GOLDEN.map((c) => c.id)).size).toBe(GOLDEN.length);
     for (const c of GOLDEN) {
       expect(c.turns.length).toBe(c.group === 'followup' ? 2 : 1);
-      expect(c.page.startsWith('/')).toBe(true);
+      // An app door case is in the app, at a place that the context names.
+      expect(c.page.startsWith(c.door === 'app' ? 'app/' : '/')).toBe(true);
       for (const source of c.sources) expect(source.startsWith('/')).toBe(true);
+    }
+  });
+
+  it('gives each app door case an open layout and an answer for its changes', () => {
+    const app = GOLDEN.filter((g) => g.group === 'app');
+    expect(app.length).toBeGreaterThan(0);
+    for (const c of app) {
+      expect(c.door, c.id).toBe('app');
+      expect(c.reader?.open, c.id).toBeDefined();
+      expect(c.reader?.changes, c.id).toBeDefined();
     }
   });
 

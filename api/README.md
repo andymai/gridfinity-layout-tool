@@ -90,6 +90,8 @@ The docs assistant on `/docs`, on `claude-opus-5-5`, with the corpus that `scrip
 
 Off unless `DOCS_ASSISTANT_ENABLED=true` and `ANTHROPIC_API_KEY` is set. Each answer adds its cost to `docsAsk:spend:{day}`. At `DOCS_ASSISTANT_DAILY_CAP_USD` (default 5) the endpoint answers 429 `RESTING` until the next UTC day. In production, and only when the reader's analytics switch is on, it sends `$ai_*` traces with the question and answer text to PostHog. Follow-ups need `TOKEN_SALT` to sign turns. `DOCS_ASK_CORPUS_DIR` points a local run, such as `pnpm run docs:ask-eval`, at another docs build.
 
+A request with `door: 'app'` comes from the panel in the app. That door also lists `propose_changes` (`APP_CLIENT_TOOLS`), signs with its own keys, counts `app.ask` and `appAsk:spend:{day}` against `APP_ASSISTANT_DAILY_CAP_USD` (default 2), and is off unless `APP_ASSISTANT_ENABLED=true`. `GET ?door=app` reports its state.
+
 ## MCP server (`mcp.ts`, `lib/mcp/`)
 
 A public MCP server for outside agents, on stateless Streamable HTTP with the official SDK. It lists the compute tools from `lib/agent`: `drawer_fit`, `plan_layout`, `split_plan`, `bin_size_for` and `print_estimate`. They keep nothing, and `plan_layout` also returns its `#plan=` link as a `resource_link`. Each request gets its own server and transport, and carries one JSON-RPC message, so the limits below count tool calls. `vercel.json` gives `/api/mcp` open CORS headers, and a firewall rule lets it past Bot Protection.

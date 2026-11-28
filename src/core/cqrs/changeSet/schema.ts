@@ -16,6 +16,21 @@ const entityRef = z.union([
   z.object({ ref }).strict(),
 ]);
 
+// The descriptions are for the AI model that writes a change set through the
+// Ask AI tool propose_changes. Validation does not read them.
+const binRef = entityRef.describe(
+  '{ id } of a bin in the layout, or { ref } of an earlier addBin.'
+);
+const layerRef = entityRef.describe(
+  '{ id } of a layer in the layout, or { ref } of an earlier addLayer. The stash is { id: "__staging__" }.'
+);
+const categoryRef = entityRef.describe(
+  '{ id } of a category in the layout, or { ref } of an earlier addCategory.'
+);
+const newRef = ref.describe(
+  'A name for what this op adds, so that a later op can use it as { ref }.'
+);
+
 const label = z.string().trim().max(CONSTRAINTS.LABEL_MAX_LENGTH);
 const items = z
   .array(z.string().trim().min(1).max(CONSTRAINTS.ITEM_NAME_MAX_LENGTH))
@@ -23,38 +38,46 @@ const items = z
 
 // Sizes and positions stay plain numbers here: each op runs the real
 // command, whose own schema and placement rules judge them.
-const position = { x: z.number(), y: z.number() };
-const size = { width: z.number(), depth: z.number(), height: z.number() };
+const position = {
+  x: z.number().describe('Grid units from the left edge of the grid to the left side of the bin.'),
+  y: z.number().describe('Grid units from the front edge of the grid to the front of the bin.'),
+};
+const size = {
+  width: z.number().describe('Width in grid units, whole or half.'),
+  depth: z.number().describe('Depth in grid units, whole or half.'),
+  height: z.number().describe('Height in height units.'),
+};
 
 export const changeOpSchema = z.discriminatedUnion('op', [
   z
     .object({
       op: z.literal('addBin'),
-      ref: ref.optional(),
-      layer: entityRef,
+      ref: newRef.optional(),
+      layer: layerRef,
       ...position,
       ...size,
       label: label.optional(),
-      category: entityRef.optional(),
-      items: items.optional(),
+      category: categoryRef.optional(),
+      items: items.optional().describe('What the bin holds.'),
     })
     .strict(),
   z
     .object({
       op: z.literal('updateBin'),
-      bin: entityRef,
+      bin: binRef,
       set: z
-        .object({ ...size, label, category: entityRef, items })
+        .object({ ...size, label, category: categoryRef, items })
         .partial()
         .strict()
-        .refine((set) => Object.keys(set).length > 0, 'Name at least one field to change.'),
+        .refine((set) => Object.keys(set).length > 0, 'Name at least one field to change.')
+        .describe('Only the fields to change.'),
     })
     .strict(),
-  z.object({ op: z.literal('moveBin'), bin: entityRef, layer: entityRef, ...position }).strict(),
-  z.object({ op: z.literal('stashBin'), bin: entityRef }).strict(),
-  z.object({ op: z.literal('deleteBin'), bin: entityRef }).strict(),
-  z.object({ op: z.literal('addCategory'), ref, name: label.min(1) }).strict(),
-  z.object({ op: z.literal('addLayer'), ref }).strict(),
+  z.object({ op: z.literal('moveBin'), bin: binRef, layer: layerRef, ...position }).strict(),
+  z.object({ op: z.literal('stashBin'), bin: binRef }).strict(),
+  z.object({ op: z.literal('deleteBin'), bin: binRef }).strict(),
+  z.object({ op: z.literal('addCategory'), ref: newRef, name: label.min(1) }).strict(),
+  z.object({ op: z.literal('addLayer'), ref: newRef }).strict(),
 ]);
 
 /**

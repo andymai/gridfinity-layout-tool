@@ -16,6 +16,7 @@
  *   session:{token}                 → user session record (sync feature)
  *   scan:session:{token}            → ephemeral phone-scan handoff (traced SVG)
  *   docsAsk:spend:{YYYY-MM-DD}      → USD that Ask AI spent on one UTC day, 2-day TTL
+ *   appAsk:spend:{YYYY-MM-DD}       → the same for Ask AI in the app, which has its own cap
  *   identity:{saltedHash}           → OAuth identity → user id (see userIdentityKey)
  *   users:{uid}:sessions            → SET of session tokens owned by a user
  *   users:{uid}:profile             → user profile (email, provider, etc.)
@@ -123,6 +124,10 @@ export function scanSessionKey(token: string): string {
 
 export function docsAskSpendKey(day: string): string {
   return `docsAsk:spend:${day}`;
+}
+
+export function appAskSpendKey(day: string): string {
+  return `appAsk:spend:${day}`;
 }
 
 /** Calls to the public MCP server in one UTC day, for its daily cap. */

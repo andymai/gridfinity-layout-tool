@@ -4,7 +4,13 @@
  * correct answer rests on; the judge reads them. For the gap group they are
  * the nearest pages, which the docs do not answer from.
  */
-import type { MyLayoutData, MyLayoutsData, MySettingsData } from '../../api/lib/agent/index.js';
+import type {
+  MyLayoutData,
+  MyLayoutsData,
+  MySettingsData,
+  PlanLayoutInput,
+} from '../../api/lib/agent/index.js';
+import { WORKBENCH } from './appFixtures';
 import type { OpenDrawer } from './checks';
 import { DESK, INJECTED, LAYOUTS, SMALL_PRINTER } from './readerFixtures';
 
@@ -18,7 +24,8 @@ export type Group =
   | 'plan'
   | 'yours'
   | 'calc'
-  | 'drawer';
+  | 'drawer'
+  | 'app';
 
 /** What the reader's browser holds, and how they answer each request to read it. */
 export interface ReaderFixture {
@@ -26,13 +33,22 @@ export interface ReaderFixture {
   readonly layouts?: MyLayoutsData;
   readonly layout?: MyLayoutData;
   readonly settings?: MySettingsData;
+  /**
+   * App door only: the layout open in the app, built by plan_layout's own
+   * code, which reads and changes go through. Overrides `layout`.
+   */
+  readonly open?: PlanLayoutInput;
+  /** App door only: what the reader does with each preview of changes. */
+  readonly changes?: 'apply' | 'decline';
 }
 
 export interface GoldenCase {
   readonly id: string;
   readonly group: Group;
-  /** The docs page the reader is on. */
+  /** The docs page the reader is on, or for the app door its place in the app. */
   readonly page: string;
+  /** The panel that asks. Absent for the docs. */
+  readonly door?: 'app';
   readonly locale?: string;
   readonly turns: readonly string[];
   readonly sources: readonly string[];
@@ -58,6 +74,7 @@ export const GROUP_RULES: Readonly<Record<Group, string>> = {
     "The answer is in the language of the question. When the question has no clear language, such as a bare size, the answer is in the language of the chat so far, or in the app's language when the chat has no earlier turn. Each control reads as the reader's app shows it: in a non-English app, its label in the app's language and then the English label in parentheses; in an English app, the English label alone. The facts are correct.",
   followup:
     'The second answer uses the first turn: it reads as a reply in the same conversation, without asking the reader to repeat the context.',
+  app: 'The reader asks from the panel inside the app. When they ask for a change to their open layout, it reads the layout and calls propose_changes, with bins, layers and categories named by the ids that the read gave. Its answer matches what the tool result says happened: it claims a change only when the reader applied it, and when the reader declined or the app refused, it says that the layout did not change. It does not propose the same changes again after a decline. It never tells the reader to open the app. A question that asks for no change gets an answer from the docs and no propose_changes call.',
 };
 
 export const GOLDEN: readonly GoldenCase[] = [
@@ -883,6 +900,74 @@ export const GOLDEN: readonly GoldenCase[] = [
     reader: { answer: 'allow', layouts: LAYOUTS },
     expect:
       'Lists the saved layouts and names Garage screws, with 41 bins, as the one with the most.',
+  },
+  // The app door: the panel inside the app, which can change the open layout.
+  {
+    id: 'A01',
+    group: 'app',
+    door: 'app',
+    page: 'app/layout',
+    turns: ['Add a bin for my M3 screws to this drawer.'],
+    sources: ['/layouts/placing-bins'],
+    reader: { answer: 'allow', open: WORKBENCH, changes: 'apply' },
+    expect:
+      'Reads the open Workbench drawer layout, then proposes one small bin for M3 screws, such as 1 x 1, in a free spot on layer 1, in the Screws category. The reader applies it. The answer says that the bin was added and that one Undo reverts it.',
+  },
+  {
+    id: 'A02',
+    group: 'app',
+    door: 'app',
+    page: 'app/layout',
+    turns: ['Put the pliers bin in the stash for now.'],
+    sources: ['/layouts/placing-bins'],
+    reader: { answer: 'allow', open: WORKBENCH, changes: 'apply' },
+    expect:
+      'Reads the layout and proposes a change that moves the Pliers bin, by its id, to the stash. The reader applies it, and the answer says that Pliers is now in the stash.',
+  },
+  {
+    id: 'A03',
+    group: 'app',
+    door: 'app',
+    page: 'app/layout',
+    turns: ['Add two 1 x 1 bins for batteries.'],
+    sources: ['/layouts/placing-bins'],
+    reader: { answer: 'allow', open: WORKBENCH, changes: 'decline' },
+    expect:
+      'Reads the layout and proposes two 1 x 1 battery bins in free spots. The reader declines. The answer says that the layout did not change, and it does not propose the bins again.',
+  },
+  {
+    id: 'A04',
+    group: 'app',
+    door: 'app',
+    page: 'app/layout',
+    turns: ['Add a 4 x 3 bin for my soldering iron.'],
+    sources: ['/layouts/placing-bins'],
+    reader: { answer: 'allow', open: WORKBENCH, changes: 'apply' },
+    expect:
+      'Reads the layout. No free 4 x 3 area is left on layer 1, so the answer says so, without a claim that the bin was added. It may offer room another way, such as the stash or a smaller bin, or a change that the reader applies, and it describes only what the tool results say happened.',
+  },
+  {
+    id: 'A05',
+    group: 'app',
+    door: 'app',
+    page: 'app/layout',
+    turns: ['Where do I set the size of my print bed?'],
+    sources: ['/layouts/drawer-setup', '/concepts/print-bed-fit'],
+    reader: { answer: 'allow', open: WORKBENCH, changes: 'apply' },
+    expect:
+      'Explains where the print bed size is set, from the docs, with the control labels. It proposes no change, and it does not tell the reader to open the app.',
+  },
+  {
+    id: 'A06',
+    group: 'app',
+    door: 'app',
+    page: 'app/layout',
+    locale: 'de',
+    turns: ['Füge bitte ein Fach für Kabelbinder hinzu, 2 x 1.'],
+    sources: ['/layouts/placing-bins'],
+    reader: { answer: 'allow', open: WORKBENCH, changes: 'apply' },
+    expect:
+      'In German. Reads the layout and proposes one 2 x 1 bin for zip ties in a free spot. The reader applies it, and the answer says in German that the bin was added.',
   },
   {
     id: 'C01',

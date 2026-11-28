@@ -133,6 +133,7 @@ describe('runAgent', () => {
   const layoutTool: ClientTool = {
     kind: 'read',
     label: () => 'Reading your layout',
+    step: { key: 'readLayout' },
     output: z.object({}),
     format: () => '',
   };
@@ -240,6 +241,11 @@ describe('runAgent', () => {
       'thinking',
       'text',
       'message',
+    ]);
+    // A panel that translates labels gets each one as a key and its values.
+    expect(events.filter((e) => e.type === 'step')).toMatchObject([
+      { key: 'placeholder.read' },
+      { key: 'readPage', vars: { group: 'Layouts', title: 'Work in layers' } },
     ]);
     expect(result).toMatchObject({
       answer: 'Layers stack bins.',
