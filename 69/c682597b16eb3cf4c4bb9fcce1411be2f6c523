@@ -1,0 +1,342 @@
+src/features/supporters/year/components/TileFill/index.ts
+  s_cbdce95362cca9::t_2b5346333bc8a9 1
+src/features/supporters/year/look/palettes.ts
+  s_cbdce95362cca9::t_bd6c38ee5b806a 1-25,27-73,78-124
+  s_cbdce95362cca9::t_fdaa958826e4d6 74-77
+  s_cbdce95362cca9::t_cb28941074ec1e 26
+src/features/supporters/year/utils/yearCards.ts
+  s_cbdce95362cca9::t_6b74a8ddb8b13f 1,23-25,27-28,31-51,56-74,94-104
+  s_cbdce95362cca9::t_2a6c5ca021b030 105
+src/features/supporters/year/look/tiles.test.ts
+  s_cbdce95362cca9::t_cc9a056874c32e 1-54
+src/features/supporters/year/cards/introScene.ts
+  s_cbdce95362cca9::t_9e94b7d220d1e3 1-4,6-18,20-22,29-43,45-62,70-74
+  s_cbdce95362cca9::t_cb6c748b4e261b 5,19,23-28,44,63-69
+src/features/supporters/year/utils/yearCards.test.ts
+  s_cbdce95362cca9::t_806e94403cd8bc 60-74
+src/features/supporters/year/look/year.css
+  s_cbdce95362cca9::t_8fc1ce9a036ef5 11-75
+  s_cbdce95362cca9::t_462de4339ec6fa 1-10
+src/features/supporters/year/cards/monthScene.ts
+  s_cbdce95362cca9::t_e4055b89178286 1-6,8-14,16-18,21-59,68-84,87-95,103,105-107,109-115,117-120,122-125,131-135,137-143,145-146
+  s_cbdce95362cca9::t_e2ded852b1b8d9 15,19-20,104,108,116,121,126-130,136,144
+  s_cbdce95362cca9::t_1c4676e27bbef7 7,60-67,85-86,96-102
+src/features/supporters/year/hooks/useShareImage.ts
+  s_cbdce95362cca9::t_75dcb8799974cc 50
+  s_cbdce95362cca9::t_c7e394f2bd8839 12-39,41-44,47
+  s_cbdce95362cca9::t_687dbbe4a680eb 2,6-11,45-46,48-49,53-55,61,69-70,73,75,77,84,86
+  s_cbdce95362cca9::t_ab0671ef1c2a65 3
+src/features/supporters/year/cards/thanksScene.ts
+  s_cbdce95362cca9::t_df29266894bef1 1-5,18-27,30-54,63-73,77-84,86-88,90-93,98-103,105-111,113-114
+  s_cbdce95362cca9::t_9138a916f2909f 6-8,10,12,14-17,28-29,55-62,74-76,85,89,94-97,104,112
+  s_cbdce95362cca9::t_e5c5e28220ba41 9,11,13
+src/features/supporters/year/components/SpinningBin/assembly.ts
+  s_cbdce95362cca9::t_1b46275002bcbb 44-45
+  s_cbdce95362cca9::t_4f99b549911130 60-62,65-70
+src/features/supporters/year/components/YearCardView/YearCardView.tsx
+  s_cbdce95362cca9::t_2bdb22ef1bf4c1 98-99
+  s_cbdce95362cca9::t_f9222e413123ed 135-136,138-141,143,155
+  s_cbdce95362cca9::t_bf05461d7276bb 220-222
+  s_cbdce95362cca9::t_50fe274c2fbb6d 5,9,38
+  s_cbdce95362cca9::t_d675f125999775 1-4,6-8,10,12,15,19,21-25,28,30,32-33,40,72-73,75-80,122-126,131-134,137,142,144-154,156-159,161-180,183-185,188-190,192-209,211,213,215-218,224-225,227-234,236-238,240-255,257-266,271-278,281-303,305-311,313-317,319-327,331,333-341,343-345,349-352,355-356,361-365,368-370,372-373,375-389,391-402,416-417,422-426,428-429,432,434-443,445-486
+  s_cbdce95362cca9::t_b1cafcf213d339 256
+  s_cbdce95362cca9::t_e47f0a68d94e88 160
+  s_cbdce95362cca9::t_b1086366cbec55 329-330
+  s_cbdce95362cca9::t_4356ccb7a930e2 84-97,100-119
+  s_cbdce95362cca9::t_9f2a4aaf252c06 41-42
+  s_cbdce95362cca9::t_09f7adc0f1d076 20
+  s_cbdce95362cca9::t_a72887ff1f8409 31
+  s_cbdce95362cca9::t_c9935e514a37d4 11
+  s_cbdce95362cca9::t_2e900d84fbc391 34
+  s_cbdce95362cca9::t_ac03360128e384 191
+  s_cbdce95362cca9::t_30b5d6eda4d13d 212
+  s_cbdce95362cca9::t_a999014a6b6a8b 214
+  s_cbdce95362cca9::t_54c5bbfefdcc29 219
+  s_cbdce95362cca9::t_0022ae84191086 226
+  s_cbdce95362cca9::t_63d8f45fa19ca3 235
+  s_cbdce95362cca9::t_13beceb06114f7 239
+  s_cbdce95362cca9::t_ccf5078dc2baaa 304
+  s_cbdce95362cca9::t_e2b1111cf921a8 328
+  s_cbdce95362cca9::t_e0d71cb986fb64 371
+  s_cbdce95362cca9::t_739d6e1fc7327c 374
+  s_cbdce95362cca9::t_e25b8de51b3d21 433
+  s_cbdce95362cca9::t_c62114baead00a 444
+src/features/supporters/year/hooks/useYearFonts.ts
+  s_cbdce95362cca9::t_c3addda8ed9b0e 1-2,5-10,14-15,21-22,24,27,33
+  s_cbdce95362cca9::t_7be1660deffe05 34-35
+  s_cbdce95362cca9::t_e94a0e082c6109 3-4,11-13,16-18,20,23,25-26,28-32,36
+  s_cbdce95362cca9::t_6546c9f73b3fe2 19
+src/features/supporters/year/utils/sampleYear.ts
+  s_cbdce95362cca9::t_2b684713aa814f 72-89,96
+src/features/supporters/year/components/YearCardView/cardCopy.ts
+  s_cbdce95362cca9::t_8c52c98835d834 162-169,171-192,194-198,200,204-207
+  s_cbdce95362cca9::t_7a64da252cf3ec 208
+src/features/supporters/year/look/splitCopy.test.ts
+  s_cbdce95362cca9::t_802d6b894b2f80 1-68
+  s_5332262e639a7a::t_d946579dd04c43 69-71
+src/features/supporters/year/look/splitCopy.ts
+  s_cbdce95362cca9::t_f6996d90b5fbef 1-69
+src/features/supporters/year/components/YearCardView/YearCardView.test.tsx
+  s_cbdce95362cca9::t_747abc26ce39f9 106
+  s_cbdce95362cca9::t_b27fa79ef874f2 122-125
+  s_cbdce95362cca9::t_48d1d329e6acb8 137-139
+  s_cbdce95362cca9::t_7547b9ec2ba1c0 1,8,10,16,18,76,93,109-118,120,133,135-136,142,144-146,155,164,174,180-183,225,237,248-250,263,266-267
+  s_cbdce95362cca9::t_63a3e2fd605ff1 102-105,107-108,177,188,194-195,201,212,222,227-228,233-234
+  s_cbdce95362cca9::t_7be1660deffe05 128
+src/features/supporters/year/look/typeset.test.ts
+  s_cbdce95362cca9::t_0400410308e125 1-13,15-33,36,38-41,43-62
+  s_cbdce95362cca9::t_aaf98f35a19b11 34-35,37
+  s_cbdce95362cca9::t_d4181a88600ee6 14
+  s_cbdce95362cca9::t_aed89970578211 42
+src/features/supporters/year/components/YearStage/YearStage.tsx
+  s_cbdce95362cca9::t_5fb0d0bf7512e0 27
+  s_cbdce95362cca9::t_20e7b9da853ca3 31
+  s_cbdce95362cca9::t_496adacea93dc0 72
+  s_cbdce95362cca9::t_b4c4dda0d54e2a 3
+  s_cbdce95362cca9::t_e72e970614f219 5-7,10-11,13,22-23,25,30,34-35,37,41,54-55
+  s_cbdce95362cca9::t_6ad2f603f41a00 42
+src/features/supporters/year/utils/shareCard.test.ts
+  s_cbdce95362cca9::t_95ffdd1fd16523 1-4,9,12,14-15,21-31,40,45-46,50-72,75-77,79-82
+src/features/supporters/year/look/fonts.ts
+  s_cbdce95362cca9::t_076e83d143207f 70-74,76
+  s_cbdce95362cca9::t_531b46c92d64e3 1-69,75,77-115
+src/features/supporters/year/look/printLayers.test.ts
+  s_cbdce95362cca9::t_f5dbc0364ba802 1-54
+src/features/supporters/year/cards/digitGlyphs.ts
+  s_cbdce95362cca9::t_af83fa843ddf0b 1-3,165-168,171-172,174,178-198,203-207,225-240,243-252
+  s_cbdce95362cca9::t_3391268aeada02 4,170
+  s_cbdce95362cca9::t_8eb716206a90bb 5-164,169,173,175-177,241-242
+  s_cbdce95362cca9::t_4fb91de7e5e70a 199-202,208-224
+src/features/supporters/year/utils/storyTimeline.ts
+  s_cbdce95362cca9::t_356b3099bb9ce9 17-18,20,43,54-87
+  s_cbdce95362cca9::t_1ca46dc63eb4ef 88
+src/features/supporters/year/cards/scene.ts
+  s_cbdce95362cca9::t_4ee4a467e8d37a 132-133,135-136,138
+  s_cbdce95362cca9::t_5287f0e964f12e 1-129,139-153,155-156,158-159,202-207,209-212,214-219
+  s_cbdce95362cca9::t_7b8d26245a6a5e 131,134,154,160-161,163-166,168-169,171-182,184-201
+  s_cbdce95362cca9::t_044142c08fe810 130,137,157,162,167,170,183,208,213
+src/features/supporters/year/cards/exportsScene.ts
+  s_cbdce95362cca9::t_64280c6f4d033b 1-8,10,12,15-44,53-67,70-72,74-77,87-93,95-125,127-129,137-142,146-148
+  s_cbdce95362cca9::t_2c73ac02c0e65a 9,11,13-14,45-52,68-69,73,78-86,94,126,130-136,143-145
+src/features/supporters/year/components/Your2026Page/Your2026Page.tsx
+  s_cbdce95362cca9::t_70765e6d07cc41 170-172
+  s_cbdce95362cca9::t_7cc4cb8e45f6eb 17-18,24-26,34-35,54-58,60-63,65-67,69-70,72-82,84-97,190-191,193-198,200,202-232,234-236,238-243,278,287-289,291-296,305,320,342,346-347
+  s_cbdce95362cca9::t_57906dc7c3a7ef 31
+  s_cbdce95362cca9::t_e7519ffdc9cc88 59
+  s_cbdce95362cca9::t_fff6c2cf980672 64
+  s_cbdce95362cca9::t_daed1a3f3c9fb4 233
+src/features/supporters/year/components/TileFill/TileFill.test.tsx
+  s_cbdce95362cca9::t_a732a534e8b68d 1-50
+src/features/supporters/year/components/TileFill/TileFill.tsx
+  s_cbdce95362cca9::t_c31b6be218ecfa 24-27,30
+  s_cbdce95362cca9::t_0035c8bd868f6d 1-23,28-29,31-46,51-73,75-84
+  s_cbdce95362cca9::t_fe88d7ca21387c 74
+  s_cbdce95362cca9::t_b223e3dd910e57 47-50
+src/features/supporters/year/components/StoryPlayer/StoryPlayer.tsx
+  s_cbdce95362cca9::t_2fe5bf94f033b4 232-241,245,252-253,258,275-276,294-317
+  s_cbdce95362cca9::t_f7b03d4e1a620c 256,259
+  s_cbdce95362cca9::t_dc0ad80c3fee3e 6-8,15,18-19,25,37-41,49-50,72,83-93,96,109,111,126,138-139
+src/features/supporters/year/components/YearStage/YearStage.test.tsx
+  s_cbdce95362cca9::t_20da199feec822 9-13,23-33
+  s_cbdce95362cca9::t_029f8a2da44828 34
+src/features/supporters/year/components/CardFrame/frameSize.ts
+  s_cbdce95362cca9::t_443930d5e4cd18 1-30
+src/features/supporters/year/utils/storyTimeline.test.ts
+  s_cbdce95362cca9::t_f39c9fcaa72f9e 41-86
+  s_cbdce95362cca9::t_1a5e4ab51c226b 2-9
+src/features/supporters/year/cards/digitGlyphs.test.ts
+  s_cbdce95362cca9::t_95862f18e34504 1-64
+  s_5332262e639a7a::t_47dbb1390d4778 65-66
+src/features/supporters/year/cards/areaScene.ts
+  s_cbdce95362cca9::t_db00b3773e34d7 1-209
+  s_cbdce95362cca9::t_6d1c2c14fa7750 210-212
+  s_aa33ca2b81c6d0::t_fe0b130200e82a 213-222
+package.json
+  s_cbdce95362cca9::t_c8de2c29e7b497 133-134
+src/features/supporters/year/look/printLayers.ts
+  s_cbdce95362cca9::t_654f9d6aa79c33 1-79
+src/features/supporters/year/components/SpinningBin/SpinningBin.tsx
+  s_cbdce95362cca9::t_3cfa239fd1e58f 108,110-112,116,122-126,128
+  s_cbdce95362cca9::t_618ad4cce6a300 1-3,7-14,17,19-25,31-45,48-58,67,71-77,81-86,89-101,106-107,109,113-115,127,129-139,141-157,161-162,165,167,169-178,181,186-189,191-192,196-197,199-200,202-204,206-209
+  s_cbdce95362cca9::t_eb62f472a46040 158-160,163-164,166
+  s_cbdce95362cca9::t_a757c563ce6780 117-121
+src/features/supporters/year/look/motion.ts
+  s_cbdce95362cca9::t_7d302dad0b1803 1-147
+src/features/supporters/README.md
+  s_cbdce95362cca9::t_2c94a1fe5bf22f 213,225-227,234-235
+src/features/supporters/year/cards/sizeScene.ts
+  s_cbdce95362cca9::t_eb148e949ae945 18
+  s_cbdce95362cca9::t_e961876cc64da4 1-17,19-57,64,78-85,89-97,105-117,119-123
+  s_cbdce95362cca9::t_7be1660deffe05 86-88
+  s_cbdce95362cca9::t_b130f4f2e8b288 58-63,65-77,98-104,118
+src/features/supporters/year/cards/drawerScene.test.ts
+  s_cbdce95362cca9::t_3395b2ffd811b0 1-65
+src/features/supporters/year/cards/drawerScene.ts
+  s_cbdce95362cca9::t_36ce59af863c31 96-104,135
+  s_cbdce95362cca9::t_dc9a8e4225b831 171
+  s_cbdce95362cca9::t_7be1660deffe05 92,94-95,205
+  s_cbdce95362cca9::t_07a925033673e7 8
+  s_cbdce95362cca9::t_a757c563ce6780 137-160
+  s_cbdce95362cca9::t_678eb8e9389cbf 1-7,9-46,53-91,105-122,131-134,163-170,172-183,186-196,200-204,206-211,269-273,277,279,281-282,284,286,293-294,296,298-303
+  s_cbdce95362cca9::t_747abc26ce39f9 93
+  s_cbdce95362cca9::t_0a171f99d15a1b 47-52,123-130,136,161-162,184-185,197-199,212-251,253-254,260-268,274-276,278,280,283,285,287-292,295,297
+  s_cbdce95362cca9::t_9b6c3648dc56ab 252,255-259
+src/features/supporters/year/look/motion.test.ts
+  s_cbdce95362cca9::t_facd7450cedf4c 1-93
+src/features/supporters/year/look/palettes.test.ts
+  s_cbdce95362cca9::t_48c249d0c29408 1-54
+src/features/supporters/year/hooks/useShareImage.test.ts
+  s_cbdce95362cca9::t_42c299609a6565 3,6,8-10,13-15,21-22,25-44,46-58,61-62,67,76-78,80,84-91,93,95,97-105,108-111,113
+src/features/supporters/year/cards/binsScene.ts
+  s_cbdce95362cca9::t_551d647c743242 1-22,25-35,38-51,53,59-62,64-101,135-137,142-150,152-164,166-174,181-188,190-198
+  s_cbdce95362cca9::t_6bd7a85868648d 23-24,36-37,52,54-58,63,102-134,138-141,175-180,189
+  s_cbdce95362cca9::t_e5f03c3f44e73b 151,165
+src/features/supporters/year/cards/designsScene.ts
+  s_cbdce95362cca9::t_e10908c8ffaed8 6-9,11,13,15-18,27-30,77-84,87-88,106,110,115-117,126-128,147
+  s_cbdce95362cca9::t_e45e0bb9e886d4 1-5,19-26,31-76,85-86,89-105,107-109,111-114,118-125,129-146,148-169
+  s_cbdce95362cca9::t_6f8ecf56c92246 10,12,14
+src/features/supporters/year/cards/modelScenes.ts
+  s_cbdce95362cca9::t_0123249bcfaa4f 169
+  s_cbdce95362cca9::t_a6509eaf9c03ed 21,23,25,107-111,172,176,181-182,229,231-242,244,248-249,254,256-264
+  s_cbdce95362cca9::t_5fb1a142b9fcb9 1-20,22,24,26-63,65-71,73-79,81-106,112-130,133-141,143-168,170,173-175,177-180,183-199,201-225,227-228,230,243,245-247,250-253,255,265-281,283-300
+  s_cbdce95362cca9::t_3391268aeada02 171,226
+  s_cbdce95362cca9::t_38fb0269f132fe 64,72,80,131-132,142,200,282
+src/features/supporters/year/components/YearCardView/spinningBinChunk.ts
+  s_cbdce95362cca9::t_30deb791332043 1-10
+src/features/supporters/year/cards/paint.ts
+  s_cbdce95362cca9::t_f943a2f3ffc856 225-234
+  s_cbdce95362cca9::t_e69531007f5833 1-7,81-224,239-256,260-262
+  s_cbdce95362cca9::t_e941f3d69f065f 48-80
+  s_cbdce95362cca9::t_defacfc1c58a84 45-47
+  s_cbdce95362cca9::t_994ad20349c11d 235-238
+  s_cbdce95362cca9::t_f802908df38994 257-259
+  s_cbdce95362cca9::t_804b420eccb602 8-44
+  s_cbdce95362cca9::t_39b7293577efbc 263-300
+src/features/supporters/year/components/CardFrame/index.ts
+  s_cbdce95362cca9::t_a303c390eed659 1-2
+src/features/supporters/year/components/SpinningBin/SpinningBin.test.tsx
+  s_cbdce95362cca9::t_70df457b559913 5,10-12,14-16,18-19,39-50,53,57-62
+  s_cbdce95362cca9::t_af78c65f2c0ec1 23-26,28
+  s_5332262e639a7a::t_937d8f344ed716 13,17,27
+src/features/supporters/year/cards/summaryScene.ts
+  s_cbdce95362cca9::t_1c4676e27bbef7 6,8-18,46-52,67-78,125-133
+  s_cbdce95362cca9::t_5470a0abaea7a8 1-5,7,19-45,53-66,79-124,134-150
+src/features/supporters/year/components/Your2026Page/Your2026Page.test.tsx
+  s_cbdce95362cca9::t_3269bc39ce70f8 60-61
+  s_cbdce95362cca9::t_c7940009562c62 72
+src/features/supporters/year/look/typeset.ts
+  s_cbdce95362cca9::t_222242c33c2a0d 71
+  s_cbdce95362cca9::t_f50b987204eefd 109
+  s_cbdce95362cca9::t_7199d6230400a0 182-183,190,193,196-200,202,213-214,217-219,221-225,232,234-251,260,264-265
+  s_cbdce95362cca9::t_7be1660deffe05 80-81,83,85,87-92
+  s_cbdce95362cca9::t_64b2e177144e8f 149
+  s_cbdce95362cca9::t_9d08720f50ad9c 12-13,16-17,20-24,41,99
+  s_cbdce95362cca9::t_23b0b45e17f37e 1-11,14-15,18-19,25-40,42-44,46-51,53-58,60-69,73-75,77-79,82,84,86,93-98,100-105,107-108,111-129,131-148,150-181,184-189,191-192,194-195,201,203-212,215-216,220,226-231,233,252-259,261-263,266
+  s_cbdce95362cca9::t_af369894a44d51 130
+  s_cbdce95362cca9::t_94f67e9af710ba 70,72,76,106,110
+  s_cbdce95362cca9::t_6cf8ac8e3b3abd 45,52,59
+src/features/supporters/year/components/CardFrame/CardFrame.tsx
+  s_cbdce95362cca9::t_a303c390eed659 1,3,45-47
+  s_cbdce95362cca9::t_e4b4a54fef7a58 2,4-44,48-78
+src/features/supporters/year/cards/drawersScene.ts
+  s_cbdce95362cca9::t_28de6b2dd8acd4 1-50,52-78,87-88,97-103,105-106,110-118,121-162
+  s_cbdce95362cca9::t_03d0115ebe879b 51
+  s_cbdce95362cca9::t_a3722f7a5cd874 104
+  s_cbdce95362cca9::t_e81dc250a196f4 79-86,89-96,107-109,119-120
+src/features/supporters/year/look/tiles.ts
+  s_cbdce95362cca9::t_405b4a59c574b4 36
+  s_cbdce95362cca9::t_30e5ecd5570412 33-34
+  s_cbdce95362cca9::t_cc51a2354a837e 1-22,24-32,35,37-81
+  s_5332262e639a7a::t_e4de2b93b20107 23
+src/features/supporters/year/look/categoryShades.test.ts
+  s_cbdce95362cca9::t_ffc7f2fa43da71 1-78
+src/features/supporters/year/components/StoryPlayer/StoryPlayer.test.tsx
+  s_cbdce95362cca9::t_cd29f25be55f1b 1,3,6-15,111,113-124,128-139
+  s_cbdce95362cca9::t_a757c563ce6780 125-127
+src/features/supporters/year/components/YearStage/index.ts
+  s_cbdce95362cca9::t_1df6e4207b311d 1
+src/features/supporters/year/cards/filamentScene.ts
+  s_cbdce95362cca9::t_121408fbbfcaaa 1-10,12-13,16-17,19-43,45-79,81-83,85,87-95,97-99,101-104,106-108,110-113,119-124,126-154,156-180
+  s_cbdce95362cca9::t_5cbd021a77bafc 84,86
+  s_cbdce95362cca9::t_f18d03773ebeb3 11,14-15,96,100,105,109,114-118,125,155
+  s_cbdce95362cca9::t_89bbc139f3766e 18,44,80
+src/features/supporters/year/components/ShareButton/ShareButton.tsx
+  s_cbdce95362cca9::t_9232d33f7af197 36
+src/features/supporters/year/components/CardFrame/CardFrame.test.tsx
+  s_cbdce95362cca9::t_1e49e400119027 1-2,5-32
+  s_cbdce95362cca9::t_5e6f319ddb6f66 3-4
+src/features/supporters/year/utils/loadImage.ts
+  s_cbdce95362cca9::t_8f0a34f7b67366 1-9
+src/features/supporters/year/look/color.ts
+  s_cbdce95362cca9::t_a707d5bee9d9f6 85
+  s_cbdce95362cca9::t_c9e5c4ec3dcb1a 1-23,27-36,41,44-84,86-123
+  s_cbdce95362cca9::t_b8fdbaedea6c5f 24-26
+  s_cbdce95362cca9::t_0f22ad064a59c1 37-40,42-43
+src/features/supporters/year/hooks/useYearFonts.test.ts
+  s_cbdce95362cca9::t_671ad1b771e6b1 1-30,32-42
+  s_cbdce95362cca9::t_7be1660deffe05 31
+src/features/supporters/year/cards/buildScene.ts
+  s_cbdce95362cca9::t_717ec48c01641f 1-55
+src/features/supporters/year/cards/sceneFixtures.testUtils.ts
+  s_cbdce95362cca9::t_a757c563ce6780 28-31
+  s_cbdce95362cca9::t_a6d15108dc15c5 1-11,13-16,19-27,32-59,65-100
+  s_cbdce95362cca9::t_94f67e9af710ba 12,17-18,60-64
+src/features/supporters/year/cards/buildScene.test.ts
+  s_cbdce95362cca9::t_d8cd32c76bcf8b 50-51
+  s_cbdce95362cca9::t_ce9ac9bc864dcf 1-33,39-49,52-77,85-95,97-161
+  s_cbdce95362cca9::t_747abc26ce39f9 78-84,96
+  s_cbdce95362cca9::t_178a28aa7055e1 34-38
+src/features/supporters/year/look/categoryShades.ts
+  s_cbdce95362cca9::t_3391268aeada02 90-91
+  s_cbdce95362cca9::t_7be1660deffe05 89,92,96
+  s_cbdce95362cca9::t_502425fbf44275 83,85
+  s_cbdce95362cca9::t_ca667db4f3f8b4 1-82,84,86-88,93-95,97-121
+src/features/supporters/year/cards/typeScene.ts
+  s_cbdce95362cca9::t_4a18a4ad7ef0bd 1-220
+  s_cbdce95362cca9::t_fefd95a572d635 221-223
+  s_aa33ca2b81c6d0::t_7c8441dc238f7c 224-268
+src/features/supporters/year/utils/shareCard.ts
+  s_cbdce95362cca9::t_cddc8bb2b6be7d 126
+  s_cbdce95362cca9::t_21313a98c0d14f 33
+  s_cbdce95362cca9::t_74a920646d8854 1,3,6-9,12,14-16,21,24-27,30-32,34-53,56-59,61,63-65,67-86,89,92,96-97,99,102-104,125,127-134
+  s_cbdce95362cca9::t_219bfbd8f84a12 2,105-112
+  s_cbdce95362cca9::t_a757c563ce6780 113-121
+  s_cbdce95362cca9::t_ed1315e4a69238 4
+  s_cbdce95362cca9::t_6398e929755101 122
+pnpm-lock.yaml
+  s_cbdce95362cca9::t_931ea0d3f90836 75-80,1285-1290,7713-7716
+src/features/supporters/year/components/YearCardView/index.ts
+  s_cbdce95362cca9::t_342b73ea85090a 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "69c682597b16eb3cf4c4bb9fcce1411be2f6c523",
+  "prompts": {},
+  "sessions": {
+    "s_5332262e639a7a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5cafc310-b19c-4b54-8739-6ec8a3669200",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_aa33ca2b81c6d0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a27dd587232bc67e3",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
