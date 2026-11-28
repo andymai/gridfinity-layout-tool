@@ -95,6 +95,9 @@ const MESH_CACHE_VERSION = 'v31';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin33`: on a grid smaller than 42mm, detachable feet drill the corners an
+ * integral foot drills in the same cell, and none when the cell centres its
+ * hole.
  * `bin31`: a foot hole too wide for its spec corner (over about 8.8mm, 7.2mm
  * chamfered) moves in until its mouth keeps a printable wall to the flank.
  * `bin30`: with corner-only holes, a half foot at the bin's edge drills its
@@ -154,7 +157,7 @@ const MESH_CACHE_VERSION = 'v31';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin31';
+const BIN_MESH_REVISION = 'bin33';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for
