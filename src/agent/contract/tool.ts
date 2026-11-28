@@ -12,6 +12,11 @@ export interface ToolOutput {
   readonly content: string;
 }
 
+export interface DrawerFitOutput extends ToolOutput {
+  /** The `?drawer=` link, or null when nothing fits. Kept out of `content`: each door decides whether the model sees it. */
+  readonly drawerLink: string | null;
+}
+
 export interface PlanLayoutOutput extends ToolOutput {
   readonly plan: PlanView | null;
 }

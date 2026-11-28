@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { PlanView } from '@/agent/contract';
-import { FONT, planCaption, planDescription, planMapView } from '../askAi/planMap';
+import { FONT, planCaption, planDescription, planMapView, planOpenLabel } from '../askAi/planMap';
 
 const props = defineProps<{ plan: PlanView }>();
 
 const map = computed(() => planMapView(props.plan));
 const caption = computed(() => planCaption(props.plan));
+const openLabel = computed(() => planOpenLabel(props.plan));
 const description = computed(() => planDescription(props.plan));
 </script>
 
@@ -69,7 +70,7 @@ const description = computed(() => planDescription(props.plan));
       <li v-for="(line, i) in description" :key="i">{{ line }}</li>
     </ul>
     <a class="docs-plan-drawer-button open" :href="plan.link" target="_blank" rel="noopener">
-      Open in the layout editor
+      {{ openLabel }}
       <svg viewBox="0 0 16 16" aria-hidden="true">
         <path d="M6 3.5H3.5v9h9V10M9 3.5h3.5V7M12.5 3.5 7 9" />
       </svg>

@@ -92,6 +92,12 @@ const PLAN_LAYOUT_SCHEMA = inputSchema(planLayoutInput);
 const ASKS_FIRST =
   "It runs in the reader's browser and asks them first, so they may decline. What it returns is their own data.";
 
+// Per-call guidance lives in the tool result, not SYSTEM_PROMPT, whose bytes
+// head every cached request. The `?drawer=` link stays out of it: the plan map
+// is the one way into the app that an answer shows.
+export const OPEN_DRAWER_HINT =
+  'So the reader can open this drawer in the app: pick the one grid that you recommend, whole or half units. Call plan_layout with this drawer as the reader measured it (width, depth, the height if they gave one, and their unit), bins: [] unless they named things to store, and halfGrid: true only for the half-unit grid. In the answer, say plainly which grid you recommend and name its size, then end with the [[plan:…]] line. Write no other link to the app.';
+
 const readPageInput = z.object({ link: z.string().max(200) }).strict();
 const searchInput = z.object({ query: z.string().min(1).max(200) }).strict();
 
@@ -129,14 +135,14 @@ export function toolDefinitions(corpus: AskCorpus): Anthropic.Beta.BetaToolUnion
     {
       name: 'drawer_fit',
       description:
-        "Run the Layout Tool's own drawer calculator. Give the inside width and depth of a drawer, and its height when known. Returns the whole-unit grid, a tighter half-unit grid when one fits, the spare room, the tallest bins for stacks of 1, 2 and 3 with the default baseplate, and a link that opens the layout editor at that size.",
+        "Run the Layout Tool's own drawer calculator. Give the inside width and depth of a drawer, and its height when known. Returns the whole-unit grid, a tighter half-unit grid when one fits, the spare room, and the tallest bins for stacks of 1, 2 and 3 with the default baseplate.",
       input_schema: inputSchema(drawerFitInput),
       eager_input_streaming: true,
     },
     {
       name: 'plan_layout',
       description:
-        "Plan a whole drawer with the Layout Tool's own placement code. Give the measured drawer (or a grid size when there is no measurement) and a bin for each kind of thing to store. The app fits the grid, places the bins largest first, puts a bin on layer 2 only where bins below carry it, and sends bins that do not fit to the stash. Returns what it placed and stashed. The panel draws the plan with a button that opens it in the app, so never write a link to it.",
+        "Plan a whole drawer with the Layout Tool's own placement code. Give the measured drawer (or a grid size when there is no measurement) and a bin for each kind of thing to store, or no bins for the drawer alone. The app fits the grid, places the bins largest first, puts a bin on layer 2 only where bins below carry it, and sends bins that do not fit to the stash. Returns what it placed and stashed. The panel draws the plan with a button that opens it in the app, so never write a link to it.",
       input_schema: PLAN_LAYOUT_SCHEMA,
       eager_input_streaming: true,
     },
@@ -259,7 +265,12 @@ export function createToolRunner(
       const d = parsed.data;
       const unit = d.unit === 'in' ? ' in' : ' mm';
       const size = [d.widthMm, d.depthMm, d.heightMm].filter((v) => v !== undefined).join(' × ');
-      return { ...runDrawerFit(d, { origin }), label: `Checking a ${size}${unit} drawer` };
+      const fit = runDrawerFit(d, { origin });
+      return {
+        isError: fit.isError,
+        label: `Checking a ${size}${unit} drawer`,
+        content: fit.drawerLink === null ? fit.content : `${fit.content}\n${OPEN_DRAWER_HINT}`,
+      };
     }
     if (name === 'plan_layout') {
       const parsed = planLayoutInput.safeParse(input);

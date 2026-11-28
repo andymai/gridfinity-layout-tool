@@ -1,4 +1,4 @@
-export type { PlanLayoutOutput, ToolContext, ToolOutput } from './tool';
+export type { DrawerFitOutput, PlanLayoutOutput, ToolContext, ToolOutput } from './tool';
 export { drawerFitInput } from './drawerFit';
 export type { DrawerFitInput } from './drawerFit';
 export { planLayoutInput } from './planLayout';

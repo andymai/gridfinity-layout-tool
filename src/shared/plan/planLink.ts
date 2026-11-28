@@ -4,7 +4,8 @@ import type { Result } from '@/core/result';
 import { planInput } from './planInput';
 import type { PlanInput } from './planInput';
 
-export const PLAN_LINK_VERSION = 1;
+/** The newest link version that this app reads. */
+export const PLAN_LINK_VERSION = 2;
 /** Longest encoded plan, so a link stays far below what browsers and chat apps cut. */
 export const PLAN_LINK_MAX_CHARS = 6144;
 export const PLAN_HASH_PREFIX = '#plan=';
@@ -33,8 +34,15 @@ export interface PlanTooLarge {
   readonly chars: number;
 }
 
+// A v1 decoder needs at least one bin and rejects halfGrid. Such a plan is
+// marked v2, so an app from before v2 asks to update instead of calling the
+// link damaged; every other plan stays v1, which both versions read.
+function linkVersion(input: PlanInput): number {
+  return input.bins.length === 0 || input.halfGrid !== undefined ? 2 : 1;
+}
+
 export function encodePlanLink(input: PlanInput): Result<string, PlanTooLarge> {
-  const encoded = `v${PLAN_LINK_VERSION}.${toBase64Url(deflateSync(strToU8(JSON.stringify(input))))}`;
+  const encoded = `v${linkVersion(input)}.${toBase64Url(deflateSync(strToU8(JSON.stringify(input))))}`;
   return encoded.length > PLAN_LINK_MAX_CHARS
     ? err({ kind: 'too-large', chars: encoded.length })
     : ok(encoded);

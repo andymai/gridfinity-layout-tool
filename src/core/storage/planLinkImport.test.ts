@@ -29,6 +29,22 @@ describe('importPlanLink', () => {
     expect(first.layout?.bins[0].id).not.toBe(second.layout?.bins[0].id);
   });
 
+  it('opens a drawer without bins at its grid and height', async () => {
+    const drawer = encodePlanLink(
+      planInput.parse({ drawer: { width: 52, depth: 44, height: 8, unit: 'cm' }, bins: [] })
+    );
+    if (!isOk(drawer)) throw new Error('plan too large');
+    const opened = await importPlanLink(drawer.value);
+    expect(opened.errors).toEqual([]);
+    expect(opened.layout?.drawer).toMatchObject({
+      width: 12,
+      depth: 10,
+      measuredMm: { width: 520, depth: 440, height: 80 },
+    });
+    expect(opened.layout?.bins).toEqual([]);
+    expect(opened.layout?.layers).toHaveLength(1);
+  });
+
   it('asks for an update when the link is from a newer app', async () => {
     expect(await importPlanLink(`v9.${link.slice(3)}`)).toEqual({
       layout: null,

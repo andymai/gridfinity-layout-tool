@@ -49,7 +49,7 @@ Yes. A Docker image serves the app from your own computer or server. Sharing, si
 
 Yes. Ask AI answers from these docs and links the sections that it used. In a wide window, it sits in a column at the right of every page. In a narrow window, click **Ask AI** in the top bar. Answers can be wrong, so check the linked sections. [Your data and privacy](../introduction/your-data#ask-ai) explains what a question sends. A self-hosted copy has no Ask AI.
 
-Ask AI can also plan a drawer. Give it the drawer size and what goes in it, and it draws a plan that opens in the layout editor. It can read your saved layouts and printer settings too, but only when you allow it. It can split a baseplate for your printer and estimate the filament and time for bins.
+Ask AI can also plan a drawer. Give it the drawer size, and the answer ends with the empty drawer at the grid that fits. Click **Open this drawer** to open it in the layout editor. Tell it what goes in the drawer too, and it places bins in the plan. It can read your saved layouts and printer settings too, but only when you allow it. It can split a baseplate for your printer and estimate the filament and time for bins.
 
 ## Your data
 

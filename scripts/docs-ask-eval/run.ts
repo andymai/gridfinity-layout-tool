@@ -25,6 +25,7 @@ import {
   readMyLayoutInput,
   readMySettingsInput,
 } from '../../api/lib/agent/index.js';
+import type { PlanView } from '../../api/lib/agent/index.js';
 import { CLIENT_TOOLS, clientRun } from '../../api/lib/docsAsk/clientTools.js';
 import type { ClientResult } from '../../api/lib/docsAsk/clientTools.js';
 import { pendingMessages, rebuildMessages, userTurn } from '../../api/lib/docsAsk/history.js';
@@ -33,7 +34,7 @@ import { docsSource } from '../../api/lib/docsAsk/source.js';
 import { ROUND_RESERVE_USD } from '../../api/lib/docsAsk/spend.js';
 import { createToolRunner, toolDefinitions } from '../../api/lib/docsAsk/tools.js';
 import type { ToolRunner } from '../../api/lib/docsAsk/tools.js';
-import { checkAnswer, chipLabels } from './checks';
+import { checkAnswer, checkPlans, chipLabels } from './checks';
 import type { AnswerChecks } from './checks';
 import { GOLDEN } from './golden';
 import type { GoldenCase, ReaderFixture } from './golden';
@@ -80,6 +81,8 @@ interface CaseResult {
   readonly group: GoldenCase['group'];
   readonly turns: readonly TurnResult[];
   readonly checks: AnswerChecks | null;
+  /** What checkPlans found wrong with the plans that the answers show. */
+  readonly planProblems: readonly string[];
   readonly citesSource: boolean | null;
   readonly verdict: Verdict | null;
   readonly judgeUsd: number;
@@ -177,6 +180,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
   const runner = createToolRunner(corpus, labelsFor, source.english, PRODUCTION_ORIGIN);
   const stored: StoredTurn[] = [];
   const results: TurnResult[] = [];
+  const plans: PlanView[] = [];
   const caseResult = (outcome: Omit<CaseResult, 'id' | 'group' | 'turns'>): CaseResult => ({
     id: golden.id,
     group: golden.group,
@@ -195,6 +199,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         tools.push(`${name} ${JSON.stringify(input)}`);
         if (CHECKED_TOOLS.has(name)) checks.push(result.content);
         if (result.link) reads.push(result.link);
+        if (result.plan) plans.push(result.plan);
         return result;
       };
       const prior = rebuildMessages(
@@ -311,6 +316,9 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       ],
       unknownCaptures: [...earlier.flatMap((c) => c.unknownCaptures), ...checks.unknownCaptures],
     };
+    const planProblems = results.flatMap((turn, i) =>
+      checkPlans(turn.answer, plans, i === results.length - 1 ? golden.openDrawer : undefined)
+    );
     const citesSource =
       golden.sources.length === 0
         ? null
@@ -318,6 +326,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
     if (!hold(JUDGE_RESERVE_USD)) {
       return caseResult({
         checks: allChecks,
+        planProblems,
         citesSource,
         verdict: null,
         judgeUsd: 0,
@@ -355,6 +364,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
     spent += graded.costUsd;
     return caseResult({
       checks: allChecks,
+      planProblems,
       citesSource,
       verdict: graded.verdict,
       judgeUsd: graded.costUsd,
@@ -376,6 +386,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
     }
     return caseResult({
       checks: null,
+      planProblems: [],
       citesSource: null,
       verdict: null,
       judgeUsd: 0,
@@ -415,6 +426,7 @@ const invalidTraps = results
   .map((r) => r.id);
 const gaps = results.filter((r) => r.group === 'gap' && !invalidTraps.includes(r.id));
 const gapsPassed = gaps.filter((r) => r.verdict?.verdict === 'pass' && r.checks?.linksForum);
+const planProblems = results.flatMap((r) => r.planProblems.map((p) => `${r.id} ${p}`));
 const seconds = results.flatMap((r) => r.turns.map((t) => t.seconds)).sort((a, b) => a - b);
 
 const summary = {
@@ -444,6 +456,7 @@ const summary = {
     )
     .map((r) => r.id),
   inventedLabels: invented,
+  planProblems,
   unknownCaptures: missingCaptures,
   gapTrapsPassed: `${gapsPassed.length}/${gaps.length}`,
   invalidTraps,
@@ -458,6 +471,7 @@ const summary = {
     passed.length / judged.length >= 0.9 &&
     broken.length === 0 &&
     invented.length === 0 &&
+    planProblems.length === 0 &&
     missingCaptures.length === 0 &&
     gapsPassed.length === gaps.length,
 };

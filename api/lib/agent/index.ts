@@ -2,6 +2,7 @@
 // because api/ cannot resolve the app's `@/` imports. Vitest aliases the
 // generated file to the source.
 export {
+  PLAN_LINK_VERSION,
   READER_TOOL_NAMES,
   binSizeForInput,
   drawerFitInput,
@@ -25,6 +26,7 @@ export {
 } from './_generated/server.js';
 export type {
   DrawerFitInput,
+  DrawerFitOutput,
   MyLayoutData,
   MyLayoutsData,
   MySettingsData,

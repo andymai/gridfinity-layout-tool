@@ -84,13 +84,22 @@ export const planInput = z
       .strict()
       .optional()
       .describe('The grid size in units, when there is no measurement. Give this or drawer.'),
+    halfGrid: z
+      .boolean()
+      .optional()
+      .describe(
+        'With a measured drawer: true fits the grid in half units, as Half-grid mode does, where that fits tighter. A bin in half units turns it on by itself.'
+      ),
     categories: z
       .array(shortName)
       .min(1)
       .max(PLAN_LIMITS.CATEGORIES_MAX)
       .optional()
       .describe('Category names. Bins of one category share a color.'),
-    bins: z.array(planBin).min(1).max(PLAN_LIMITS.BINS_MAX),
+    bins: z
+      .array(planBin)
+      .max(PLAN_LIMITS.BINS_MAX)
+      .describe('The bins to place. Empty for the drawer alone, with its grid and no bins.'),
   })
   .strict()
   .superRefine((plan, ctx) => {

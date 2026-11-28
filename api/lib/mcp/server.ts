@@ -56,7 +56,14 @@ export function createMcpServer(origin: string, version: string): McpServer {
       inputSchema: drawerFitInput,
       annotations: COMPUTE,
     },
-    (input) => asResult(runDrawerFit(input, context))
+    (input) => {
+      const run = runDrawerFit(input, context);
+      return asResult(
+        run.drawerLink === null
+          ? run
+          : { ...run, content: `${run.content}\nPlan this drawer in the app: ${run.drawerLink}` }
+      );
+    }
   );
 
   server.registerTool(

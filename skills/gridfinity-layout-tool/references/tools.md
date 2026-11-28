@@ -27,28 +27,29 @@ Run the Layout Tool's drawer calculator. Give the inside width and depth of a dr
 
 Plan a whole drawer with the Layout Tool's placement code. Give the measured drawer, or a grid size when there is no measurement, and a bin for each kind of thing to store, in grid units of 42 mm and height units of 7 mm. The app fits the grid, places the bins largest first, puts a bin on layer 2 only where bins below carry it, and sends bins that do not fit to the stash. Returns what it placed and stashed, and a link that opens the plan in the app. The bin sizes are your choice, so present them as a starting point.
 
-| Input             | Type        | Required | Notes                                                                                              |
-| ----------------- | ----------- | -------- | -------------------------------------------------------------------------------------------------- |
-| `title`           | string      | no       | The layout name. Up to 64 characters.                                                              |
-| `drawer`          | object      | no       | The inside size of the drawer, as measured. Give this or grid.                                     |
-| `drawer.width`    | number      | yes      | Over 0.                                                                                            |
-| `drawer.depth`    | number      | yes      | Over 0.                                                                                            |
-| `drawer.height`   | number      | no       | Over 0.                                                                                            |
-| `drawer.unit`     | string      | yes      | One of `mm`, `cm`, `in`.                                                                           |
-| `grid`            | object      | no       | The grid size in units, when there is no measurement. Give this or drawer.                         |
-| `grid.width`      | number      | yes      | 0.5 to 50.                                                                                         |
-| `grid.depth`      | number      | yes      | 0.5 to 50.                                                                                         |
-| `grid.height`     | integer     | no       | The drawer height in height units of 7 mm, if known. 2 to 50.                                      |
-| `categories`      | string list | no       | Category names. Bins of one category share a color. 1 to 20 items. Each item: up to 24 characters. |
-| `bins`            | object list | yes      | 1 to 60 items.                                                                                     |
-| `bins[].label`    | string      | yes      | A short label for the bin. Up to 24 characters.                                                    |
-| `bins[].items`    | string list | no       | What the bin holds. 0 to 20 items. Each item: up to 48 characters.                                 |
-| `bins[].width`    | number      | yes      | Width in grid units of 42 mm, whole or half. 0.5 to 50.                                            |
-| `bins[].depth`    | number      | yes      | Depth in grid units of 42 mm, whole or half. 0.5 to 50.                                            |
-| `bins[].height`   | integer     | yes      | Height in height units of 7 mm. 2 to 50.                                                           |
-| `bins[].category` | string      | no       | One of the category names. Up to 24 characters.                                                    |
-| `bins[].layer`    | integer     | no       | 1, the default, for the baseplate; 2 or more to rest on bins below. 1 to 10.                       |
-| `bins[].count`    | integer     | no       | How many of this bin. Default 1. 1 to 60.                                                          |
+| Input             | Type        | Required | Notes                                                                                                                                                 |
+| ----------------- | ----------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`           | string      | no       | The layout name. Up to 64 characters.                                                                                                                 |
+| `drawer`          | object      | no       | The inside size of the drawer, as measured. Give this or grid.                                                                                        |
+| `drawer.width`    | number      | yes      | Over 0.                                                                                                                                               |
+| `drawer.depth`    | number      | yes      | Over 0.                                                                                                                                               |
+| `drawer.height`   | number      | no       | Over 0.                                                                                                                                               |
+| `drawer.unit`     | string      | yes      | One of `mm`, `cm`, `in`.                                                                                                                              |
+| `grid`            | object      | no       | The grid size in units, when there is no measurement. Give this or drawer.                                                                            |
+| `grid.width`      | number      | yes      | 0.5 to 50.                                                                                                                                            |
+| `grid.depth`      | number      | yes      | 0.5 to 50.                                                                                                                                            |
+| `grid.height`     | integer     | no       | The drawer height in height units of 7 mm, if known. 2 to 50.                                                                                         |
+| `halfGrid`        | boolean     | no       | With a measured drawer: true fits the grid in half units, as Half-grid mode does, where that fits tighter. A bin in half units turns it on by itself. |
+| `categories`      | string list | no       | Category names. Bins of one category share a color. 1 to 20 items. Each item: up to 24 characters.                                                    |
+| `bins`            | object list | yes      | The bins to place. Empty for the drawer alone, with its grid and no bins. 0 to 60 items.                                                              |
+| `bins[].label`    | string      | yes      | A short label for the bin. Up to 24 characters.                                                                                                       |
+| `bins[].items`    | string list | no       | What the bin holds. 0 to 20 items. Each item: up to 48 characters.                                                                                    |
+| `bins[].width`    | number      | yes      | Width in grid units of 42 mm, whole or half. 0.5 to 50.                                                                                               |
+| `bins[].depth`    | number      | yes      | Depth in grid units of 42 mm, whole or half. 0.5 to 50.                                                                                               |
+| `bins[].height`   | integer     | yes      | Height in height units of 7 mm. 2 to 50.                                                                                                              |
+| `bins[].category` | string      | no       | One of the category names. Up to 24 characters.                                                                                                       |
+| `bins[].layer`    | integer     | no       | 1, the default, for the baseplate; 2 or more to rest on bins below. 1 to 10.                                                                          |
+| `bins[].count`    | integer     | no       | How many of this bin. Default 1. 1 to 60.                                                                                                             |
 
 ## `print_estimate`: Estimate a print
 

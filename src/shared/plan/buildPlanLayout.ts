@@ -17,6 +17,7 @@ import type { PlanBin, PlanInput } from './planInput';
 const GRID_UNIT_MM = 42;
 const HEIGHT_UNIT_MM = 7;
 const DEFAULT_DRAWER_HEIGHT = 12;
+const DEFAULT_LAYER_HEIGHT = 3;
 const DEFAULT_TITLE = 'Drawer plan';
 const MM_PER_UNIT = { mm: 1, cm: 10, in: 25.4 } as const;
 
@@ -58,13 +59,17 @@ function planCategories(input: PlanInput): Category[] {
 }
 
 function planLayers(bins: readonly PlanBin[]): Layer[] {
-  const count = Math.max(...bins.map((bin) => bin.layer ?? 1));
+  const count = Math.max(1, ...bins.map((bin) => bin.layer ?? 1));
   return Array.from({ length: count }, (_, index) => {
     const heights = bins.filter((bin) => (bin.layer ?? 1) === index + 1).map((bin) => bin.height);
     return {
       id: layerId(`plan-layer-${index + 1}`),
       name: `Layer ${index + 1}`,
-      height: heightUnits(Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, Math.min(...heights))),
+      height: heightUnits(
+        heights.length === 0
+          ? DEFAULT_LAYER_HEIGHT
+          : Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, Math.min(...heights))
+      ),
     };
   });
 }
@@ -171,12 +176,16 @@ function coveredBelow(layout: Layout, layer: number): (rect: FitRect) => boolean
 export function buildPlanLayout(input: PlanInput): Result<PlanResult, ValidationError> {
   const categories = planCategories(input);
   const layers = planLayers(input.bins);
-  const half =
+  const halfBins =
     input.bins.some((bin) => !Number.isInteger(bin.width) || !Number.isInteger(bin.depth)) ||
     (input.grid !== undefined &&
       (!Number.isInteger(input.grid.width) || !Number.isInteger(input.grid.depth)));
-  const base = baseLayout(input, categories, layers, half);
+  const base = baseLayout(input, categories, layers, halfBins || input.halfGrid === true);
   if (!isOk(base)) return base;
+  // halfGrid takes a half unit only where it fits tighter, so a drawer that a
+  // half unit does not fill keeps whole units, and its bins keep whole steps.
+  const { width: gridWidth, depth: gridDepth } = base.value.drawer;
+  const half = halfBins || !Number.isInteger(gridWidth) || !Number.isInteger(gridDepth);
 
   const categoryOf = (bin: PlanBin): Category =>
     categories.find((c) => c.name.toLowerCase() === bin.category?.toLowerCase()) ?? categories[0];

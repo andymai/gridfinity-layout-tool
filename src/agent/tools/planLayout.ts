@@ -54,12 +54,17 @@ export function runPlanLayout(input: PlanInput, context: ToolContext): PlanLayou
   const measured = layout.drawer.measuredMm;
   const params = layout.baseplateParams;
   if (measured && params) {
+    const size = [measured.width, measured.depth, measured.height]
+      .filter((value) => value !== undefined)
+      .join(' x ');
     lines.push(
-      `Drawer ${measured.width} x ${measured.depth} mm: the baseplate pads ${params.paddingLeft} mm at each side and ${params.paddingFront} mm at the front and the back.`
+      `Drawer ${size} mm: the baseplate pads ${params.paddingLeft} mm at each side and ${params.paddingFront} mm at the front and the back.`
     );
   }
   lines.push(
-    `Placed ${placed.length} bins: ${[...counted].map(([key, n]) => (n > 1 ? `${n} x ${key}` : key)).join('; ')}.`
+    input.bins.length === 0
+      ? 'No bins: the plan opens the empty drawer.'
+      : `Placed ${placed.length} bins: ${[...counted].map(([key, n]) => (n > 1 ? `${n} x ${key}` : key)).join('; ')}.`
   );
   if (input.categories !== undefined) {
     const colorName = (hex: string): string =>
