@@ -54,13 +54,15 @@ describe('sampleYear', () => {
     );
   });
 
-  it('picks a most complicated bin that is not the longest print', () => {
+  it('picks the design with the most work, not the most triangles', () => {
     const triangles = sampleTriangles(SAMPLE_SOURCE);
     const pick = pickComplicated(stats.complexityShortlist, (id) => triangles.get(id));
-    expect(pick?.design.id).not.toBe(SAMPLE_SOURCE.longestPrint);
-    expect(pick?.triangles).toBe(
-      Math.max(...stats.complexityShortlist.map((entry) => triangles.get(entry.id) ?? 0))
+    const most = Math.max(
+      ...stats.complexityShortlist.map((entry) => triangles.get(entry.id) ?? 0)
     );
+    expect(pick?.design.id).not.toBe(SAMPLE_SOURCE.longestPrint);
+    expect(pick?.triangles).toBe(triangles.get(pick?.design.id ?? ''));
+    expect(pick?.triangles).toBeLessThan(most);
   });
 
   it('translates names and links thumbnails through the given lookups', () => {

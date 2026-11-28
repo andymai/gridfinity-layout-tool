@@ -9,7 +9,6 @@ import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { useYour2026Routing } from '@/shared/hooks/useYour2026Routing';
 import { markYearReviewSeen } from '@/shared/yearReview/dockRow';
 import { isYearReviewOpen, YEAR_REVIEW_YEAR } from '@/shared/yearReview/window';
-import { useLatestRef } from '@/shared/hooks';
 import { useSupportersData } from '../../../hooks/useSupportersData';
 import { getSupportersPalette } from '../../../scene/palette';
 import { getSupporterCount } from '../../../utils/supportersData';
@@ -20,7 +19,7 @@ import { useShareImage } from '../../hooks/useShareImage';
 import { useYearMeshes } from '../../hooks/useYearMeshes';
 import { useYearSoundtrack } from '../../hooks/useYearSoundtrack';
 import { useYearReviewData } from '../../hooks/useYearReviewData';
-import { meshCandidates, pickComplicated, type ComplicatedPick } from '../../utils/complicatedPick';
+import { meshCandidates, pickComplicated } from '../../utils/complicatedPick';
 import type { YearCard } from '../../utils/yearCards';
 import { readableAccent } from '../../utils/readableAccent';
 import { ShareButton } from '../ShareButton';
@@ -30,14 +29,6 @@ import { hasYearActivity } from '../../utils/yearStats';
 import { StoryPlayer } from '../StoryPlayer';
 import { YearCardView, describeCard } from '../YearCardView';
 import { YearStage } from '../YearStage';
-
-/**
- * The most complicated bin of the user's own year, fixed the first time its card
- * shows, so a mesh that lands later cannot change the answer, and a replay names
- * the same bin. The sample's baked counts fix its pick already, and a frozen one
- * would keep a name translated into an earlier language.
- */
-let frozenComplicated: ComplicatedPick | null = null;
 
 const SITE_HOST = 'gridfinitylayouttool.com';
 
@@ -148,10 +139,9 @@ function YearReview({ demo }: { readonly demo: boolean }) {
     !demo && stats !== null && hasYearActivity(stats)
   );
   const meshes = demo ? sample.meshes : liveMeshes;
-  const [complicated, setComplicated] = useState(() => (demo ? null : frozenComplicated));
   // The sample knows its counts before its meshes load, so its pick never waits.
   const triangles = demo ? sample.triangles : null;
-  const liveComplicated = useMemo(
+  const complicated = useMemo(
     () =>
       stats
         ? pickComplicated(
@@ -161,20 +151,10 @@ function YearReview({ demo }: { readonly demo: boolean }) {
         : null,
     [stats, meshes, triangles]
   );
-  const shownComplicated = complicated ?? liveComplicated;
   const [settledCard, setSettledCard] = useState<YearCard | null>(null);
-  // Read through a ref: a new handler makes the player call it again with no
-  // card change, which would clear the image the settled card prepared.
-  const liveComplicatedRef = useLatestRef(liveComplicated);
-  const onCardChange = useCallback(
-    (card: YearCard) => {
-      setSettledCard(null);
-      if (demo || card.kind !== 'complicated' || frozenComplicated) return;
-      frozenComplicated = liveComplicatedRef.current;
-      setComplicated(liveComplicatedRef.current);
-    },
-    [liveComplicatedRef, demo]
-  );
+  // Stable on purpose: a new handler makes the player call it again with no card
+  // change, which would clear the image the settled card prepared.
+  const onCardChange = useCallback(() => setSettledCard(null), []);
   const supporterCount = getSupporterCount(supporters);
   const shareSpec = useMemo(
     () =>
@@ -185,23 +165,12 @@ function YearReview({ demo }: { readonly demo: boolean }) {
             locale,
             unit,
             supporterCount,
-            complicated: complicated ?? liveComplicated,
+            complicated,
             drawerPreview,
             meshes,
           })
         : null,
-    [
-      settledCard,
-      stats,
-      t,
-      locale,
-      unit,
-      supporterCount,
-      complicated,
-      liveComplicated,
-      drawerPreview,
-      meshes,
-    ]
+    [settledCard, stats, t, locale, unit, supporterCount, complicated, drawerPreview, meshes]
   );
   const shareTheme = useMemo(() => {
     // Canvas fonts cannot read CSS variables, so the families are resolved here.
@@ -306,7 +275,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
           locale,
           unit,
           supporterCount: getSupporterCount(supporters),
-          complicated: shownComplicated,
+          complicated,
         })
       }
       renderCard={(card, position) => (
@@ -321,7 +290,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
           supporterCount={getSupporterCount(supporters)}
           drawerPreview={drawerPreview}
           meshes={meshes}
-          complicated={shownComplicated}
+          complicated={complicated}
           onRollCredits={rollCredits}
           onSupport={support}
         />

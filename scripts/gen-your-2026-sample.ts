@@ -23,7 +23,7 @@ import gltfPipeline from 'gltf-pipeline';
 import { EXAMPLE_DESIGNS } from '../src/features/bin-designer/data/examples';
 import { initOcctWasmKernel } from '../src/features/generation/worker/generators/__kernel-tests__/kernelInit';
 import type { MeshData } from '../src/features/generation/bridge/types';
-import { featureScore } from '../src/features/supporters/year/utils/designFeatures';
+import { designWork } from '../src/features/supporters/year/utils/designFeatures';
 import { meshTriangles } from '../src/features/supporters/year/utils/meshTriangles';
 import { withSocketNozzle } from '../src/shared/generation/socketNozzle';
 import { DEFAULT_PRINT_SETTINGS } from '../src/shared/printSettings';
@@ -294,7 +294,7 @@ async function main(): Promise<void> {
       id,
       nameKey: example.nameKey,
       minutes: Math.round(estimateCommunityPrint(example.params).minutes),
-      score: featureScore(example.params),
+      score: designWork(example.params),
       triangles: meshTriangles(mesh),
       mesh,
     };
@@ -305,9 +305,8 @@ async function main(): Promise<void> {
   if (others.some((design) => design.minutes >= longest.minutes)) {
     throw new Error(`${LONGEST_PRINT} is no longer the longest print`);
   }
-  const complicated = others.reduce((best, design) =>
-    design.triangles > best.triangles ? design : best
-  );
+  // The app picks by design work, not triangles, so the bake does too.
+  const complicated = others.reduce((best, design) => (design.score > best.score ? design : best));
 
   const raw = buildGlb([bake(longest.id, longest.mesh), bake(complicated.id, complicated.mesh)]);
   const { glb } = await processGlb(raw, { dracoOptions: { compressionLevel: 7 } });

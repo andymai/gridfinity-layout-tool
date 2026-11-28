@@ -10,15 +10,15 @@ function entry(id: string, score: number): YearShortlistEntry {
 const shortlist = [entry('a', 30), entry('b', 20), entry('c', 10)];
 
 describe('pickComplicated', () => {
-  it('picks the most triangles among the designs with a mesh', () => {
-    const counts: Record<string, number> = { b: 9000, c: 4000 };
+  it('picks the most design work, whatever has the most triangles', () => {
+    const counts: Record<string, number> = { a: 3000, b: 90_000 };
     expect(pickComplicated(shortlist, (id) => counts[id])).toEqual({
-      design: shortlist[1],
-      triangles: 9000,
+      design: shortlist[0],
+      triangles: 3000,
     });
   });
 
-  it('falls back to the top score, without a count, when no mesh is ready', () => {
+  it('shows no count until the mesh is ready', () => {
     expect(pickComplicated(shortlist, () => undefined)).toEqual({
       design: shortlist[0],
       triangles: null,
@@ -31,18 +31,14 @@ describe('pickComplicated', () => {
 });
 
 describe('meshCandidates', () => {
-  it('puts the longest print first and takes five more by score, once each', () => {
+  it('asks for the longest print and the most complicated design, once each', () => {
     const many = Array.from({ length: 8 }, (_, i) => entry(`d${i}`, 10 - i));
     const stats = {
       longestPrint: { ...many[2], minutes: 600 },
       complexityShortlist: many,
     } as unknown as YearStats;
-    expect(meshCandidates(stats).map((design) => design.id)).toEqual([
-      'd2',
-      'd0',
-      'd1',
-      'd3',
-      'd4',
-    ]);
+    expect(meshCandidates(stats).map((design) => design.id)).toEqual(['d2', 'd0']);
+    const same = { ...stats, longestPrint: { ...many[0], minutes: 600 } } as unknown as YearStats;
+    expect(meshCandidates(same).map((design) => design.id)).toEqual(['d0']);
   });
 });

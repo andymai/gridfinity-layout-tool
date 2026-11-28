@@ -50,22 +50,33 @@ export function hasLabelText(params: BinParams, nozzleSizeMm?: number): boolean 
   return textCount(params, nozzleSizeMm) > 0;
 }
 
+/** Compartments past this read as one grid preset, not as separate decisions. */
+const COMPARTMENT_WORK_CAP = 12;
+
 /**
- * A cheap guess at which designs have the biggest meshes, used to pick the few
- * worth generating. Patterns and engraved text add the most triangles.
+ * How much a maker built into a design, for "Most complicated". Each placed
+ * cutout, insert and text counts, and each feature turned on counts once: a
+ * wall pattern adds the most triangles, but it is one decision like a scoop.
  */
-export function featureScore(params: BinParams, nozzleSizeMm?: number): number {
+export function designWork(params: BinParams, nozzleSizeMm?: number): number {
+  const features = [
+    params.wallPattern.enabled,
+    params.floorPattern?.enabled === true,
+    params.scoop.enabled,
+    params.label.enabled,
+    params.handles.enabled,
+    params.pullTab?.enabled === true,
+    params.knifeRest?.enabled === true,
+    params.overhang?.enabled === true,
+    params.cellMask !== undefined,
+  ].filter(Boolean).length;
   return (
-    compartmentCount(params) +
-    params.cutouts.length * 2 +
+    Math.min(compartmentCount(params), COMPARTMENT_WORK_CAP) +
+    (params.cutouts.length + (params.lid.enabled ? (params.lid.cutouts?.length ?? 0) : 0)) * 2 +
     params.inserts.length * 2 +
-    textCount(params, nozzleSizeMm) * 3 +
-    (params.wallPattern.enabled ? 6 : 0) +
-    (params.floorPattern?.enabled === true ? 6 : 0) +
-    (params.lid.enabled ? 3 : 0) +
-    (params.scoop.enabled ? 2 : 0) +
-    (params.label.enabled ? 1 : 0) +
-    (params.handles.enabled ? 1 : 0) +
-    (params.slant ? 1 : 0)
+    textCount(params, nozzleSizeMm) * 2 +
+    features +
+    (params.lid.enabled ? 2 : 0) +
+    (params.slant ? 2 : 0)
   );
 }
