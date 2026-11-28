@@ -1,0 +1,30 @@
+src/agent/server.ts
+  s_cbdce95362cca9::t_7d22a3757b380c 8
+scripts/docs-ask-eval/checks.test.ts
+  s_cbdce95362cca9::t_7e0b2aa11d3300 208-220
+  s_cbdce95362cca9::t_3e4a2ac6fa05d3 229-231
+scripts/docs-ask-eval/checks.ts
+  s_cbdce95362cca9::t_85264fdc179e51 2
+  s_cbdce95362cca9::t_93066e818dc3ea 93-95
+  s_cbdce95362cca9::t_e35ae072a3a30c 143-147
+  s_cbdce95362cca9::t_0ea0e0d6372955 106-108
+  s_cbdce95362cca9::t_2f8416ddfa9ba7 175-177
+api/lib/agent/index.ts
+  s_cbdce95362cca9::t_2b088456964571 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5270d496fcd3d633ca99b3954e5899e1bf0e5953",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
