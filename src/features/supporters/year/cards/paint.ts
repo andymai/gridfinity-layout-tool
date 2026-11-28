@@ -222,6 +222,25 @@ export function topBin(
   ctx.restore();
 }
 
+/**
+ * Where to put the baseline so a line sits centred in its line box, as the
+ * page lays it out. Browsers without font-box metrics get a typical split.
+ */
+export function lineBaseline(
+  metrics: TextMetrics,
+  top: number,
+  lineHeight: number,
+  size: number
+): number {
+  const ascent = Number.isFinite(metrics.fontBoundingBoxAscent)
+    ? metrics.fontBoundingBoxAscent
+    : size * 0.8;
+  const descent = Number.isFinite(metrics.fontBoundingBoxDescent)
+    ? metrics.fontBoundingBoxDescent
+    : size * 0.2;
+  return top + (lineHeight - (ascent + descent)) / 2 + ascent;
+}
+
 /** Text centred on its ink, not its em box, so a digit sits square in a block. */
 export function fillCentred(ctx: Ctx, text: string, cx: number, cy: number, font: string): void {
   ctx.font = font;

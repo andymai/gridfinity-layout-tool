@@ -4,7 +4,7 @@ import { BEAT, clamp01, easeOut, onGrid } from '../look/motion';
 import { PALETTES } from '../look/palettes';
 import { sentences } from '../look/splitCopy';
 import { cssFont, fitSize, wrapBalanced, type FontSpec, type Measure } from '../look/typeset';
-import { roundRect } from './paint';
+import { lineBaseline, roundRect } from './paint';
 import {
   CONTENT_TOP,
   CONTENT_W,
@@ -85,10 +85,12 @@ function paintSheet(
   ctx.fillStyle = fill(ctx);
   const offset = block.height - block.inked;
   block.lines.forEach((line, index) => {
-    const m = ctx.measureText(line);
-    const ascent = m.fontBoundingBoxAscent;
-    const box = ascent + m.fontBoundingBoxDescent;
-    ctx.fillText(line, 0, offset + index * block.font.size + (block.font.size - box) / 2 + ascent);
+    const top = offset + index * block.font.size;
+    ctx.fillText(
+      line,
+      0,
+      lineBaseline(ctx.measureText(line), top, block.font.size, block.font.size)
+    );
   });
   return canvas;
 }

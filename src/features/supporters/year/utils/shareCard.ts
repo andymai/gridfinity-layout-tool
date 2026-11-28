@@ -1,5 +1,12 @@
 import { CARD_H, CARD_W, MARGIN, type Scene, type TextBlock } from '../cards/scene';
-import { THUMB_SIZE, TIMES_SCALE, drawTinted, fillTimes, roundRect } from '../cards/paint';
+import {
+  THUMB_SIZE,
+  TIMES_SCALE,
+  drawTinted,
+  fillTimes,
+  lineBaseline,
+  roundRect,
+} from '../cards/paint';
 import { TEXT, familyFor } from '../look/fonts';
 import { applyTracking, cssFont, roleFont } from '../look/typeset';
 
@@ -42,11 +49,13 @@ function drawText(ctx: CanvasRenderingContext2D, block: TextBlock): void {
   });
   block.lines.forEach((line, index) => {
     ctx.font = font;
-    const m = ctx.measureText(line);
-    const ascent = m.fontBoundingBoxAscent;
-    const box = ascent + m.fontBoundingBoxDescent;
-    const baseline =
-      block.y + index * block.font.lineHeight + (block.font.lineHeight - box) / 2 + ascent;
+    const top = block.y + index * block.font.lineHeight;
+    const baseline = lineBaseline(
+      ctx.measureText(line),
+      top,
+      block.font.lineHeight,
+      block.font.size
+    );
     if (block.times && line.includes('×'))
       fillTimes(ctx, line, block.x, baseline, font, timesFont, block.font.size);
     else ctx.fillText(line, block.x, baseline);
