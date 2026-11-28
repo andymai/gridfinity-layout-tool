@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
+import { roundRectPath } from '../../cards/paint';
 import { CARD_H } from '../../cards/scene';
 import { easeOut } from '../../look/motion';
 import { tileColours } from '../../look/palettes';
@@ -60,7 +61,7 @@ export function TileFill({ transition, background, reduced }: TileFillProps) {
         ctx.fillStyle = colours.rim;
         ctx.fillRect(-0.5, -0.5, TILE + 1, TILE + 1);
         ctx.beginPath();
-        ctx.roundRect(9, 9, TILE - 18, TILE - 18, 18);
+        roundRectPath(ctx, 9, 9, TILE - 18, TILE - 18, 18);
         ctx.fillStyle = colours.floor;
         ctx.fill();
         ctx.save();

@@ -2,7 +2,7 @@ import type { CardCopy } from '../components/YearCardView/cardCopy';
 import { BEAT, clamp01, easeOut, onGrid, springX } from '../look/motion';
 import { PALETTES } from '../look/palettes';
 import { sentences } from '../look/splitCopy';
-import { roundRect } from './paint';
+import { roundRect, roundRectPath } from './paint';
 import {
   CONTENT_TOP,
   GAP_V,
@@ -115,7 +115,7 @@ export function exportsScene(input: SceneInput, copy: CardCopy): Scene {
         roundRect(ctx, bin.x + 8 * k, bin.y + 14 * k, 72 * k, 66 * k, 8 * k, P.binLo);
         ctx.save();
         ctx.beginPath();
-        ctx.roundRect(bin.x + 8 * k, bin.y + 14 * k, 72 * k, 66 * k, 8 * k);
+        roundRectPath(ctx, bin.x + 8 * k, bin.y + 14 * k, 72 * k, 66 * k, 8 * k);
         ctx.clip();
         ctx.fillStyle = P.binShade;
         ctx.fillRect(bin.x + 8 * k, bin.y + 14 * k, 72 * k, 8 * k);

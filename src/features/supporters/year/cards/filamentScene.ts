@@ -3,7 +3,7 @@ import { mix, toyShade } from '../look/color';
 import { BEAT, REST, dropPose, fadeAt, squash, type DropSpec } from '../look/motion';
 import { PALETTES } from '../look/palettes';
 import { spools } from '../utils/yearFormat';
-import { rect, roundRect } from './paint';
+import { rect, roundRect, roundRectPath } from './paint';
 import {
   CONTENT_TOP,
   GAP_V,
@@ -168,7 +168,7 @@ function paintSpool(
   const dark = mix(colour, '#000000', 0.16);
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(coreX, y + 16, coreW, SPOOL_H - 32, 8);
+  roundRectPath(ctx, coreX, y + 16, coreW, SPOOL_H - 32, 8);
   ctx.clip();
   rect(ctx, coreX, y + 16, coreW, SPOOL_H - 32, colour);
   for (let sx = coreX + 11; sx < coreX + coreW; sx += 14)

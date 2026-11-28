@@ -2,7 +2,7 @@ import type { CardCopy } from '../components/YearCardView/cardCopy';
 import { mix } from '../look/color';
 import { BEAT, clamp01, easeOut, springContact, springX, squash } from '../look/motion';
 import { PALETTES, toy } from '../look/palettes';
-import { roundRect } from './paint';
+import { roundRect, roundRectPath } from './paint';
 import {
   CONTENT_W,
   GAP_V,
@@ -120,7 +120,7 @@ export function drawersScene(input: SceneInput, copy: CardCopy): Scene {
         const { x, y, w, h } = slot;
         ctx.save();
         ctx.beginPath();
-        ctx.roundRect(x, y, w, h, 12);
+        roundRectPath(ctx, x, y, w, h, 12);
         ctx.clip();
         ctx.fillStyle = P.inside;
         ctx.fillRect(x, y, w, h);

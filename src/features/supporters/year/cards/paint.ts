@@ -138,6 +138,32 @@ function radiiFor(r: Radii, w: number, h: number): number[] {
   return list.map((each) => Math.max(0, Math.min(max, each)));
 }
 
+/**
+ * Adds a rounded rectangle to the current path. Built from arcs because
+ * `CanvasRenderingContext2D.roundRect` is missing in Safari 15 and Firefox
+ * before 112, which the app still supports.
+ */
+export function roundRectPath(
+  ctx: Ctx,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: Radii
+): void {
+  const [tl = 0, tr = 0, br = 0, bl = 0] = radiiFor(r, w, h);
+  ctx.moveTo(x + tl, y);
+  ctx.lineTo(x + w - tr, y);
+  ctx.arcTo(x + w, y, x + w, y + tr, tr);
+  ctx.lineTo(x + w, y + h - br);
+  ctx.arcTo(x + w, y + h, x + w - br, y + h, br);
+  ctx.lineTo(x + bl, y + h);
+  ctx.arcTo(x, y + h, x, y + h - bl, bl);
+  ctx.lineTo(x, y + tl);
+  ctx.arcTo(x, y, x + tl, y, tl);
+  ctx.closePath();
+}
+
 export function roundRect(
   ctx: Ctx,
   x: number,
@@ -150,7 +176,7 @@ export function roundRect(
   if (w <= 0 || h <= 0) return;
   ctx.fillStyle = fill;
   ctx.beginPath();
-  ctx.roundRect(x, y, w, h, radiiFor(r, w, h));
+  roundRectPath(ctx, x, y, w, h, r);
   ctx.fill();
 }
 
@@ -265,7 +291,7 @@ export function topBin(
   roundRect(ctx, x + side, y + shelf, fw, fh, fr, shade.floor);
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(x + side, y + shelf, fw, fh, radiiFor(fr, fw, fh));
+  roundRectPath(ctx, x + side, y + shelf, fw, fh, fr);
   ctx.clip();
   rect(ctx, x + side, y + shelf, fw, Math.min(fh, Math.min(6, unit * 0.14)), shade.shade);
   ctx.restore();

@@ -9,6 +9,8 @@ const COLON = /[:：]/;
 /** Punctuation that stays with the value it follows. */
 const TRAILING = /^[.,;。、，！？!?)）]+/;
 
+const SENTENCE_END = /[.!?。！？]/;
+
 /** Sentences, each with its own end punctuation. */
 export function sentences(text: string, locale: string): string[] {
   if (typeof Intl.Segmenter === 'function') {
@@ -17,10 +19,17 @@ export function sentences(text: string, locale: string): string[] {
       (part) => part.segment.trim()
     ).filter(Boolean);
   }
-  return text
-    .split(/(?<=[.!?。！？])\s+/)
-    .map((part) => part.trim())
-    .filter(Boolean);
+  // No lookbehind: Safari before 16.4 rejects it, and that would stop the whole module.
+  const parts: string[] = [];
+  let start = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (SENTENCE_END.test(text.charAt(i)) && /\s/.test(text.charAt(i + 1))) {
+      parts.push(text.slice(start, i + 1));
+      start = i + 1;
+    }
+  }
+  parts.push(text.slice(start));
+  return parts.map((part) => part.trim()).filter(Boolean);
 }
 
 export interface LabelSplit {

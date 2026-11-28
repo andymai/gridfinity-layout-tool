@@ -11,6 +11,21 @@ describe('sentences', () => {
     expect(sentences('About 1.5 kg of filament', 'en')).toEqual(['About 1.5 kg of filament']);
   });
 
+  it('splits the same way where the browser has no Intl.Segmenter', () => {
+    const intl = Intl as { Segmenter?: unknown };
+    const segmenter = intl.Segmenter;
+    intl.Segmenter = undefined;
+    try {
+      expect(sentences('148 things now have a home. Most of them.', 'en')).toEqual([
+        '148 things now have a home.',
+        'Most of them.',
+      ]);
+      expect(sentences('About 1.5 kg of filament', 'en')).toEqual(['About 1.5 kg of filament']);
+    } finally {
+      intl.Segmenter = segmenter;
+    }
+  });
+
   it('splits Japanese at its full stops', () => {
     expect(sentences('三角形 8,010 個。スライサーはまだ覚えています。', 'ja')).toEqual([
       '三角形 8,010 個。',

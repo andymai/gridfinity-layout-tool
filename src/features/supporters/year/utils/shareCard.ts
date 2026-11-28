@@ -7,6 +7,7 @@ import {
   lineBaseline,
   paintBinGlyph,
   roundRect,
+  roundRectPath,
 } from '../cards/paint';
 import { TEXT, familyFor } from '../look/fonts';
 import { applyTracking, cssFont, roleFont } from '../look/typeset';
@@ -82,7 +83,7 @@ function drawKeys(
     roundRect(ctx, MARGIN, y, 960, 128, 30, look.face);
     ctx.save();
     ctx.beginPath();
-    ctx.roundRect(MARGIN, y, 960, 128, 30);
+    roundRectPath(ctx, MARGIN, y, 960, 128, 30);
     ctx.clip();
     ctx.fillStyle = look.lip;
     ctx.fillRect(MARGIN, y, 960, 7);
