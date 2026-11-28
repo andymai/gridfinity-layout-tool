@@ -180,6 +180,17 @@ describe('docs-ask', () => {
       resting: true,
     });
     expect((await handle('GET'))._body).toEqual({ enabled: true, resting: false });
+    // A thumb from the app passes the app switch, with the docs switch off.
+    vi.stubEnv('DOCS_ASSISTANT_ENABLED', 'false');
+    const thumb = {
+      op: 'feedback',
+      door: 'app',
+      sessionId: 'abc12345-tab',
+      traceId: '3f2b8c1e-5d4a-4c3b-9a2e-1f0e9d8c7b6a',
+      value: 1,
+    };
+    expect((await handle('POST', thumb))._status).toBe(204);
+    expect((await handle('POST', { ...thumb, door: undefined }))._status).toBe(503);
     mocks.checkRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 60 });
     expect((await handle('POST', app))._status).toBe(429);
     expect(mocks.checkRateLimit).toHaveBeenLastCalledWith('203.0.113.1', 'app.ask');

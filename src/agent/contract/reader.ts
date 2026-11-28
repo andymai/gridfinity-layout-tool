@@ -107,7 +107,15 @@ export const myLayoutData = z
     moreBins: count,
     stashed: z
       .array(
-        z.object({ label: z.string().max(24), width: units, depth: units, height: units }).strict()
+        z
+          .object({
+            id: entityId.optional(),
+            label: z.string().max(24),
+            width: units,
+            depth: units,
+            height: units,
+          })
+          .strict()
       )
       .max(READER_LIMITS.STASHED),
     moreStashed: count,
@@ -191,7 +199,7 @@ export function formatMyLayout(data: MyLayoutData): string {
   }
   if (data.stashed.length > 0) {
     lines.push(
-      `In the stash: ${data.stashed.map((bin) => `${quote(bin.label)} (${size(bin.width, bin.depth)}, ${bin.height}u)`).join('; ')}${data.moreStashed > 0 ? `; and ${data.moreStashed} more` : ''}.`
+      `In the stash: ${data.stashed.map((bin) => `${quote(bin.label)} (${bin.id === undefined ? '' : `id ${quote(bin.id)}, `}${size(bin.width, bin.depth)}, ${bin.height}u)`).join('; ')}${data.moreStashed > 0 ? `; and ${data.moreStashed} more` : ''}.`
     );
   }
   return lines.join('\n');
