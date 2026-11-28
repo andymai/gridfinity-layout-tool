@@ -1,6 +1,10 @@
 {
   "tolerance": "1.1",
-  "allowedMissingRefs": ["b17779575", "components/Foo.tsx", "diffProps"],
+  "allowedMissingRefs": [
+    "b17779575",
+    "components/Foo.tsx",
+    "diffProps"
+  ],
   "words": {
     ".claude/skills/analytics-and-labs/SKILL.md": 1244,
     ".claude/skills/auth-and-sync/SKILL.md": 1320,
@@ -48,6 +52,7 @@
     "src/design-system/docs/README.md": 623,
     "src/design-system/docs/TOKENS.md": 1387,
     "src/features/.greptile/rules.md": 238,
+    "src/features/ask-ai/README.md": 226,
     "src/features/baseplate/README.md": 3726,
     "src/features/bin-designer/README.md": 11242,
     "src/features/bin-inspector/README.md": 785,

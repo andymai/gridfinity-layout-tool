@@ -145,6 +145,11 @@ export function getStaticTranslation(key: string, vars?: TranslationVars): strin
   return interpolate(template, vars);
 }
 
+/** A key's English text, once English has loaded; undefined before or for an unknown key. */
+export function getEnglishTranslation(key: string): string | undefined {
+  return _loadedEn ? lookupKey(_loadedEn, key) : undefined;
+}
+
 /**
  * Cache for the full English translations (loaded lazily).
  * Used by getStaticTranslation and as fallback in t().

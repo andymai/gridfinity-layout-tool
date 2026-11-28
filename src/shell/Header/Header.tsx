@@ -21,6 +21,7 @@ import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { SaveStatus } from '@/shared/hooks';
 import type { ShareModalRenderProps } from '@/features/layout-library/components/LayoutManagerModal';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
+import { AskAiButton } from '@/features/ask-ai/components/AskAiButton';
 
 // Lazy load modals - only loaded when opened (with retry for chunk load failures)
 const LayoutManagerModal = lazyWithRetry(() =>
@@ -306,6 +307,7 @@ export function Header({ saveStatus }: HeaderProps) {
               />
             </svg>
           </IconButton>
+          <AskAiButton />
           <ShareButton />
         </div>
 

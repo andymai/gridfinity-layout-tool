@@ -156,6 +156,9 @@ importers:
       manifold-3d:
         specifier: 3.5.5
         version: 3.5.5(@gltf-transform/core@4.4.1)(@gltf-transform/extensions@4.4.1)(@gltf-transform/functions@4.4.1(@types/node@26.6.6))(esbuild-wasm@0.27.7)
+      marked:
+        specifier: ^18.2.0
+        version: 18.2.0
       occt-wasm:
         specifier: 5.18.3
         version: 5.18.3
@@ -325,9 +328,6 @@ importers:
       lint-staged:
         specifier: ^17.6.1
         version: 17.6.1
-      marked:
-        specifier: ^18.2.0
-        version: 18.2.0
       path-to-regexp:
         specifier: 6.3.0
         version: 6.3.0

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { answerSegments, docsPath, plainAnswer } from './render';
+import type { ShowMe } from './render';
 
 const isCapture = (id: string): boolean => id.startsWith('shot');
 const html = (text: string, streaming = false): string =>
@@ -112,5 +113,35 @@ describe("links after a read of the reader's data", () => {
     expect(out).toContain('href="/docs/a"');
     expect(out).not.toContain('href="https://evil.example');
     expect(out).toContain('Leak');
+  });
+});
+
+describe('show me', () => {
+  const showMe: ShowMe = {
+    showMe: (label: string) => label === 'Fit grid',
+    title: 'Show it in the app',
+  };
+  const render = (text: string, chips = showMe): string =>
+    answerSegments(text, {
+      streaming: false,
+      isCapture: () => false,
+      isPlan: () => false,
+      showMe: chips,
+      copyLabel: 'Kopieren',
+    })
+      .map((s) => (s.kind === 'html' ? s.html : ''))
+      .join('');
+
+  it('turns a label with a target into a button that carries the label', () => {
+    expect(render('Click [[ui:Fit grid]] or [[ui:Export]].')).toBe(
+      '<p>Click <button type="button" class="ui-label ui-label-show" data-show-me="Fit grid" title="Show it in the app">Fit grid</button> or <span class="ui-label">Export</span>.</p>\n'
+    );
+  });
+
+  it('escapes the label in the attribute, and words the copy button', () => {
+    const html = render('[[ui:"><img src=x>]]', { showMe: () => true, title: 'x' });
+    expect(html).not.toContain('<img');
+    expect(html).toContain('data-show-me="&quot;&gt;&lt;img src=x&gt;"');
+    expect(render('```\ncode\n```')).toContain('data-copy-code>Kopieren</button>');
   });
 });
