@@ -311,8 +311,6 @@ export function buildLightweightBase(
         ? buildSingleCellSocket(w, d, socketHeight)
         : buildSimplifiedCellSocket(w, d, socketHeight);
 
-    // The pads are placed before the feet are built. When a pad reaches past
-    // its foot's underside, each foot also builds a clip for the pads.
     const holeRadius = Math.max(withMagnet ? magnetRadius : 0, withScrew ? screwRadius : 0);
     const chamfer = padTakesChamfer(holeStyle);
     const padSites: Array<{ cell: CellInfo; positions: Array<[number, number]> }> = [];
@@ -360,11 +358,26 @@ export function buildLightweightBase(
     const clipPads = padSites.some(({ cell, positions }) =>
       positions.some((p) => padLeavesFoot(p, cell, holeRadius, unitX, unitY))
     );
+    // The foot of each cell the pads sit in, a hair inside its own faces, so a
+    // clipped pad never shares a face with the foot it is fused into. These
+    // are the whole cells, not the feet the plan splits them into: a half
+    // socket's pad bridges the gap between two half feet, and that bridge
+    // holds the pocket's wall and ceiling.
+    const padClips: Shape3D[] = clipPads
+      ? padSites.map(({ cell }) =>
+          translate(
+            scope.register(
+              buildFoot(
+                cell.widthUnits * unitX - CLEARANCE - 2 * COPLANAR_OVERLAP,
+                cell.depthUnits * unitY - CLEARANCE - 2 * COPLANAR_OVERLAP
+              )
+            ),
+            [cell.centerX, cell.centerY, 0]
+          )
+        )
+      : [];
 
     const feet: Shape3D[] = [];
-    // The feet, a hair inside their own faces, so a clipped pad never shares a
-    // face with the foot it is fused into.
-    const padClips: Shape3D[] = [];
     const voids: Shape3D[] = [];
     const openingTools: Shape3D[] = [];
     const undersideSupports: Shape3D[] = [];
@@ -385,16 +398,6 @@ export function buildLightweightBase(
           0,
         ]);
         feet.push(foot);
-        if (clipPads) {
-          padClips.push(
-            translate(
-              scope.register(
-                buildFoot(cellW_mm - 2 * COPLANAR_OVERLAP, cellD_mm - 2 * COPLANAR_OVERLAP)
-              ),
-              [cell.centerX, cell.centerY, 0]
-            )
-          );
-        }
 
         const innerW = cellW_mm - 2 * shellOffset;
         const innerD = cellD_mm - 2 * shellOffset;
