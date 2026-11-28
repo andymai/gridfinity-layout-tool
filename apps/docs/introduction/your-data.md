@@ -19,6 +19,7 @@ sources:
   - api/lib/posthogLogSink.ts
   - api/docs-ask.ts
   - apps/docs/.vitepress/theme/askAi/
+  - src/agent/client/
   - api/mcp.ts
   - api/lib/mcp/telemetry.ts
 ---
