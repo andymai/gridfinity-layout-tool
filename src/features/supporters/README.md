@@ -210,7 +210,7 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
 ## Your 2026 (`year/`)
 
 A year in review at `/your-2026` that ends by rolling these credits, with its own
-lazy entry (`year/index.ts`). It reuses this slice's clock, pixel font and palette.
+lazy entry (`year/index.ts`). It reuses this slice's clock.
 
 - **2026 work** is defined once in `src/shared/yearReview/yearWork.ts` for the
   stats and the dock row. `modifiedAt` and `updatedAt` are not evidence: a
@@ -222,13 +222,14 @@ lazy entry (`year/index.ts`). It reuses this slice's clock, pixel font and palet
   the route turns off the idle kernel prefetch.
 - **Handoff:** the current entry becomes `?card=thanks`, then
   `/supporters?from=your-2026` rolls even for a return visit.
-- **Time:** visible motion reads the story clock, never a timer, so the
-  launch-video capture stays frame-exact.
+- **Look:** each card is a `year/cards/` scene at 1080 × 1920, copy in the
+  DOM over one canvas, all drawn from the story clock, so the capture stays
+  frame-exact and the share PNG is the same scene, settled.
 - **3D:** `useYearMeshes` reads the mesh cache first, then generates on the
   shared worker only when the kernel is cached; the route turns off
   `useBackgroundThumbnailRegen` so nothing else uses the worker.
 - **Sound:** `YearSoundtrack` takes only a paused flag, never the story clock,
   so a card skip cannot lurch the tune. It shares the credits' sound setting.
 - **Share:** the PNG renders when a card settles, so the click shares at once
-  (a share sheet needs a fresh gesture). Canvas fonts need resolved families;
-  `PIXEL_FONT` holds a CSS variable, which `document.fonts.load` rejects.
+  (a share sheet needs a fresh gesture). Each display width is its own font
+  family, because canvas text cannot stretch a face in every browser.

@@ -72,6 +72,12 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^1.9.0
         version: 1.9.0(zod@4.6.7)
+      '@fontsource-variable/anybody':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource-variable/fredoka':
+        specifier: 5.3.0
+        version: 5.3.0
       '@fontsource/press-start-2p':
         specifier: 5.3.0
         version: 5.3.0
@@ -1275,6 +1281,12 @@ packages:
     peerDependenciesMeta:
       '@noble/hashes':
         optional: true
+
+  '@fontsource-variable/anybody@5.3.0':
+    resolution: {integrity: sha512-3u/FSV3mGv9xW3x+CdK9lAZYT1Y3NaRA1bexeoIuk9s5QE8sD8OOTcofvpPx0Z6M0Fq1WAJ06ZAw8hivdRQWHQ==}
+
+  '@fontsource-variable/fredoka@5.3.0':
+    resolution: {integrity: sha512-13w98iw2RcmYfZQRZPLSu+0YJK3HHm5A2XrpU26moFIAePmfiKfvkmEJUgkc8r5GNR+pbDijOueS1KdGAMAWmQ==}
 
   '@fontsource/press-start-2p@5.3.0':
     resolution: {integrity: sha512-gxWFxdeDglPhEYSwEeooomcaFK8kSQYLQwVxfnOJeYRj2sPEHXjpVtFgEaYfqzOjuAJGrIcJOipu2KY5YkbyuQ==}
@@ -7697,6 +7709,10 @@ snapshots:
       levn: 0.4.1
 
   '@exodus/bytes@1.16.0': {}
+
+  '@fontsource-variable/anybody@5.3.0': {}
+
+  '@fontsource-variable/fredoka@5.3.0': {}
 
   '@fontsource/press-start-2p@5.3.0': {}
 

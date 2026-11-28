@@ -1,18 +1,22 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import type { YearCard } from '../../utils/yearCards';
+import { yearCard, type YearCard } from '../../utils/yearCards';
 import { StoryPlayer } from './StoryPlayer';
 
-const cards: YearCard[] = [
-  { kind: 'intro', duration: 4 },
-  { kind: 'drawers', duration: 5 },
-  { kind: 'thanks', duration: 6 },
-];
+const cards: YearCard[] = [yearCard('intro'), yearCard('drawers'), yearCard('thanks', true)];
+
+beforeEach(() => {
+  // jsdom has no 2D canvas; the fill between cards draws in the browser pass.
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 function renderPlayer(overrides: Partial<Parameters<typeof StoryPlayer>[0]> = {}) {
   const props = {
     cards,
-    accent: '#3b82f6',
     onClose: vi.fn(),
     onReachEnd: vi.fn(),
     renderCard: (card: YearCard) => <p>card:{card.kind}</p>,
@@ -104,9 +108,35 @@ describe('StoryPlayer', () => {
     });
     key(' ');
     key('ArrowRight');
-    expect(screen.getByText('drawers@2.5')).toBeInTheDocument();
+    expect(screen.getByText(`drawers@${(cards[1]?.settle ?? 0).toFixed(1)}`)).toBeInTheDocument();
     key('ArrowLeft');
-    expect(screen.getByText('intro@2.5')).toBeInTheDocument();
+    expect(screen.getByText(`intro@${(cards[0]?.settle ?? 0).toFixed(1)}`)).toBeInTheDocument();
+  });
+
+  it("fills the empty stage with the first card's colour before the card shows", () => {
+    const seen: boolean[] = [];
+    renderPlayer({
+      renderCard: (card, _position, entering) => {
+        seen.push(entering);
+        return <p>card:{card.kind}</p>;
+      },
+    });
+    expect(seen[0]).toBe(true);
+    expect(document.querySelector('canvas[aria-hidden="true"]')).toHaveStyle({
+      visibility: 'visible',
+    });
+  });
+
+  it('cuts straight to a card it opens on, with no entrance', () => {
+    const seen: boolean[] = [];
+    renderPlayer({
+      initialIndex: 2,
+      renderCard: (card, _position, entering) => {
+        seen.push(entering);
+        return <p>card:{card.kind}</p>;
+      },
+    });
+    expect(seen.every((entering) => !entering)).toBe(true);
   });
 
   it('announces the final words once, outside the animated card', () => {

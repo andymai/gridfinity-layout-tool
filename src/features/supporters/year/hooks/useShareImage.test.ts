@@ -1,41 +1,72 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import type { ShareSpec } from '../components/YearCardView/shareSpec';
+import type { ModelSlot, Scene } from '../cards/scene';
 import type * as ShareCardModule from '../utils/shareCard';
 import type { ShareTheme } from '../utils/shareCard';
-import { useShareImage } from './useShareImage';
+import { useShareImage, type ShareRequest } from './useShareImage';
 
-const drawn: { title: string | null } = { title: null };
+const drawn: { kind: string | null; model: unknown } = { kind: null, model: undefined };
+const images = vi.hoisted(() => ({ load: vi.fn<(src: string) => Promise<HTMLImageElement>>() }));
+vi.mock('../utils/loadImage', () => ({ loadImage: images.load }));
 vi.mock('../utils/shareCard', async (original) => ({
   ...(await original<typeof ShareCardModule>()),
-  drawShareCard: (_ctx: unknown, spec: ShareSpec) => {
-    drawn.title = spec.title;
+  drawShareCard: (_ctx: unknown, scene: Scene, _theme: unknown, images: { model?: unknown }) => {
+    drawn.kind = scene.kind;
+    drawn.model = images.model;
   },
 }));
 
 const theme: ShareTheme = {
-  accent: '#f59e0b',
-  accentText: '#f59e0b',
-  appFont: 'Inter',
-  pixelFont: '"Press Start 2P"',
   kicker: 'Your 2026',
-  site: 'gridfinitylayouttool.com',
+  locale: 'en',
+  keys: ['Roll the credits', 'Support on Ko-fi'],
 };
 
-function card(title: string): ShareSpec {
-  return { title, lines: [], visual: { kind: 'big', text: '1' } };
+const slot: ModelSlot = {
+  kind: 'drop',
+  x: 0,
+  y: 400,
+  w: 1080,
+  h: 820,
+  origin: '50% 73%',
+  end: 6,
+  look: {
+    tint: '#D27800',
+    edge: '#2B1700',
+    edgeOpacity: 0.3,
+    sky: '#FFFFFF',
+    ground: '#2B1700',
+    rim: '#FFB81C',
+    fov: 24,
+    elevation: 30,
+    fit: 0.9,
+  },
+};
+
+function request(kind: Scene['kind'], thumbnail: string | null = null): ShareRequest {
+  return {
+    scene: {
+      kind,
+      colours: { bg: '#000000', ink: '#FFFFFF' },
+      texts: [],
+      draw: () => undefined,
+      still: 0,
+      ...(thumbnail ? { model: slot } : {}),
+    },
+    thumbnail,
+    turns: false,
+    modelFrames: 0,
+  };
 }
 
-const fontLoad = vi.fn<(font: string) => Promise<unknown>>();
-
 beforeEach(() => {
-  fontLoad.mockReset().mockResolvedValue([]);
-  Object.defineProperty(document, 'fonts', { value: { load: fontLoad }, configurable: true });
+  drawn.kind = null;
+  drawn.model = undefined;
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
     {} as CanvasRenderingContext2D
   );
   vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((done) => {
-    done(new Blob([drawn.title ?? '']));
+    done(new Blob([drawn.kind ?? '']));
   });
 });
 
@@ -44,37 +75,43 @@ afterEach(() => {
 });
 
 describe('useShareImage', () => {
-  it('waits for each new card before it offers an image', async () => {
-    const { result, rerender } = renderHook(({ spec }) => useShareImage(spec, theme), {
-      initialProps: { spec: card('A') },
-    });
+  it('draws the settled card and offers it as a PNG', async () => {
+    const drawers = request('drawers');
+    const { result } = renderHook(() => useShareImage(drawers, theme));
     await waitFor(() => expect(result.current).not.toBeNull());
-    let release: () => void = () => undefined;
-    fontLoad.mockReturnValue(new Promise((resolve) => (release = () => resolve([]))));
-    rerender({ spec: card('B') });
-    expect(result.current).toBeNull();
-    release();
-    await waitFor(() => expect(result.current).not.toBeNull());
-    expect(await result.current?.text()).toBe('B');
+    expect(await result.current?.text()).toBe('drawers');
   });
 
   it('drops an older render that lands after the card changed', async () => {
-    let releaseOld: () => void = () => undefined;
-    fontLoad.mockReturnValueOnce(new Promise((resolve) => (releaseOld = () => resolve([]))));
-    const { result, rerender } = renderHook(({ spec }) => useShareImage(spec, theme), {
-      initialProps: { spec: card('old') },
+    let release: () => void = () => undefined;
+    images.load.mockImplementationOnce(
+      () => new Promise((resolve) => (release = () => resolve(new Image())))
+    );
+    const first = request('complicated', 'data:image/png;base64,a');
+    const second = request('exports');
+    const { result, rerender } = renderHook(({ req }) => useShareImage(req, theme), {
+      initialProps: { req: first },
     });
-    rerender({ spec: card('new') });
+    rerender({ req: second });
     await waitFor(() => expect(result.current).not.toBeNull());
-    releaseOld();
+    release();
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(await result.current?.text()).toBe('new');
+    expect(await result.current?.text()).toBe('exports');
   });
 
-  it('still makes an image when the fonts fail to load', async () => {
-    fontLoad.mockRejectedValue(new Error('offline'));
-    const spec = card('A');
-    const { result } = renderHook(() => useShareImage(spec, theme));
+  it('falls back to the thumbnail when no 3D canvas is on screen', async () => {
+    images.load.mockResolvedValue(new Image());
+    const complicated = request('complicated', 'data:image/png;base64,a');
+    const { result } = renderHook(() => useShareImage(complicated, theme));
     await waitFor(() => expect(result.current).not.toBeNull());
+    expect(drawn.model).toBeInstanceOf(HTMLImageElement);
+  });
+
+  it('still makes an image when the thumbnail fails to load', async () => {
+    images.load.mockRejectedValue(new Error('offline'));
+    const complicated = request('complicated', 'data:image/png;base64,a');
+    const { result } = renderHook(() => useShareImage(complicated, theme));
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(drawn.model).toBeUndefined();
   });
 });

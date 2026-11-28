@@ -1,49 +1,45 @@
-import { Component, Suspense, type ReactNode } from 'react';
+import {
+  Component,
+  Fragment,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { Button } from '@/design-system';
 import type { LayoutPreview } from '@/core/types';
-import { useTranslation, type TFunction } from '@/i18n';
+import { useTranslation } from '@/i18n';
 import type { LengthUnit } from '@/shared/utils/lengthUnit';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { detectWebGL, markWebGLUnavailable, webglFailureReason } from '@/shared/webgl/detectWebGL';
+import { buildScene } from '../../cards/buildScene';
+import { BIN_GLYPH, GLYPH_SHARE, THUMB_SIZE, drawTinted } from '../../cards/paint';
+import { PRINT_SPAN, PRINT_START, modelPose } from '../../cards/modelScenes';
+import { CARD_H, CARD_W, type ModelSlot, type Scene, type TextBlock } from '../../cards/scene';
+import { TEXT, familyFor } from '../../look/fonts';
+import { enterPose, fadeAt, poseTransform } from '../../look/motion';
+import type { Measure } from '../../look/typeset';
 import type { YearMesh } from '../../hooks/useYearMeshes';
-import { canSpin } from '../SpinningBin/assembly';
-import type { ComplicatedPick } from '../../utils/complicatedPick';
-import { PIXEL_FONT } from '../../../components/CreditsRoll/creditsRollItems';
 import type { YearStats } from '../../types';
+import type { ComplicatedPick } from '../../utils/complicatedPick';
 import type { YearCard } from '../../utils/yearCards';
-import { formatCount, pizzaBoxes, spools } from '../../utils/yearFormat';
-import { readableAccent } from '../../utils/readableAccent';
-import { cardCopy, summaryRows } from './cardCopy';
-import { countUp, fraction, rise } from './cardMotion';
-import {
-  BinGrid,
-  BoxGrid,
-  DrawerPlan,
-  DrawerStack,
-  FileStack,
-  Footprint,
-  HeroThumb,
-  IntroVisual,
-  MonthBars,
-  SpoolRow,
-  ThumbGrid,
-  TypeBadge,
-} from './cardVisuals';
+import { useFrameSize } from '../CardFrame';
+import { loadImage } from '../../utils/loadImage';
+import { canSpin } from '../SpinningBin/assembly';
+import { cardCopy, summaryEntries } from './cardCopy';
+import { loadSpinningBin } from './spinningBinChunk';
 import { typeName } from './typeCopy';
 
-const SITE_HOST = 'gridfinitylayouttool.com';
-
 /** Lazy, so a device with no mesh never downloads the 3D viewer. */
-const SpinningBin = lazyWithRetry(() => import('../SpinningBin').then(namedExport('SpinningBin')));
+const SpinningBin = lazyWithRetry(() => loadSpinningBin().then(namedExport('SpinningBin')));
 
-interface BinShowcaseProps {
-  readonly mesh: YearMesh | undefined;
-  readonly thumbnail: string | null;
-  readonly name: string;
-  readonly elapsed: number;
-  readonly reduced: boolean;
-  readonly accent: string;
-}
+const PRINT_TIMING = { start: PRINT_START, span: PRINT_SPAN };
+/** The × between two numbers is set in the text face; every font has it, so any locale works. */
+const TIMES_STYLE: CSSProperties = { fontFamily: familyFor(TEXT, 'en') };
 
 interface ShowcaseBoundaryProps {
   readonly fallback: ReactNode;
@@ -73,29 +69,294 @@ class ShowcaseBoundary extends Component<ShowcaseBoundaryProps, { failed: boolea
   }
 }
 
-/** The saved thumbnail until the mesh is ready, then the real bin turning. */
-function BinShowcase({ mesh, thumbnail, name, elapsed, reduced, accent }: BinShowcaseProps) {
-  const thumb = <HeroThumb elapsed={elapsed} reduced={reduced} accent={accent} src={thumbnail} />;
-  if (!mesh || !canSpin(mesh) || !detectWebGL().available) return thumb;
+/** A drawn bin in the card's tint, for a design with no thumbnail yet. */
+function BinGlyph({ tint, edge }: { readonly tint: string; readonly edge: string }) {
+  return (
+    <svg
+      viewBox="0 0 120 120"
+      style={{ width: `${GLYPH_SHARE * 100}%`, height: `${GLYPH_SHARE * 100}%` }}
+      aria-hidden="true"
+    >
+      {BIN_GLYPH.map((part) => (
+        <rect
+          key={`${part.x}-${part.y}`}
+          x={part.x}
+          y={part.y}
+          width={part.w}
+          height={part.h}
+          rx={part.r}
+          fill={part.colour === 'tint' ? tint : edge}
+          opacity={part.opacity}
+        />
+      ))}
+    </svg>
+  );
+}
+
+/** The saved thumbnail tinted into the card, so the stand-in matches the 3D bin it replaces. */
+function TintedThumb({
+  src,
+  tint,
+  resolution,
+}: {
+  readonly src: string;
+  readonly tint: string;
+  readonly resolution: number;
+}) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    loadImage(src).then(
+      (next) => {
+        if (!cancelled) setImage(next);
+      },
+      () => undefined
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [src]);
+  useLayoutEffect(() => {
+    const canvas = ref.current;
+    if (!canvas || !image) return;
+    const size = Math.max(1, Math.round(THUMB_SIZE * resolution));
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.setTransform(resolution, 0, 0, resolution, 0, 0);
+    drawTinted(ctx, image, 0, 0, THUMB_SIZE, THUMB_SIZE, tint);
+  }, [image, tint, resolution]);
+  return <canvas ref={ref} style={{ width: THUMB_SIZE, height: THUMB_SIZE }} />;
+}
+
+interface ModelViewProps {
+  readonly slot: ModelSlot;
+  readonly mesh: YearMesh | undefined;
+  readonly thumbnail: string | null;
+  readonly name: string;
+  readonly elapsed: number;
+  readonly reduced: boolean;
+  readonly onDrawn?: () => void;
+}
+
+/** The real bin in its slot: the turning mesh, or the thumbnail until it can turn. */
+function ModelView({ slot, mesh, thumbnail, name, elapsed, reduced, onDrawn }: ModelViewProps) {
+  const { resolution } = useFrameSize();
+  const pose = modelPose(slot, elapsed, reduced);
+  // A thumbnail cannot print, so it fades in where the print would begin.
+  const stillOpacity = slot.kind === 'print' ? fadeAt(elapsed, PRINT_START, 0.45) : 1;
+  const still = (
+    <div
+      className="flex h-full w-full items-center justify-center"
+      style={{ opacity: stillOpacity }}
+    >
+      {thumbnail ? (
+        <TintedThumb src={thumbnail} tint={slot.look.tint} resolution={resolution} />
+      ) : (
+        <BinGlyph tint={slot.look.tint} edge={slot.look.edge} />
+      )}
+    </div>
+  );
+  const spins = mesh !== undefined && canSpin(mesh) && detectWebGL().available;
+  const style: CSSProperties = {
+    left: slot.x,
+    top: slot.y,
+    width: slot.w,
+    height: slot.h,
+    opacity: pose.opacity,
+    transform: pose.transform,
+    transformOrigin: slot.origin,
+  };
+  return (
+    <div className="absolute" style={style} data-year-model="">
+      {spins ? (
+        <ShowcaseBoundary fallback={still}>
+          <Suspense fallback={still}>
+            <SpinningBin
+              mesh={mesh.mesh}
+              restOffset={mesh.restOffset}
+              label={name}
+              look={slot.look}
+              angle={pose.angle}
+              printTime={pose.printTime}
+              printTiming={slot.kind === 'print' ? PRINT_TIMING : undefined}
+              resolution={resolution}
+              onDrawn={onDrawn}
+            />
+          </Suspense>
+        </ShowcaseBoundary>
+      ) : (
+        still
+      )}
+    </div>
+  );
+}
+
+/** The scene's drawing, redrawn only while something on it still moves. */
+function SceneCanvas({
+  scene,
+  elapsed,
+  reduced,
+}: {
+  readonly scene: Scene;
+  readonly elapsed: number;
+  readonly reduced: boolean;
+}) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const { resolution } = useFrameSize();
+  const t = Math.min(elapsed, scene.still);
+  useLayoutEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const width = Math.max(1, Math.round(CARD_W * resolution));
+    const height = Math.max(1, Math.round(CARD_H * resolution));
+    if (canvas.width !== width) canvas.width = width;
+    if (canvas.height !== height) canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    ctx.setTransform(resolution, 0, 0, resolution, 0, 0);
+    scene.draw({ ctx, t, reduced, resolution });
+  }, [scene, t, reduced, resolution]);
+  return (
+    <canvas ref={ref} className="absolute left-0 top-0" style={{ width: CARD_W, height: CARD_H }} />
+  );
+}
+
+function lineContent(line: string, times: boolean | undefined): ReactNode {
+  if (!times || !line.includes('×')) return line;
+  return line.split('×').map((part, index) => (
+    <Fragment key={index}>
+      {index > 0 && (
+        <span
+          className="relative top-[-0.1em] mx-[0.1em] text-[0.74em] font-semibold"
+          style={TIMES_STYLE}
+        >
+          ×
+        </span>
+      )}
+      {part}
+    </Fragment>
+  ));
+}
+
+function TextView({
+  block,
+  elapsed,
+  reduced,
+}: {
+  readonly block: TextBlock;
+  readonly elapsed: number;
+  readonly reduced: boolean;
+}) {
+  const pose =
+    block.enter < 0
+      ? null
+      : enterPose(elapsed, reduced ? block.reduceEnter : block.enter, block.rise, reduced);
   return (
     <div
-      className="h-[18em] w-[18em]"
+      className="absolute"
       style={{
-        opacity: fraction(elapsed, 0.2, 0.9, reduced),
-        filter: `drop-shadow(0 0 2em ${accent}33)`,
+        left: block.x,
+        top: block.y,
+        width: block.width,
+        fontFamily: block.font.family,
+        fontWeight: block.font.weight,
+        fontSize: block.font.size,
+        lineHeight: `${block.font.lineHeight}px`,
+        letterSpacing: block.font.tracking ? `${block.font.tracking}em` : undefined,
+        color: block.color,
+        opacity: pose?.opacity,
+        transform: pose && pose.y !== 0 ? `translateY(${pose.y.toFixed(2)}px)` : undefined,
       }}
     >
-      <ShowcaseBoundary fallback={thumb}>
-        <Suspense fallback={thumb}>
-          <SpinningBin
-            mesh={mesh.mesh}
-            restOffset={mesh.restOffset}
-            turnSeconds={reduced ? 0 : elapsed}
-            label={name}
-          />
-        </Suspense>
-      </ShowcaseBoundary>
+      {block.lines.map((line, index) => (
+        <span key={index} className="block whitespace-nowrap">
+          {lineContent(line, block.times)}
+        </span>
+      ))}
     </div>
+  );
+}
+
+interface ThanksKeysProps {
+  readonly y: number;
+  readonly enter: readonly [number, number];
+  readonly elapsed: number;
+  readonly reduced: boolean;
+  readonly locale: string;
+  readonly onRollCredits: () => void;
+  readonly onSupport: () => void;
+}
+
+const PRIMARY = {
+  '--key-face': '#D4FF38',
+  '--key-hover': '#E2FF6E',
+  '--key-ink': '#121A5C',
+  '--key-lip': '#EBFF9A',
+  '--key-wall': '#8FB314',
+} as CSSProperties;
+const SECONDARY = {
+  '--key-face': '#4A55F0',
+  '--key-hover': '#5C66FF',
+  '--key-ink': '#FFFFFF',
+  '--key-lip': '#6E78FF',
+  '--key-wall': '#161E8C',
+} as CSSProperties;
+
+/** The thank-you card's two buttons, as toy keys that sink when pressed. */
+function ThanksKeys({
+  y,
+  enter,
+  elapsed,
+  reduced,
+  locale,
+  onRollCredits,
+  onSupport,
+}: ThanksKeysProps) {
+  const t = useTranslation();
+  const keys = [
+    { label: t('your2026.thanks.rollCredits'), onClick: onRollCredits, look: PRIMARY },
+    { label: t('your2026.thanks.support'), onClick: onSupport, look: SECONDARY },
+  ];
+  const reducedAt = [2.5, 3].map((beats) => (beats * 60) / 88);
+  return (
+    <>
+      {keys.map((key, index) => {
+        const start = reduced ? (reducedAt[index] ?? 0) : (enter[index] ?? 0);
+        const pose = enterPose(elapsed, start, 30, reduced);
+        return (
+          <div
+            key={key.label}
+            className="y26-key"
+            style={{
+              ...key.look,
+              left: 60,
+              top: y + index * 170,
+              width: 960,
+              height: 150,
+              opacity: pose.opacity,
+              transform: poseTransform(pose),
+              // Before it rises in, a tap there advances the card; keys and screen readers still reach it.
+              pointerEvents: pose.opacity > 0.05 ? undefined : 'none',
+            }}
+          >
+            <div className="y26-key-wall" aria-hidden="true" />
+            <Button
+              variant="ghost"
+              className="y26-key-face"
+              style={{ fontFamily: familyFor(TEXT, locale) }}
+              onClick={key.onClick}
+            >
+              {key.label}
+            </Button>
+          </div>
+        );
+      })}
+    </>
   );
 }
 
@@ -104,7 +365,6 @@ export interface YearCardViewProps {
   /** Seconds since the card began. */
   readonly elapsed: number;
   readonly stats: YearStats;
-  readonly accent: string;
   readonly locale: string;
   readonly unit: LengthUnit;
   readonly reducedMotion: boolean;
@@ -112,207 +372,56 @@ export interface YearCardViewProps {
   readonly drawerPreview: LayoutPreview | null;
   readonly meshes: ReadonlyMap<string, YearMesh>;
   readonly complicated: ComplicatedPick | null;
+  readonly measure: Measure;
+  /** While the first card's colour fills in, the card is there for screen readers only. */
+  readonly hidden?: boolean;
+  /** The card's 3D bin drew its first frame. */
+  readonly onModelDrawn?: () => void;
   readonly onRollCredits: () => void;
   readonly onSupport: () => void;
 }
 
-interface Motion {
-  readonly elapsed: number;
-  readonly reduced: boolean;
-  readonly accent: string;
-}
-
-interface CardBodyProps extends Omit<Motion, 'accent'> {
-  readonly visual?: ReactNode;
-  readonly kicker?: string;
-  readonly title: string;
-  readonly lines?: readonly string[];
-  readonly accentText: string;
-  readonly footer?: ReactNode;
-}
-
-function CardBody({
-  visual,
-  kicker,
-  title,
-  lines = [],
-  accentText,
-  elapsed,
-  reduced,
-  footer,
-}: CardBodyProps) {
-  return (
-    <div className="flex min-h-0 flex-1 flex-col px-[1.6em] pb-[1.8em] pt-[0.8em]">
-      <div className="flex min-h-0 flex-1 items-center justify-center">{visual}</div>
-      <div>
-        {kicker && (
-          <p
-            className="mb-[0.6em] text-[0.62em] uppercase tracking-[0.15em]"
-            style={{ fontFamily: PIXEL_FONT, color: accentText, ...rise(elapsed, 0.1, reduced) }}
-          >
-            {kicker}
-          </p>
-        )}
-        <h2
-          className="text-[2em] font-bold leading-[1.1] tracking-tight tabular-nums"
-          style={rise(elapsed, 0.2, reduced)}
-        >
-          {title}
-        </h2>
-        {lines.map((line, index) => (
-          <p
-            key={line}
-            className="mt-[0.5em] text-[1em] leading-snug text-white/70"
-            style={rise(elapsed, 0.9 + index * 0.35, reduced)}
-          >
-            {line}
-          </p>
-        ))}
-        {footer}
+/** The words of the card, whole, for screen readers; the drawn copy is split across type roles. */
+function CardWords({
+  card,
+  input,
+}: {
+  readonly card: YearCard;
+  readonly input: Parameters<typeof cardCopy>[1];
+}) {
+  if (card.kind === 'summary') {
+    return (
+      <div className="sr-only">
+        <h2>{String(input.stats.year)}</h2>
+        <dl>
+          {summaryEntries(input).map((entry) => (
+            <div key={entry.kind}>
+              <dt>{entry.label}</dt>
+              <dd>{entry.value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
-    </div>
-  );
-}
-
-interface SummaryCardProps extends Omit<Motion, 'accent'> {
-  readonly rows: readonly [string, string][];
-  readonly year: number;
-  readonly accentText: string;
-}
-
-function SummaryCard({ rows, year, accentText, elapsed, reduced }: SummaryCardProps) {
-  return (
-    <div className="flex min-h-0 flex-1 flex-col justify-center px-[1.6em] pb-[1.8em]">
-      <p
-        className="mb-[1em] text-[2.6em] leading-none"
-        style={{ fontFamily: PIXEL_FONT, color: accentText, ...rise(elapsed, 0.1, reduced) }}
-      >
-        {year}
-      </p>
-      <dl className="flex flex-col gap-[0.7em]">
-        {rows.map(([label, value], index) => (
-          <div
-            key={label}
-            className="flex items-baseline justify-between gap-[1em] border-b border-white/10 pb-[0.5em]"
-            style={rise(elapsed, 0.3 + index * 0.25, reduced)}
-          >
-            <dt className="text-[0.95em] text-white/60">{label}</dt>
-            <dd className="text-right text-[1.3em] font-bold tabular-nums">{value}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="mt-[1.4em] text-[0.75em] text-white/40">{SITE_HOST}</p>
-    </div>
-  );
-}
-
-interface VisualInput {
-  readonly motion: Motion;
-  readonly accentText: string;
-  readonly stats: YearStats;
-  readonly locale: string;
-  readonly supporterCount: number;
-  readonly drawerPreview: LayoutPreview | null;
-  readonly meshes: ReadonlyMap<string, YearMesh>;
-  readonly complicated: ComplicatedPick | null;
-  readonly t: TFunction;
-}
-
-function cardVisual(card: YearCard, input: VisualInput): ReactNode {
-  const { motion, accentText, stats, locale, drawerPreview, t } = input;
-  const { elapsed, reduced, accent } = motion;
-  switch (card.kind) {
-    case 'intro':
-      return <IntroVisual {...motion} year={stats.year} />;
-    case 'drawers':
-      return <DrawerStack {...motion} count={stats.drawers} />;
-    case 'bins':
-      return <BinGrid {...motion} count={stats.binsPlaced} />;
-    case 'area':
-      return <BoxGrid {...motion} count={pizzaBoxes(stats.drawerAreaMm2)} />;
-    case 'biggest':
-      return drawerPreview && <DrawerPlan {...motion} preview={drawerPreview} />;
-    case 'size':
-      return (
-        stats.favouriteSize && (
-          <Footprint
-            {...motion}
-            width={stats.favouriteSize.width}
-            depth={stats.favouriteSize.depth}
-          />
-        )
-      );
-    case 'designs':
-      return (
-        <ThumbGrid
-          {...motion}
-          thumbnails={stats.complexityShortlist.map((entry) => entry.thumbnail)}
-        />
-      );
-    case 'month':
-      return (
-        stats.busiestMonth && (
-          <MonthBars
-            {...motion}
-            counts={stats.monthCounts}
-            busiest={stats.busiestMonth.month}
-            locale={locale}
-            year={stats.year}
-          />
-        )
-      );
-    case 'filament':
-      return stats.filament && <SpoolRow {...motion} count={spools(stats.filament.grams)} />;
-    case 'longest':
-      return (
-        stats.longestPrint && (
-          <BinShowcase
-            {...motion}
-            mesh={input.meshes.get(stats.longestPrint.id)}
-            thumbnail={stats.longestPrint.thumbnail}
-            name={stats.longestPrint.name}
-          />
-        )
-      );
-    case 'complicated':
-      return (
-        input.complicated && (
-          <BinShowcase
-            {...motion}
-            mesh={input.meshes.get(input.complicated.design.id)}
-            thumbnail={input.complicated.design.thumbnail}
-            name={input.complicated.design.name}
-          />
-        )
-      );
-    case 'exports':
-      return <FileStack {...motion} count={stats.exports} />;
-    case 'type':
-      return <TypeBadge {...motion} accent={accentText} name={typeName(t, stats.type.id)} />;
-    case 'thanks':
-      return (
-        <p
-          className="text-[4.2em] font-bold leading-none tabular-nums"
-          style={{
-            color: accentText,
-            textShadow: `0 0 0.5em ${accent}66`,
-            ...rise(elapsed, 0.1, reduced),
-          }}
-          aria-hidden="true"
-        >
-          {formatCount(locale, countUp(input.supporterCount, elapsed, reduced))}
-        </p>
-      );
-    case 'summary':
-      return null;
+    );
   }
+  const copy = cardCopy(card.kind, input);
+  if (!copy) return null;
+  return (
+    <div className="sr-only">
+      {copy.kicker && <p>{copy.kicker}</p>}
+      {card.kind === 'type' && <p>{typeName(input.t, input.stats.type.id)}</p>}
+      <h2>{copy.title}</h2>
+      {copy.lines.map((line) => (
+        <p key={line}>{line}</p>
+      ))}
+    </div>
+  );
 }
 
 export function YearCardView({
   card,
   elapsed,
   stats,
-  accent,
   locale,
   unit,
   reducedMotion: reduced,
@@ -320,63 +429,78 @@ export function YearCardView({
   drawerPreview,
   meshes,
   complicated,
+  measure,
+  hidden = false,
+  onModelDrawn,
   onRollCredits,
   onSupport,
 }: YearCardViewProps) {
   const t = useTranslation();
-  const accentText = readableAccent(accent);
-  const input = { t, stats, locale, unit, supporterCount, complicated };
-
-  if (card.kind === 'summary') {
-    return (
-      <SummaryCard
-        rows={summaryRows(input)}
-        year={stats.year}
-        accentText={accentText}
-        elapsed={elapsed}
-        reduced={reduced}
-      />
-    );
-  }
-
-  const copy = cardCopy(card.kind, {
-    ...input,
-    shown: (value) => countUp(value, elapsed, reduced),
-  });
-  if (!copy) return null;
-
-  const footer =
-    card.kind === 'thanks' ? (
-      <div className="mt-[1.4em] flex flex-col gap-[0.6em]" style={rise(elapsed, 1.6, reduced)}>
-        <Button variant="primary" size="lg" onClick={onRollCredits} className="w-full">
-          {t('your2026.thanks.rollCredits')}
-        </Button>
-        <Button variant="secondary" size="lg" onClick={onSupport} className="w-full">
-          {t('your2026.thanks.support')}
-        </Button>
-      </div>
-    ) : undefined;
-
-  return (
-    <CardBody
-      visual={cardVisual(card, {
-        motion: { elapsed, reduced, accent },
-        accentText,
-        stats,
-        locale,
-        supporterCount,
-        drawerPreview,
-        meshes,
-        complicated,
+  const scene = useMemo(
+    () =>
+      buildScene({
+        card,
         t,
-      })}
-      kicker={copy.kicker}
-      title={copy.title}
-      lines={copy.lines}
-      accentText={accentText}
-      elapsed={elapsed}
-      reduced={reduced}
-      footer={footer}
-    />
+        locale,
+        unit,
+        stats,
+        supporterCount,
+        complicated,
+        drawerPreview,
+        measure,
+      }),
+    [card, t, locale, unit, stats, supporterCount, complicated, drawerPreview, measure]
+  );
+  const copyInput = {
+    t,
+    locale,
+    unit,
+    stats,
+    supporterCount,
+    complicated,
+    shown: (value: number) => value,
+  };
+  const modelSource =
+    card.kind === 'longest'
+      ? stats.longestPrint
+      : card.kind === 'complicated'
+        ? (complicated?.design ?? null)
+        : null;
+  return (
+    <>
+      <CardWords card={card} input={copyInput} />
+      {scene && (
+        <div className="absolute inset-0" style={hidden ? { visibility: 'hidden' } : undefined}>
+          <div aria-hidden="true">
+            <SceneCanvas scene={scene} elapsed={elapsed} reduced={reduced} />
+            {scene.model && modelSource && (
+              <ModelView
+                slot={scene.model}
+                mesh={meshes.get(modelSource.id)}
+                thumbnail={modelSource.thumbnail}
+                name={modelSource.name}
+                elapsed={elapsed}
+                reduced={reduced}
+                onDrawn={onModelDrawn}
+              />
+            )}
+            {scene.texts.map((block) => (
+              <TextView key={block.key} block={block} elapsed={elapsed} reduced={reduced} />
+            ))}
+          </div>
+          {scene.keys && (
+            <ThanksKeys
+              y={scene.keys.y}
+              enter={scene.keys.enter}
+              elapsed={elapsed}
+              reduced={reduced}
+              locale={locale}
+              onRollCredits={onRollCredits}
+              onSupport={onSupport}
+            />
+          )}
+        </div>
+      )}
+    </>
   );
 }

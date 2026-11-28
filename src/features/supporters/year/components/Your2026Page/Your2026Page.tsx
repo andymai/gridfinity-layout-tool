@@ -9,28 +9,32 @@ import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { useYour2026Routing } from '@/shared/hooks/useYour2026Routing';
 import { markYearReviewSeen } from '@/shared/yearReview/dockRow';
 import { isYearReviewOpen, YEAR_REVIEW_YEAR } from '@/shared/yearReview/window';
+import { detectWebGL } from '@/shared/webgl/detectWebGL';
 import { useSupportersData } from '../../../hooks/useSupportersData';
-import { getSupportersPalette } from '../../../scene/palette';
 import { getSupporterCount } from '../../../utils/supportersData';
 import { SoundToggle } from '../../../components/SoundToggle';
 import { readSoundOn, saveSoundOn } from '../../../utils/soundPreference';
 import { useSampleYear } from '../../hooks/useSampleYear';
-import { useShareImage } from '../../hooks/useShareImage';
+import { useShareImage, type ShareRequest } from '../../hooks/useShareImage';
+import { useYearFonts } from '../../hooks/useYearFonts';
 import { useYearMeshes } from '../../hooks/useYearMeshes';
 import { useYearSoundtrack } from '../../hooks/useYearSoundtrack';
 import { useYearReviewData } from '../../hooks/useYearReviewData';
 import { meshCandidates, pickComplicated } from '../../utils/complicatedPick';
 import type { YearCard } from '../../utils/yearCards';
-import { readableAccent } from '../../utils/readableAccent';
+import { buildScene } from '../../cards/buildScene';
+import { DISPLAY, TEXT, familyFor } from '../../look/fonts';
+import { PALETTES } from '../../look/palettes';
 import { ShareButton } from '../ShareButton';
-import { shareSpecFor } from '../YearCardView/shareSpec';
 import { buildYearCards } from '../../utils/yearCards';
 import { hasYearActivity } from '../../utils/yearStats';
 import { StoryPlayer } from '../StoryPlayer';
-import { YearCardView, describeCard } from '../YearCardView';
+import { YearCardView, describeCard, preloadSpinningBin } from '../YearCardView';
 import { YearStage } from '../YearStage';
+import { canSpin } from '../SpinningBin/assembly';
 
-const SITE_HOST = 'gridfinitylayouttool.com';
+/** Status screens stand on the opening card's colours. */
+const STATUS_COLOURS = { bg: PALETTES.intro.bg, ink: PALETTES.intro.ink };
 
 /** Doors that pass `?from=`; anything else is a direct visit. */
 function openSource(from: string | null): 'dock' | 'whats_new' | 'direct' {
@@ -49,22 +53,50 @@ interface StatusCardProps {
   readonly secondary?: StatusAction;
 }
 
+/** The thank-you card's keys at status-screen size: lime first, cobalt second. */
+const STATUS_KEYS = [
+  {
+    background: '#D4FF38',
+    color: '#121A5C',
+    boxShadow: 'inset 0 0.25em 0 #EBFF9A, 0 0.35em 0 #8FB314',
+  },
+  {
+    background: '#4A55F0',
+    color: '#FFFFFF',
+    boxShadow: 'inset 0 0.25em 0 #6E78FF, 0 0.35em 0 #161E8C',
+  },
+] as const;
+
 function StatusCard({ title, line, action, secondary }: StatusCardProps) {
+  const locale = useCurrentLocale();
+  const text = familyFor(TEXT, locale);
   return (
-    <div className="flex flex-1 flex-col justify-end px-[1.6em] pb-[1.8em]">
-      <h2 className="text-[1.8em] font-bold leading-[1.15] tracking-tight">{title}</h2>
-      {line && <p className="mt-[0.6em] text-white/70">{line}</p>}
+    <div
+      className="flex flex-1 flex-col justify-end px-[1.6em] pb-[2.2em]"
+      style={{ fontFamily: text }}
+    >
+      <h2
+        className="text-[2.6em] leading-[0.95]"
+        style={{ fontFamily: familyFor(DISPLAY, locale), fontWeight: 900 }}
+      >
+        {title}
+      </h2>
+      {line && <p className="mt-[0.7em] text-[1.1em] font-semibold leading-snug">{line}</p>}
       {(action || secondary) && (
-        <div className="mt-[1.4em] flex flex-col gap-[0.6em]">
-          {action && (
-            <Button variant="primary" size="lg" onClick={action.onClick} className="w-full">
-              {action.label}
-            </Button>
-          )}
-          {secondary && (
-            <Button variant="secondary" size="lg" onClick={secondary.onClick} className="w-full">
-              {secondary.label}
-            </Button>
+        <div className="mt-[1.6em] flex flex-col gap-[0.9em]">
+          {[action, secondary].map((each, index) =>
+            each ? (
+              <Button
+                key={each.label}
+                variant="ghost"
+                size="lg"
+                onClick={each.onClick}
+                className="w-full rounded-[0.9em] text-[1.05em] font-semibold hover:brightness-105 focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-white"
+                style={{ ...STATUS_KEYS[index], fontFamily: text }}
+              >
+                {each.label}
+              </Button>
+            ) : null
           )}
         </div>
       )}
@@ -103,12 +135,10 @@ function YearReview({ demo }: { readonly demo: boolean }) {
   const real = useYearReviewData(YEAR_REVIEW_YEAR, allowed && !demo);
   const sample = useSampleYear(demo);
   const data = demo ? sample.data : real;
-  const accentName = useSettingsStore((s) => s.settings.accentColor);
   const unit = useSettingsStore((s) => s.settings.measureUnit);
   const entries = useLibraryStore((s) => s.library.entries);
   const { data: supporters, settled: supportersSettled } = useSupportersData();
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
-  const accent = getSupportersPalette('dark', accentName).accent;
 
   useEffect(() => {
     if (!allowed) replaceWithHome();
@@ -139,6 +169,9 @@ function YearReview({ demo }: { readonly demo: boolean }) {
     !demo && stats !== null && hasYearActivity(stats)
   );
   const meshes = demo ? sample.meshes : liveMeshes;
+  useEffect(() => {
+    if (meshes.size > 0) preloadSpinningBin();
+  }, [meshes]);
   // The sample knows its counts before its meshes load, so its pick never waits.
   const triangles = demo ? sample.triangles : null;
   const complicated = useMemo(
@@ -152,39 +185,74 @@ function YearReview({ demo }: { readonly demo: boolean }) {
     [stats, meshes, triangles]
   );
   const [settledCard, setSettledCard] = useState<YearCard | null>(null);
+  const [modelFrames, setModelFrames] = useState(0);
+  const onModelDrawn = useCallback(() => setModelFrames((count) => count + 1), []);
   // Stable on purpose: a new handler makes the player call it again with no card
   // change, which would clear the image the settled card prepared.
   const onCardChange = useCallback(() => setSettledCard(null), []);
   const supporterCount = getSupporterCount(supporters);
-  const shareSpec = useMemo(
+  // Every word the cards set, so the font load fetches exactly the subsets they need.
+  const fontSample = useMemo(
     () =>
-      settledCard && stats
-        ? shareSpecFor(settledCard, {
-            t,
-            stats,
-            locale,
-            unit,
-            supporterCount,
-            complicated,
-            drawerPreview,
-            meshes,
-          })
+      stats
+        ? cards
+            .map((card) =>
+              describeCard(card, { t, stats, locale, unit, supporterCount, complicated })
+            )
+            .join(' ')
         : null,
-    [settledCard, stats, t, locale, unit, supporterCount, complicated, drawerPreview, meshes]
+    [cards, stats, t, locale, unit, supporterCount, complicated]
   );
-  const shareTheme = useMemo(() => {
-    // Canvas fonts cannot read CSS variables, so the families are resolved here.
-    const appFont = getComputedStyle(document.body).fontFamily;
+  const fonts = useYearFonts(fontSample);
+  const shareRequest = useMemo<ShareRequest | null>(() => {
+    if (!settledCard || !stats) return null;
+    const scene = buildScene({
+      card: settledCard,
+      t,
+      locale,
+      unit,
+      stats,
+      supporterCount,
+      complicated,
+      drawerPreview,
+      measure: fonts.measure,
+    });
+    if (!scene) return null;
+    const design =
+      settledCard.kind === 'longest'
+        ? stats.longestPrint
+        : settledCard.kind === 'complicated'
+          ? (complicated?.design ?? null)
+          : null;
+    const mesh = design ? meshes.get(design.id) : undefined;
     return {
-      accent,
-      accentText: readableAccent(accent),
-      appFont,
-      pixelFont: `"Press Start 2P", ${appFont}`,
-      kicker: t('your2026.kicker'),
-      site: SITE_HOST,
+      scene,
+      thumbnail: design?.thumbnail ?? null,
+      turns: mesh !== undefined && canSpin(mesh) && detectWebGL().available,
+      modelFrames,
     };
-  }, [accent, t]);
-  const shareBlob = useShareImage(shareSpec, shareTheme);
+  }, [
+    settledCard,
+    stats,
+    t,
+    locale,
+    unit,
+    supporterCount,
+    complicated,
+    drawerPreview,
+    fonts.measure,
+    meshes,
+    modelFrames,
+  ]);
+  const shareTheme = useMemo(
+    () => ({
+      kicker: t('your2026.kicker'),
+      locale,
+      keys: [t('your2026.thanks.rollCredits'), t('your2026.thanks.support')] as const,
+    }),
+    [t, locale]
+  );
+  const shareBlob = useShareImage(shareRequest, shareTheme);
 
   const onReachEnd = useCallback(() => trackEvent('your_2026_finished'), []);
 
@@ -219,7 +287,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
 
   if (data.status === 'error') {
     return (
-      <YearStage accent={accent} onClose={navigateHome}>
+      <YearStage colours={STATUS_COLOURS} onClose={navigateHome}>
         <StatusCard
           title={t('your2026.error.title')}
           action={{ label: t('your2026.error.retry'), onClick: retry }}
@@ -228,11 +296,16 @@ function YearReview({ demo }: { readonly demo: boolean }) {
     );
   }
 
-  // The thank-you card's count is its final word, so it waits for the live list.
-  if (!stats || (startOnThanks && !supportersSettled)) {
+  // The thank-you card's count is its final word, so it waits for the live list;
+  // the story waits for its faces, so no card wraps against a fallback.
+  if (!stats || (startOnThanks && !supportersSettled) || (hasYearActivity(stats) && !fonts.ready)) {
     return (
-      <YearStage accent={accent} onClose={navigateHome}>
-        <div className="flex flex-1 items-center justify-center text-white/60" role="status">
+      <YearStage colours={STATUS_COLOURS} onClose={navigateHome}>
+        <div
+          className="flex flex-1 items-center justify-center text-[1.1em] font-semibold"
+          style={{ fontFamily: familyFor(TEXT, locale) }}
+          role="status"
+        >
           {t('your2026.counting')}
         </div>
       </YearStage>
@@ -241,7 +314,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
 
   if (!hasYearActivity(stats)) {
     return (
-      <YearStage accent={accent} onClose={navigateHome}>
+      <YearStage colours={STATUS_COLOURS} onClose={navigateHome}>
         <StatusCard
           title={t('your2026.empty.title')}
           line={t('your2026.empty.line')}
@@ -256,7 +329,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
     <StoryPlayer
       cards={cards}
       initialIndex={startOnThanks ? cards.length - 1 : 0}
-      accent={accent}
+      reducedMotion={reducedMotion}
       onClose={navigateHome}
       onReachEnd={onReachEnd}
       onCardChange={onCardChange}
@@ -278,12 +351,13 @@ function YearReview({ demo }: { readonly demo: boolean }) {
           complicated,
         })
       }
-      renderCard={(card, position) => (
+      renderCard={(card, position, entering) => (
         <YearCardView
           card={card}
           elapsed={position.elapsed}
+          hidden={entering}
+          measure={fonts.measure}
           stats={stats}
-          accent={accent}
           locale={locale}
           unit={unit}
           reducedMotion={reducedMotion}
@@ -293,6 +367,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
           complicated={complicated}
           onRollCredits={rollCredits}
           onSupport={support}
+          onModelDrawn={onModelDrawn}
         />
       )}
     />

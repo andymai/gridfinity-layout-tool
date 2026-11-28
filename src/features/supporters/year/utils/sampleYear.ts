@@ -69,13 +69,31 @@ const DRAWER_BINS: readonly (readonly [number, number, number, number])[] = (() 
   return bins;
 })();
 
+/**
+ * Category colours the way a maker groups a workbench drawer: single-width
+ * screws, deep tools on the left and electronics on the right, tape between.
+ * The card shades them by group and never shows these colours.
+ */
+const CATEGORY = {
+  screws: '#64748b',
+  tools: '#ef4444',
+  electronics: '#3b82f6',
+  tape: '#f59e0b',
+} as const;
+
+function sampleCategory(x: number, w: number, d: number): string {
+  if (w === 1) return CATEGORY.screws;
+  if (d >= 2) return x + w / 2 < 11.5 ? CATEGORY.tools : CATEGORY.electronics;
+  return CATEGORY.tape;
+}
+
 export function sampleDrawerPreview(): LayoutPreview {
   const binMap: ThumbnailBin[] = DRAWER_BINS.map(([x, y, w, d]) => ({
     x: gridUnits(x),
     y: gridUnits(y),
     w: gridUnits(w),
     d: gridUnits(d),
-    c: '#f59e0b',
+    c: sampleCategory(x, w, d),
   }));
   return {
     drawerWidth: gridUnits(DRAWER_WIDTH),
