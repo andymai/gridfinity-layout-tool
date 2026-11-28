@@ -254,6 +254,27 @@ describe('planFloorPattern keep-outs', () => {
     expect(centres.sort()).toEqual(['-23.5,-13', '-23.5,13', '21,-13', '21,13']);
   });
 
+  it("reserves a half foot's corner pocket when only the magnet mouth takes the chamfer", () => {
+    // The 6mm screw is wider than the 4mm magnet's chamfered mouth, so the
+    // half foot's hole keeps its wall 8mm from the bin's edge.
+    const params = makeParams({
+      width: 1.5,
+      depth: 1,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'magnet_and_screw',
+        magnetDiameter: 4,
+        screwDiameter: 6,
+        cornerHolesOnly: true,
+        magnetChamfer: true,
+      },
+    });
+    const centres = (plan(params)?.windows ?? []).flatMap((w) =>
+      w.keepOuts.map((k) => `${w.x + (k.uMin + k.uMax) / 2},${w.y + (k.zMin + k.zMax) / 2}`)
+    );
+    expect(centres.sort()).toEqual(['-23.5,-13', '-23.5,13', '23.5,-13', '23.5,13']);
+  });
+
   it("keeps an L-shaped bin's five corner pockets, not the removed cell's", () => {
     const corners = { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, cornerHolesOnly: true };
     // 2x2 at half-unit resolution, bottom row first, top-right unit removed.
