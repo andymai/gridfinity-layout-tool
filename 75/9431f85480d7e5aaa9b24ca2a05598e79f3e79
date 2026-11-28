@@ -1,0 +1,32 @@
+src/features/generation/worker/generators/lightweightBaseBuilder.ts
+  s_cbdce95362cca9::t_3d2a93ed0726e2 356
+  s_cbdce95362cca9::t_c42822a419493e 54-62,158-173,307-355,358-360,381-384,386-390,480,520-525
+  s_cbdce95362cca9::t_d7a3c3c0b9dd59 385
+  s_cbdce95362cca9::t_e819bfeb2f9be8 174-175
+src/features/generation/worker/generators/binGenerator.scenario.largeMagnets.test.ts
+  s_cbdce95362cca9::t_ec7d5f9dfd1b27 152-180
+  s_cbdce95362cca9::t_651781b050ff47 15
+  s_cbdce95362cca9::t_edb5811105e6d9 81-86,92,95-96,102-121
+  s_cbdce95362cca9::t_191bfc6b2f75a9 122
+src/shared/generation/meshPersistence.ts
+  s_cbdce95362cca9::t_4da368c83c5118 159
+  s_cbdce95362cca9::t_a097145bea7ea1 98-99
+src/features/generation/worker/generators/__kernel-tests__/holeProbes.ts
+  s_cbdce95362cca9::t_8b4793232b0e39 71-73,75,79-81,95-116,119-135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "759431f85480d7e5aaa9b24ca2a05598e79f3e79",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
