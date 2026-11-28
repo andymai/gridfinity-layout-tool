@@ -1,0 +1,127 @@
+src/agent/contract/changes.ts
+  s_cbdce95362cca9::t_524b64042cdbd0 61
+  s_cbdce95362cca9::t_21c08353858e69 1-60,62-69
+src/agent/reader/changes.test.ts
+  s_cbdce95362cca9::t_c4fdbb139554b7 1-85
+api/lib/docsAsk/prompt.test.ts
+  s_cbdce95362cca9::t_0331a04fa397ff 75-77
+  s_cbdce95362cca9::t_f5d9fc63e6b348 71-74,78-89
+scripts/docs-ask-eval/golden.ts
+  s_cbdce95362cca9::t_0331a04fa397ff 77
+  s_cbdce95362cca9::t_a7bf2143eafd1f 7-13,27-28,36-42,48,50-51,904-971
+api/lib/docsAsk/traces.ts
+  s_cbdce95362cca9::t_cdea422f90e93c 20-21,71
+src/agent/contract/index.ts
+  s_cbdce95362cca9::t_21b610ad57e9a7 27-35
+api/lib/docsAsk/history.test.ts
+  s_cbdce95362cca9::t_3520315301cbe7 228
+scripts/docs-ask-eval/run.ts
+  s_cbdce95362cca9::t_cc4a5dd5a4fe1c 124-127
+  s_cbdce95362cca9::t_fc552b95f63349 512
+  s_cbdce95362cca9::t_a7bf2143eafd1f 29,37-38,136-140,142,160-168,183-203,213-220,223-225,262-263,265,291,304,309-312,319
+  s_cbdce95362cca9::t_2d2183c465d611 318
+  s_cbdce95362cca9::t_50cf59ba446b14 513-515
+  s_9c710970268c27::t_65bd972f612ad6 315,333,507
+api/docs-ask.stream.test.ts
+  s_cbdce95362cca9::t_4cd10aea1e6c54 341,343,348-353,368,370,375
+  s_cbdce95362cca9::t_e0748d1154339a 43,47-53,168-175,326-340,342,344-347,354-367,369,371-374,376
+  s_cbdce95362cca9::t_b0124972695f98 377
+api/README.md
+  s_cbdce95362cca9::t_48db23cc12dc0b 93-94
+api/lib/docsAsk/clientTools.ts
+  s_cbdce95362cca9::t_bedc2013d8a5db 3-5,8,12,15-21,33-34,37-39,44,50,60,70,75-99,102-105,137-138,140
+src/agent/client/session.test.ts
+  s_cbdce95362cca9::t_a4ebf968cec6f2 3,58,69,266-343
+  s_cbdce95362cca9::t_71d0106c7a07d2 67
+  s_cbdce95362cca9::t_dc1b99c4cf2131 344
+package.json
+  s_cbdce95362cca9::t_a7bf2143eafd1f 91
+api/lib/docsAsk/traces.test.ts
+  s_cbdce95362cca9::t_3520315301cbe7 9
+scripts/docs-ask-eval/checks.test.ts
+  s_cbdce95362cca9::t_63e35a8cb6d5e0 98-99,104-110
+  s_cbdce95362cca9::t_27d51049d3077f 111-113
+src/agent/reader/changes.ts
+  s_cbdce95362cca9::t_cbdd7b83f2c68b 1-37,39-63
+  s_cbdce95362cca9::t_0331a04fa397ff 38
+api/docs-ask.test.ts
+  s_cbdce95362cca9::t_c292df6adace8c 48-53,57-60,167-185
+  s_cbdce95362cca9::t_ae3a1c06479b89 186-187
+src/agent/reader/readers.ts
+  s_cbdce95362cca9::t_c3ac852c07413f 149,154-156,161
+api/lib/docsAsk/history.ts
+  s_cbdce95362cca9::t_e1105309b07fd1 16,34-35,89,101,294-295,299,315-316,324,356-357,366
+src/core/cqrs/changeSet/schema.ts
+  s_cbdce95362cca9::t_305301b65645a5 19-33,41-49,55-56,60-61,67,69,72-73
+  s_cbdce95362cca9::t_dba5a119ba7a52 76-80
+src/agent/contract/reader.ts
+  s_cbdce95362cca9::t_1f10fc3108d9cb 64-67,70,95-99,101-104,139,168,171-175,187
+api/lib/docsAsk/spend.ts
+  s_cbdce95362cca9::t_dc78a55e60b7a2 2-3,22-23,50,52-53,56-57,60-62,67-72,76-81,83,92-93,95,103-109
+  s_cbdce95362cca9::t_44b3cf5be6f736 51,54-55
+api/lib/agent/index.ts
+  s_cbdce95362cca9::t_21b610ad57e9a7 5-6,8,14,21-22,42-43
+api/lib/docsAsk/prompt.ts
+  s_cbdce95362cca9::t_7bf3e9dba43ac2 3,64-90,96-108,115-116
+api/lib/redisKeys.ts
+  s_cbdce95362cca9::t_dc78a55e60b7a2 19,129-130
+  s_cbdce95362cca9::t_95d2421075fec0 131-132
+apps/docs/.vitepress/theme/askAi/useAskAi.ts
+  s_cbdce95362cca9::t_71d0106c7a07d2 78
+apps/docs/.vitepress/theme/components/AskAiAnswer.vue
+  s_cbdce95362cca9::t_71d0106c7a07d2 39
+api/lib/docsAsk/clientTools.test.ts
+  s_cbdce95362cca9::t_f5d9fc63e6b348 2-9,101-142
+  s_cbdce95362cca9::t_3bbe0b82ba9d89 143
+src/agent/server.ts
+  s_cbdce95362cca9::t_21b610ad57e9a7 31-39
+api/lib/docsAsk/spend.test.ts
+  s_cbdce95362cca9::t_25de9c6fad571c 54
+  s_cbdce95362cca9::t_a231550c7234f3 4,8,46-53
+  s_cbdce95362cca9::t_4a1b3ad5f2c72b 55-56
+api/lib/docsAsk/tools.ts
+  s_cbdce95362cca9::t_67d1f271b4513c 11,42-55,73,77,83-84,109,123-139,267,283-284,288,313,331-332,334-335,339,347-352,370,378,387,402,406-410
+  s_cbdce95362cca9::t_0331a04fa397ff 391-395
+  s_cbdce95362cca9::t_338fc0eca19544 76,260,278,303,323,333
+scripts/docs-ask-eval/appFixtures.ts
+  s_cbdce95362cca9::t_945b209884b3c2 1-68
+api/lib/docsAsk/agent.ts
+  s_cbdce95362cca9::t_338fc0eca19544 7,35-37,122-129,365,375-376,378-385,398-405
+src/agent/reader/readers.test.ts
+  s_cbdce95362cca9::t_9573b09f8b18a2 127-152
+api/docs-ask.ts
+  s_cbdce95362cca9::t_cdea422f90e93c 6,34,49-57,75,78,87,94,99,105,115-120,131,134-135,148,168-169,185-193,227,235,238,244-245,293,314-315,320,324,327,335,351-352,354,360,371,374-375,389,410-413
+  s_cbdce95362cca9::t_0331a04fa397ff 133
+api/lib/docsAsk/agent.test.ts
+  s_cbdce95362cca9::t_a231550c7234f3 136,245-248
+  s_cbdce95362cca9::t_5eb66c7f5a481c 249
+api/lib/rateLimit.ts
+  s_cbdce95362cca9::t_dc78a55e60b7a2 37,137
+src/agent/client/session.ts
+  s_cbdce95362cca9::t_ccbd4793fe3b94 18,24,26-28,31-38,46-50,53-54,60-64,109-110,121-124,202-204,250-253,357-359,379,406-411,413-419,429,453-465
+  s_cbdce95362cca9::t_ac7a008fa4fee2 466-467
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "897ff118c9ddf7f13b8322d301f3e4e3c0c0b894",
+  "prompts": {},
+  "sessions": {
+    "s_9c710970268c27": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a273415309635c935",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
