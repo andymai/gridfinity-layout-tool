@@ -68,17 +68,17 @@ export function holeCentres(mesh: MeshData, radius: number, ceilingDepth: number
 }
 
 /**
- * Solid between a hole and the flank beyond it, along `axis` in `direction`
- * from the hole's centre at `z` above the underside. Zero when the bore opens
- * through the flank, which leaves no material on that side of it.
+ * Every face a line through `[x, y]` along `axis` crosses at `z` above the
+ * underside, split into those behind the point and those beyond it in
+ * `direction`, nearest first.
  */
-export function outboardWallMm(
+function crossingsAlong(
   mesh: MeshData,
   [x, y]: readonly [number, number],
   z: number,
-  axis: 'x' | 'y' = 'x',
-  direction: 1 | -1 = 1
-): number {
+  axis: 'x' | 'y',
+  direction: 1 | -1
+): { behind: number; beyond: number[] } {
   const minZ = lowestZ(mesh);
   // Rotate the axes so a vertical column probe runs along the chosen one.
   const rotated = new Float32Array(mesh.vertices.length);
@@ -92,8 +92,44 @@ export function outboardWallMm(
   const across = axis === 'x' ? y : x;
   const along = axis === 'x' ? x : y;
   // Off the hole's axis by a hair: the bore has a vertex exactly on it.
-  const beyond = columnCrossings({ ...mesh, vertices: rotated }, across + 0.013, minZ + z)
-    .filter((crossing) => (crossing - along) * direction > 0)
-    .sort((a, b) => (a - b) * direction);
+  const all = columnCrossings({ ...mesh, vertices: rotated }, across + 0.013, minZ + z);
+  return {
+    behind: all.filter((crossing) => (crossing - along) * direction < 0).length,
+    beyond: all
+      .filter((crossing) => (crossing - along) * direction > 0)
+      .sort((a, b) => (a - b) * direction),
+  };
+}
+
+/**
+ * Solid between a hole and the flank beyond it, along `axis` in `direction`
+ * from the hole's centre at `z` above the underside. Zero when the bore opens
+ * through the flank, which leaves no material on that side of it.
+ */
+export function outboardWallMm(
+  mesh: MeshData,
+  point: readonly [number, number],
+  z: number,
+  axis: 'x' | 'y' = 'x',
+  direction: 1 | -1 = 1
+): number {
+  const { beyond } = crossingsAlong(mesh, point, z, axis, direction);
   return beyond.length >= 2 ? Math.abs(beyond[1] - beyond[0]) : 0;
+}
+
+/**
+ * Where the solid next to `point` ends along `axis` in `direction`, at `z`
+ * above the underside. From inside a bore, that is the far face of the wall
+ * beyond it. From inside solid (the same spot on a bin with no hole there),
+ * it is the first face the line crosses.
+ */
+export function outerFaceMm(
+  mesh: MeshData,
+  point: readonly [number, number],
+  z: number,
+  axis: 'x' | 'y' = 'x',
+  direction: 1 | -1 = 1
+): number {
+  const { behind, beyond } = crossingsAlong(mesh, point, z, axis, direction);
+  return beyond[behind % 2 === 1 ? 0 : 1] ?? Number.NaN;
 }
