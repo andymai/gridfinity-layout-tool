@@ -846,7 +846,7 @@ const MOST_COMPLICATED_CARD = 10;
 
 /**
  * The /your-2026 share card: three cards of the sample year (`?demo`), fanned
- * on the story's dark stage. Seasonal, so it stays out of OG_CARDS and their
+ * on the opening card's cobalt. Seasonal, so it stays out of OG_CARDS and their
  * shared template.
  */
 async function renderYour2026Og(browser: Browser): Promise<void> {
@@ -874,9 +874,8 @@ async function renderYour2026Og(browser: Browser): Promise<void> {
     for (const index of YOUR_2026_CARDS) {
       for (; at < index; at++) await page.keyboard.press('ArrowRight');
       if (index === MOST_COMPLICATED_CARD) {
-        await page.waitForSelector('section[aria-roledescription="slide"] canvas', {
-          timeout: 60000,
-        });
+        // The turning bin's own canvas; every card also draws on a 2D one.
+        await page.waitForSelector('[data-year-model] [role="img"] canvas', { timeout: 60000 });
       }
       await page.waitForTimeout(1500);
       const png = await page.screenshot({ type: 'png' });
@@ -891,22 +890,19 @@ async function renderYour2026Og(browser: Browser): Promise<void> {
 <html><head>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Press+Start+2P&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,900&family=Fredoka:wght@500;600&display=block" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     width: 1200px; height: 630px; overflow: hidden; position: relative;
-    background:
-      radial-gradient(circle at 88% 0%, rgba(245,158,11,0.35), rgba(245,158,11,0) 55%),
-      linear-gradient(160deg, #16161f, #0d0d14 60%, #0a0a0f);
-    color: #fafafa; font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: #2733E0; color: #FFFFFF; font-family: 'Fredoka', system-ui, sans-serif;
   }
   .text { position: absolute; left: 64px; top: 56px; bottom: 56px; width: 470px; display: flex; flex-direction: column; }
-  .kicker { font-family: 'Press Start 2P', monospace; font-size: 54px; line-height: 1.25; color: #f59e0b; text-shadow: 0 0 32px rgba(245,158,11,0.55); margin-top: 72px; }
-  .subtitle { font-size: 26px; line-height: 1.45; color: #d4d4d8; margin-top: 32px; }
-  .domain { margin-top: auto; font-size: 18px; font-weight: 600; color: #f59e0b; }
+  .kicker { font-family: 'Anybody', sans-serif; font-weight: 900; font-stretch: 62%; font-size: 150px; line-height: 0.86; letter-spacing: -0.01em; margin-top: 40px; }
+  .subtitle { font-size: 26px; font-weight: 600; line-height: 1.35; margin-top: 34px; }
+  .domain { margin-top: auto; font-size: 20px; font-weight: 500; color: #D4FF38; }
   .card { position: absolute; width: 210px; height: 373px; border-radius: 18px; overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 28px 70px rgba(0,0,0,0.6);
+    box-shadow: 0 24px 0 rgba(14,23,115,0.55), 0 30px 60px rgba(14,23,115,0.45);
     background-size: cover; background-position: center; }
   .left { left: 580px; top: 150px; transform: rotate(-7deg); }
   .right { left: 980px; top: 150px; transform: rotate(7deg); }
@@ -914,7 +910,7 @@ async function renderYour2026Og(browser: Browser): Promise<void> {
 </style>
 </head><body>
   <div class="text">
-    <div class="kicker">YOUR<br>2026</div>
+    <div class="kicker">Your<br>2026</div>
     <div class="subtitle">Your year in bins: drawers, prints, the most complicated thing you made, and the people who kept it free.</div>
     <div class="domain">GridfinityLayoutTool.com</div>
   </div>
@@ -930,7 +926,7 @@ async function renderYour2026Og(browser: Browser): Promise<void> {
   try {
     await page.setContent(html, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
-    // JPEG: the glow and the 3D render make a PNG over three times larger.
+    // JPEG: the 3D render makes a PNG over three times larger.
     const outFile = resolve(OG_OUT, 'your-2026.jpg');
     writeFileSync(outFile, await page.screenshot({ type: 'jpeg', quality: 90 }));
     console.log(`wrote ${outFile}`);
