@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/lightweightBaseBuilder.ts
+  s_cbdce95362cca9::t_02afd5d4816e73 536-547,549-551
+  s_cbdce95362cca9::t_ec2dabe360eadf 61-64
+  s_cbdce95362cca9::t_01d91306fe1686 498-499,501,503-505,533-535,552-561
+  s_cbdce95362cca9::t_09dab28f77e7be 169-174,176,180,186-191
+  s_cbdce95362cca9::t_d22743c88fed6b 328-334,371-374,376-386,388
+src/features/generation/worker/generators/binGenerator.scenario.largeMagnets.test.ts
+  s_cbdce95362cca9::t_d934756d23890a 291-310
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a0dfc56e2807ad9604d305125fea2bf2ef240176",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
