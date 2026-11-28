@@ -75,7 +75,7 @@ const chat = createSession({
   storage: () => store('session'),
   settings: () => readerSettings(store('local')),
   prepareCalls,
-  declinedLabel: 'Not shared',
+  declinedLabel: () => 'Not shared',
   newId: () => crypto.randomUUID(),
 });
 

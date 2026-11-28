@@ -146,14 +146,19 @@ export function summarizeLayout(layout: Layout, modifiedAt?: number): MyLayoutDa
     printBedMm: { width: layout.printBedSize, depth: layout.printBedDepth ?? layout.printBedSize },
     magnets: layout.baseplateParams?.magnetHoles ?? null,
     layers: layout.layers.map((layer) => ({
+      id: clip(layer.id, 64),
       name: clip(layer.name, 24),
       height: layer.height,
       bins: placed.filter((entry) => entry.bin.layerId === layer.id).length,
     })),
+    categories: layout.categories
+      .slice(0, 20)
+      .map((category) => ({ id: clip(category.id, 64), name: clip(category.name, 24) })),
     freeCells: freeCellsOnFirstLayer(layout),
     bins: placed.slice(0, READER_LIMITS.BINS).map(({ bin, layer }) => {
       const items = bin.items ?? [];
       return {
+        id: clip(bin.id, 64),
         label: clip(bin.label, 24),
         layer,
         x: bin.x,

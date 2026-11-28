@@ -17,6 +17,8 @@ export interface Generation {
 
 export interface AskTrace {
   readonly traceId: string;
+  /** The panel that asked: the docs site or the app. */
+  readonly door: 'docs' | 'app';
   readonly sessionId: string;
   readonly question: string;
   readonly page: string;
@@ -66,6 +68,7 @@ export function sendAskTrace(trace: AskTrace): void {
     $ai_latency: trace.latencySeconds,
     $ai_is_error: trace.error !== null,
     ...(trace.error === null ? {} : { $ai_error: trace.error }),
+    docs_ask_door: trace.door,
     docs_ask_corpus_version: trace.corpusVersion,
     docs_ask_steps: trace.steps,
     docs_ask_pages: trace.links,

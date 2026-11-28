@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { CLIENT_TOOLS, UNAVAILABLE_CONTENT, clientRun } from './clientTools.js';
+import {
+  APP_CLIENT_TOOLS,
+  CLIENT_TOOLS,
+  UNAVAILABLE_CONTENT,
+  clientRun,
+  clientToolsFor,
+} from './clientTools.js';
+import { CHANGES_DECLINED, CHANGES_UNAVAILABLE } from '../agent/index.js';
 import { toolDefinitions } from './tools.js';
 
 const layout = {
@@ -89,5 +96,48 @@ describe('the browser read tools', () => {
       expect(t).toMatchObject({ input_schema: { type: 'object', additionalProperties: false } });
       expect(JSON.stringify(t)).not.toContain('$schema');
     }
+  });
+});
+
+describe('propose_changes, the app door act', () => {
+  const change = APP_CLIENT_TOOLS.get('propose_changes');
+  const input = { summary: 'Add a bin for M3 screws', ops: [] };
+
+  it('is listed only on the app door, last, with the change set schema', () => {
+    const corpus = { version: 'test', map: '', pages: {} };
+    const names = (door: 'docs' | 'app') =>
+      toolDefinitions(corpus, door).map((t) => ('name' in t ? t.name : ''));
+    expect(names('docs')).not.toContain('propose_changes');
+    expect(names('app')).toEqual([...names('docs'), 'propose_changes']);
+    expect(JSON.stringify(toolDefinitions(corpus, 'app'))).toContain('addBin');
+    expect(clientToolsFor('docs')).toBe(CLIENT_TOOLS);
+    expect(clientToolsFor('app').has('propose_changes')).toBe(true);
+  });
+
+  it('tells the model what the reader did with the changes', () => {
+    if (!change) throw new Error('no propose_changes');
+    const applied = clientRun(change, input, {
+      callId: 'c',
+      status: 'shared',
+      data: { outcome: 'applied', added: { screws: 'bin-1' } },
+    });
+    expect(applied?.content).toContain('applied the changes ("Add a bin for M3 screws")');
+    expect(applied?.content).toContain('screws = "bin-1"');
+    const refused = clientRun(change, input, {
+      callId: 'c',
+      status: 'shared',
+      data: { outcome: 'refused', change: 2, reason: 'Bin overlaps another bin' },
+    });
+    expect(refused?.content).toContain('refused change 2: "Bin overlaps another bin"');
+    expect(clientRun(change, input, { callId: 'c', status: 'declined' })).toMatchObject({
+      isError: false,
+      content: CHANGES_DECLINED,
+    });
+    expect(clientRun(change, input, { callId: 'c', status: 'unavailable' })?.content).toBe(
+      CHANGES_UNAVAILABLE
+    );
+    expect(
+      clientRun(change, input, { callId: 'c', status: 'shared', data: { outcome: 'done' } })
+    ).toBeNull();
   });
 });

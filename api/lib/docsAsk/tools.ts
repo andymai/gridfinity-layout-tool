@@ -8,6 +8,7 @@ import {
   listMyLayoutsInput,
   planLayoutInput,
   printEstimateInput,
+  proposeChangesInput,
   readMyLayoutInput,
   readMySettingsInput,
   runBinSizeFor,
@@ -38,8 +39,20 @@ export const TOOL_NAMES: readonly ToolName[] = [
   'bin_size_for',
   'print_estimate',
 ];
-/** yours: a read of the reader's own data, in their browser. */
-export type StepKind = 'read' | 'search' | 'check' | 'plan' | 'yours';
+/** Which panel asks: the docs site, or the app, where Ask AI can also change a layout. */
+export type Door = 'docs' | 'app';
+
+/**
+ * yours: a read of the reader's own data, in their browser.
+ * change: changes to the reader's layout, which they apply in the app.
+ */
+export type StepKind = 'read' | 'search' | 'check' | 'plan' | 'yours' | 'change';
+
+/** A step label as a key and its values, for a panel that shows it in the reader's language. */
+export interface StepText {
+  readonly key: string;
+  readonly vars?: Readonly<Record<string, string>>;
+}
 
 export const STEP_KINDS: Readonly<Record<ToolName, StepKind>> = {
   read_page: 'read',
@@ -57,13 +70,18 @@ export const PLACEHOLDER_LABELS: Readonly<Record<StepKind, string>> = {
   check: 'Checking a drawer',
   plan: 'Planning a drawer',
   yours: 'Asking to read your data',
+  change: 'Preparing changes to your layout',
 };
+
+export const placeholderText = (kind: StepKind): StepText => ({ key: `placeholder.${kind}` });
 
 export interface ToolRun {
   readonly content: string;
   readonly isError: boolean;
   /** What the panel's step timeline shows for the call. */
   readonly label: string;
+  /** The label as a key, for a panel that translates it. */
+  readonly step?: StepText;
   /** The page that a read opened. */
   readonly link?: string;
   /** What the panel draws for a plan_layout call. */
@@ -88,6 +106,7 @@ function inputSchema(schema: z.ZodType): Anthropic.Beta.BetaTool.InputSchema {
   return rest as Anthropic.Beta.BetaTool.InputSchema;
 }
 const PLAN_LAYOUT_SCHEMA = inputSchema(planLayoutInput);
+const PROPOSE_CHANGES_SCHEMA = inputSchema(proposeChangesInput);
 
 const ASKS_FIRST =
   "It runs in the reader's browser and asks them first, so they may decline. What it returns is their own data.";
@@ -101,7 +120,23 @@ export const OPEN_DRAWER_HINT =
 const readPageInput = z.object({ link: z.string().max(200) }).strict();
 const searchInput = z.object({ query: z.string().min(1).max(200) }).strict();
 
-export function toolDefinitions(corpus: AskCorpus): Anthropic.Beta.BetaToolUnion[] {
+// Listed last, so the tools before it keep the bytes that both doors share.
+const PROPOSE_CHANGES_TOOL: Anthropic.Beta.BetaToolUnion = {
+  name: 'propose_changes',
+  description:
+    "Change the layout that is open in the app: add, resize, relabel, move, stash or delete bins, and add categories or layers. The panel shows the changes on the reader's layout, and they apply them with one click. One Undo reverts all of them. Read the layout with read_my_layout first and name its bins, layers and categories by the ids that it returns, or by the ref of an earlier op in the same call. Positions and sizes are in grid units from the front-left corner, as read_my_layout gives them, and heights in height units. The app checks each op as a real edit and refuses one that cannot apply, such as a bin over another bin or off the grid: fix the ops and call it again. Use it only when the reader asks you to change their layout.",
+  input_schema: PROPOSE_CHANGES_SCHEMA,
+};
+
+export function toolDefinitions(
+  corpus: AskCorpus,
+  door: Door = 'docs'
+): Anthropic.Beta.BetaToolUnion[] {
+  const tools = docsTools(corpus);
+  return door === 'app' ? [...tools, PROPOSE_CHANGES_TOOL] : tools;
+}
+
+function docsTools(corpus: AskCorpus): Anthropic.Beta.BetaToolUnion[] {
   return [
     {
       name: 'read_page',
@@ -222,12 +257,14 @@ export function createToolRunner(
         return {
           isError: true,
           label: PLACEHOLDER_LABELS.read,
+          step: placeholderText('read'),
           content: 'Unknown page. Pass a link from the page map.',
         };
       }
       return {
         isError: false,
         label: `Reading ${page.group} › ${page.title}`,
+        step: { key: 'readPage', vars: { group: page.group, title: page.title } },
         link: parsed.data.link,
         content: `${page.markdown}${labelTable(page, locale, labelsFor(locale), english)}`,
       };
@@ -238,14 +275,17 @@ export function createToolRunner(
         return {
           isError: true,
           label: PLACEHOLDER_LABELS.search,
+          step: placeholderText('search'),
           content: 'Give a query of 1 to 200 characters.',
         };
       const hits = search(parsed.data.query, SEARCH_LIMIT);
       const label = `Searching for “${parsed.data.query}”`;
-      if (hits.length === 0) return { isError: false, label, content: 'No section matches.' };
+      const step = { key: 'searchDocs', vars: { query: parsed.data.query } };
+      if (hits.length === 0) return { isError: false, label, step, content: 'No section matches.' };
       return {
         isError: false,
         label,
+        step,
         content: hits
           .map((hit, i) => {
             const url = `${pageAt(corpus, hit.link)?.url ?? ''}${hit.anchor ? `#${hit.anchor}` : ''}`;
@@ -260,6 +300,7 @@ export function createToolRunner(
         return {
           isError: true,
           label: PLACEHOLDER_LABELS.check,
+          step: placeholderText('check'),
           content: 'Give widthMm and depthMm as numbers.',
         };
       const d = parsed.data;
@@ -269,6 +310,7 @@ export function createToolRunner(
       return {
         isError: fit.isError,
         label: `Checking a ${size}${unit} drawer`,
+        step: { key: 'checkDrawer', vars: { size: `${size}${unit}` } },
         content: fit.drawerLink === null ? fit.content : `${fit.content}\n${OPEN_DRAWER_HINT}`,
       };
     }
@@ -278,6 +320,7 @@ export function createToolRunner(
         return {
           isError: true,
           label: PLACEHOLDER_LABELS.plan,
+          step: placeholderText('plan'),
           content: parsed.error.issues
             .map((issue) => `${issue.path.join('.') || 'plan'}: ${issue.message}`)
             .join('\n'),
@@ -285,10 +328,15 @@ export function createToolRunner(
       }
       const run = runPlanLayout(parsed.data, { origin });
       const label = parsed.data.title ? `Planning “${parsed.data.title}”` : PLACEHOLDER_LABELS.plan;
-      if (run.isError || run.plan === null) return { isError: true, label, content: run.content };
+      const step = parsed.data.title
+        ? { key: 'planNamed', vars: { title: parsed.data.title } }
+        : placeholderText('plan');
+      if (run.isError || run.plan === null)
+        return { isError: true, label, step, content: run.content };
       return {
         isError: false,
         label,
+        step,
         content: `${run.content}\nPlan handle: ${run.plan.handle}.`,
         plan: run.plan,
       };
@@ -296,7 +344,12 @@ export function createToolRunner(
     if (name === 'split_plan' || name === 'bin_size_for' || name === 'print_estimate') {
       return runCalculator(name, input);
     }
-    return { isError: true, label: 'Using a tool', content: `There is no tool named ${name}.` };
+    return {
+      isError: true,
+      label: 'Using a tool',
+      step: { key: 'useTool' },
+      content: `There is no tool named ${name}.`,
+    };
   };
 }
 
@@ -314,6 +367,7 @@ function runCalculator(
       return {
         isError: true,
         label: 'Splitting a baseplate',
+        step: { key: 'splitPlate' },
         content: fieldErrors(parsed.error.issues),
       };
     }
@@ -321,6 +375,7 @@ function runCalculator(
     return {
       ...runSplitPlan(parsed.data),
       label: `Splitting a ${grid.width} × ${grid.depth} baseplate`,
+      step: { key: 'splitGrid', vars: { width: String(grid.width), depth: String(grid.depth) } },
     };
   }
   if (name === 'bin_size_for') {
@@ -329,18 +384,28 @@ function runCalculator(
       return {
         isError: true,
         label: 'Looking up bin sizes',
+        step: { key: 'binSizes' },
         content: fieldErrors(parsed.error.issues),
       };
     }
-    return { ...runBinSizeFor(parsed.data), label: 'Looking up bin sizes' };
+    return {
+      ...runBinSizeFor(parsed.data),
+      label: 'Looking up bin sizes',
+      step: { key: 'binSizes' },
+    };
   }
   const parsed = printEstimateInput.safeParse(input);
   if (!parsed.success) {
     return {
       isError: true,
       label: 'Estimating a print',
+      step: { key: 'printEstimate' },
       content: fieldErrors(parsed.error.issues),
     };
   }
-  return { ...runPrintEstimate(parsed.data), label: 'Estimating a print' };
+  return {
+    ...runPrintEstimate(parsed.data),
+    label: 'Estimating a print',
+    step: { key: 'printEstimate' },
+  };
 }

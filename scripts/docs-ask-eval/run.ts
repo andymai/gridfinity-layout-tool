@@ -26,7 +26,7 @@ import {
   readMySettingsInput,
 } from '../../api/lib/agent/index.js';
 import type { PlanView } from '../../api/lib/agent/index.js';
-import { CLIENT_TOOLS, clientRun } from '../../api/lib/docsAsk/clientTools.js';
+import { clientRun, clientToolsFor } from '../../api/lib/docsAsk/clientTools.js';
 import type { ClientResult } from '../../api/lib/docsAsk/clientTools.js';
 import { pendingMessages, rebuildMessages, userTurn } from '../../api/lib/docsAsk/history.js';
 import type { PendingTurn, StoredTurn } from '../../api/lib/docsAsk/history.js';
@@ -34,6 +34,8 @@ import { docsSource } from '../../api/lib/docsAsk/source.js';
 import { ROUND_RESERVE_USD } from '../../api/lib/docsAsk/spend.js';
 import { createToolRunner, toolDefinitions } from '../../api/lib/docsAsk/tools.js';
 import type { ToolRunner } from '../../api/lib/docsAsk/tools.js';
+import { OPEN_LAYOUT_ID, appCode } from './appFixtures';
+import type { AppLayout } from './appFixtures';
 import { checkAnswer, checkPlans, chipLabels } from './checks';
 import type { AnswerChecks } from './checks';
 import { GOLDEN } from './golden';
@@ -119,7 +121,10 @@ const cases = (args.suggestions ? suggestionCases() : GOLDEN).filter(
   (c) =>
     (!args.only || args.only.split(',').includes(c.id)) && (!args.group || c.group === args.group)
 );
-const missing = cases.flatMap((c) => [c.page, ...c.sources]).filter((link) => !corpus.pages[link]);
+// An app door case's page is its place in the app, not a docs page.
+const missing = cases
+  .flatMap((c) => [...(c.door === 'app' ? [] : [c.page]), ...c.sources])
+  .filter((link) => !corpus.pages[link]);
 if (missing.length > 0)
   throw new Error(`Golden set names pages the corpus lacks: ${missing.join(', ')}`);
 
@@ -128,8 +133,13 @@ if (missing.length > 0)
  * reader allows it, or a decline. A case without a fixture declines every
  * read, since its question does not ask about the reader's data.
  */
-function readerResult(fixture: ReaderFixture | undefined, call: BrowserCall): ClientResult {
+async function readerResult(
+  fixture: ReaderFixture | undefined,
+  call: BrowserCall,
+  app: { layout: AppLayout } | null
+): Promise<ClientResult> {
   const id = call.id;
+  if (call.name === 'propose_changes') return proposalResult(fixture, call, app);
   // The panel runs a read only when its input fits the tool, as the browser does.
   const schema = {
     list_my_layouts: listMyLayoutsInput,
@@ -147,6 +157,15 @@ function readerResult(fixture: ReaderFixture | undefined, call: BrowserCall): Cl
   if (call.name === 'read_my_settings' && fixture.settings) {
     return { callId: id, status: 'shared', data: fixture.settings };
   }
+  if (call.name === 'read_my_layout' && app !== null) {
+    const asked = (call.input as { layoutId?: unknown } | null)?.layoutId;
+    const layout = (await appCode()).summarizeLayout(app.layout);
+    return {
+      callId: id,
+      status: 'shared',
+      data: { layout: asked === undefined || asked === OPEN_LAYOUT_ID ? layout : null },
+    };
+  }
   if (call.name === 'read_my_layout') {
     // The fixture layout is the one open in the app; an explicit id must name it.
     const asked = (call.input as { layoutId?: unknown } | null)?.layoutId;
@@ -161,6 +180,27 @@ function readerResult(fixture: ReaderFixture | undefined, call: BrowserCall): Cl
   return { callId: id, status: 'unavailable' };
 }
 
+/**
+ * A proposal, run on the case's open layout as the app panel runs it: a set
+ * that the app refuses goes back at once, and one that previews goes back as
+ * the reader answers it. An applied set becomes the open layout.
+ */
+async function proposalResult(
+  fixture: ReaderFixture | undefined,
+  call: BrowserCall,
+  app: { layout: AppLayout } | null
+): Promise<ClientResult> {
+  if (app === null) return { callId: call.id, status: 'unavailable' };
+  const code = await appCode();
+  const prepared = code.prepareChanges({ id: OPEN_LAYOUT_ID, layout: app.layout }, call.input);
+  if (prepared.kind === 'unavailable') return { callId: call.id, status: 'unavailable' };
+  if (prepared.kind === 'refused')
+    return { callId: call.id, status: 'shared', data: prepared.data };
+  if (fixture?.changes !== 'apply') return { callId: call.id, status: 'declined' };
+  app.layout = prepared.result.layout;
+  return { callId: call.id, status: 'shared', data: code.appliedChanges(prepared.result.refs) };
+}
+
 // Tools whose results the judge gets, since their numbers are not in the docs.
 const CHECKED_TOOLS = new Set([
   'drawer_fit',
@@ -170,8 +210,19 @@ const CHECKED_TOOLS = new Set([
   'print_estimate',
 ]);
 
+async function openLayout(golden: GoldenCase): Promise<{ layout: AppLayout } | null> {
+  const plan = golden.door === 'app' ? golden.reader?.open : undefined;
+  if (plan === undefined) return null;
+  const built = (await appCode()).buildPlanLayout(plan);
+  if (!built.ok || !built.value) throw new Error(`The open layout of ${golden.id} does not build`);
+  return { layout: built.value.layout };
+}
+
 async function runCase(golden: GoldenCase): Promise<CaseResult> {
   const locale = source.locale(golden.locale ?? 'en');
+  const door = golden.door ?? 'docs';
+  const clientTools = clientToolsFor(door);
+  const app = await openLayout(golden);
   const tables = new Map([
     ['en', source.english],
     [locale, await source.labels(locale)],
@@ -208,9 +259,10 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         runner,
         source.locale,
         () => true,
-        CLIENT_TOOLS
+        clientTools,
+        door
       );
-      let messages = [...prior, ...userTurn(corpus, question, golden.page, locale)];
+      let messages = [...prior, ...userTurn(corpus, question, golden.page, locale, door)];
       let shared: ClientResult[] = [];
       let firstRound = 0;
       const sent: unknown[] = [];
@@ -236,7 +288,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         result = await runAgent({
           client,
           corpus,
-          tools: toolDefinitions(corpus),
+          tools: toolDefinitions(corpus, door),
           messages,
           locale,
           run,
@@ -249,17 +301,22 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
           signal: new AbortController().signal,
           model,
           effort,
-          clientTools: CLIENT_TOOLS,
+          clientTools,
           firstRound,
           clientResults: shared.length,
         });
         if (result.pending === null) break;
-        const fresh = result.pending.calls.map((call) => readerResult(golden.reader, call));
+        const fresh: ClientResult[] = [];
+        for (const call of result.pending.calls) {
+          fresh.push(await readerResult(golden.reader, call, app));
+        }
         for (const call of result.pending.calls) {
           tools.push(`${call.name} ${JSON.stringify(call.input)}`);
-          const tool = CLIENT_TOOLS.get(call.name);
+          const tool = clientTools.get(call.name);
           const answer = fresh.find((r) => r.callId === call.id);
           const ran = tool && answer ? clientRun(tool, call.input, answer) : null;
+          if (call.name === 'propose_changes')
+            checks.push(`Proposed: ${JSON.stringify(call.input)}`);
           if (ran) checks.push(ran.content);
         }
         const waiting: PendingTurn = {
@@ -273,7 +330,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
           nonce: '00000000-0000-4000-8000-000000000000',
           signature: '0'.repeat(64),
         };
-        const current = pendingMessages(corpus, waiting, fresh, runner, CLIENT_TOOLS);
+        const current = pendingMessages(corpus, waiting, fresh, runner, clientTools, door);
         if (current === null)
           throw new Error(`A reader fixture does not fit its tool in ${golden.id}`);
         shared = [...shared, ...fresh];
@@ -447,12 +504,15 @@ const summary = {
     })
   ),
   brokenLinks: broken,
-  // Reads that a question outside the yours group did not ask for.
+  // Reads that a question outside the yours and app groups did not ask for.
   unaskedReads: results
     .filter(
       (r) =>
         r.group !== 'yours' &&
-        r.turns.some((t) => t.tools.some((call) => CLIENT_TOOLS.has(call.split(' ')[0] ?? '')))
+        r.group !== 'app' &&
+        r.turns.some((t) =>
+          t.tools.some((call) => clientToolsFor('docs').has(call.split(' ')[0] ?? ''))
+        )
     )
     .map((r) => r.id),
   inventedLabels: invented,

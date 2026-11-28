@@ -13,7 +13,7 @@ import type { ClientResult, ClientTools } from './clientTools.js';
 import type { AskCorpus } from './corpus.js';
 import { contextMessage } from './prompt.js';
 import { TOOL_NAMES, toolResult } from './tools.js';
-import type { ToolRunner } from './tools.js';
+import type { Door, ToolRunner } from './tools.js';
 
 type MessageParam = Anthropic.Beta.BetaMessageParam;
 type ContentBlockParam = Anthropic.Beta.BetaContentBlockParam;
@@ -31,6 +31,8 @@ const clean = <T extends z.ZodType>(schema: T) =>
   z.preprocess((value) => (typeof value === 'string' ? value.replace(CONTROL, '') : value), schema);
 
 const sessionIdField = z.string().regex(/^[A-Za-z0-9-]{8,64}$/);
+/** The panel that asks. Each door signs with its own key, so a turn cannot cross doors. */
+const doorField = z.enum(['docs', 'app']).default('docs');
 const pageField = clean(z.string().max(200));
 const localeField = clean(z.string().max(10));
 
@@ -84,6 +86,7 @@ export type PendingTurn = z.infer<typeof pendingSchema>;
 
 export const askRequestSchema = z.object({
   op: z.literal('ask'),
+  door: doorField,
   sessionId: sessionIdField,
   question: clean(z.string().trim().min(1).max(MAX_QUESTION_CHARS)),
   page: pageField,
@@ -95,6 +98,7 @@ export const askRequestSchema = z.object({
 
 export const resumeRequestSchema = z.object({
   op: z.literal('resume'),
+  door: doorField,
   sessionId: sessionIdField,
   pending: pendingSchema,
   results: z.array(clientResultSchema).min(1).max(MAX_CLIENT_RESULTS),
@@ -287,11 +291,12 @@ export function userTurn(
   corpus: AskCorpus,
   question: string,
   page: string,
-  locale: string
+  locale: string,
+  door: Door = 'docs'
 ): MessageParam[] {
   return [
     { role: 'user', content: question },
-    { role: 'system', content: contextMessage(corpus, page, locale) },
+    { role: 'system', content: contextMessage(corpus, page, locale, door) },
   ];
 }
 
@@ -307,7 +312,8 @@ export function rebuildMessages(
   run: ToolRunner,
   localeOf: (locale: string) => string,
   signed: (turn: StoredTurn) => boolean,
-  clientTools: ClientTools = CLIENT_TOOLS
+  clientTools: ClientTools = CLIENT_TOOLS,
+  door: Door = 'docs'
 ): MessageParam[] {
   const messages: MessageParam[] = [];
   for (const turn of turns) {
@@ -315,7 +321,7 @@ export function rebuildMessages(
     const locale = localeOf(turn.locale);
     const answer = turnMessages(turn, run, locale, clientTools);
     if (answer.length === 0) continue;
-    messages.push(...userTurn(corpus, turn.question, turn.page, locale), ...answer);
+    messages.push(...userTurn(corpus, turn.question, turn.page, locale, door), ...answer);
   }
   return messages;
 }
@@ -347,7 +353,8 @@ export function pendingMessages(
   pending: PendingTurn,
   results: readonly ClientResult[],
   run: ToolRunner,
-  clientTools: ClientTools = CLIENT_TOOLS
+  clientTools: ClientTools = CLIENT_TOOLS,
+  door: Door = 'docs'
 ): MessageParam[] | null {
   const messages = storedMessages(pending.messages, clientTools, true);
   if (messages === null) return null;
@@ -356,5 +363,5 @@ export function pendingMessages(
     ...results,
   ]);
   if (answer === null) return null;
-  return [...userTurn(corpus, pending.question, pending.page, pending.locale), ...answer];
+  return [...userTurn(corpus, pending.question, pending.page, pending.locale, door), ...answer];
 }

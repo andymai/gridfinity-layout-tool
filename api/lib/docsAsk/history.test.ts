@@ -225,6 +225,7 @@ describe('browser tool results', () => {
   const layoutTool: ClientTool = {
     kind: 'read',
     label: () => 'Reading your layout',
+    step: { key: 'readLayout' },
     output: z.object({ name: z.string(), bins: z.number() }).strict(),
     format: (data) => {
       const layout = data as { name: string; bins: number };

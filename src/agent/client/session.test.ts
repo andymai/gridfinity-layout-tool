@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSession } from './session';
-import type { BrowserCall, PreparedCall, Session, SessionState } from './session';
+import type { BrowserCall, PreparedCall, Session, SessionHost, SessionState } from './session';
 
 const KEY = 'test:ask-ai';
 
@@ -55,7 +55,7 @@ let changes: number;
 let session: Session;
 let prepareCalls: (calls: readonly BrowserCall[]) => Promise<PreparedCall[]>;
 
-function start(): Session {
+function start(extra: Partial<SessionHost> = {}): Session {
   return createSession({
     state,
     changed: () => void changes++,
@@ -64,8 +64,9 @@ function start(): Session {
     storage: () => storage,
     settings: () => ({ analytics: false, locale: 'en' }),
     prepareCalls: (calls) => prepareCalls(calls),
-    declinedLabel: 'Not shared',
+    declinedLabel: (call) => (call.kind === 'change' ? 'Not applied' : 'Not shared'),
     newId: () => 'session-0001',
+    ...extra,
   });
 }
 
@@ -260,5 +261,84 @@ describe('createSession', () => {
       value: 1,
     });
     expect(current.feedback).toBe(1);
+  });
+});
+
+describe('the app door', () => {
+  const change = { type: 'tool_use', id: 'toolu_c', name: 'propose_changes', input: {} };
+  const proposal = (): Response =>
+    sse([
+      ['message', { content: [change] }],
+      ['step', { id: 'toolu_c', kind: 'change', state: 'waiting', label: 'Preparing', key: 'k' }],
+      ['pending', { calls: [{ id: 'toolu_c', name: 'propose_changes', input: {} }], pending: {} }],
+    ]);
+  const preview = (extra: Partial<PreparedCall> = {}): PreparedCall[] => [
+    {
+      id: 'toolu_c',
+      kind: 'change',
+      title: 'Add a bin',
+      preview: null,
+      data: { set: 1 },
+      unavailable: false,
+      ...extra,
+    },
+  ];
+
+  it('names its door, keeps the step key, and sends what Apply returns', async () => {
+    const apply = vi.fn((call: PreparedCall) =>
+      Promise.resolve({ outcome: 'applied', added: {}, from: call.data })
+    );
+    prepareCalls = () => Promise.resolve(preview());
+    session = start({ door: 'app', apply });
+    fetchMock.mockResolvedValueOnce(proposal());
+    await session.ask('Add a bin', 'app/layout');
+    await asking();
+    expect(bodyOf(0)).toMatchObject({ op: 'ask', door: 'app', page: 'app/layout' });
+    expect(state.exchanges[0]?.steps[0]).toMatchObject({ kind: 'change', key: 'k' });
+    fetchMock.mockResolvedValueOnce(answer());
+    const current = state.exchanges[0];
+    if (current) await session.answerRequest(current, true);
+    expect(apply).toHaveBeenCalledOnce();
+    expect(bodyOf(1)).toMatchObject({
+      op: 'resume',
+      door: 'app',
+      results: [
+        { callId: 'toolu_c', status: 'shared', data: { outcome: 'applied', from: { set: 1 } } },
+      ],
+    });
+  });
+
+  it('sends a decline without applying, with the host label for a change', async () => {
+    const apply = vi.fn(() => Promise.resolve({}));
+    prepareCalls = () => Promise.resolve(preview());
+    session = start({ door: 'app', apply });
+    fetchMock.mockResolvedValueOnce(proposal());
+    await session.ask('Add a bin', 'app/layout');
+    await asking();
+    fetchMock.mockResolvedValueOnce(answer());
+    const current = state.exchanges[0];
+    if (current) await session.answerRequest(current, false);
+    expect(apply).not.toHaveBeenCalled();
+    expect(bodyOf(1).results).toEqual([{ callId: 'toolu_c', status: 'declined' }]);
+    expect(state.exchanges[0]?.steps[0]).toMatchObject({ state: 'done', label: 'Not applied' });
+  });
+
+  it('sends a change that the app refused at once, without a question to the reader', async () => {
+    prepareCalls = () => Promise.resolve(preview({ settled: { outcome: 'refused', change: 1 } }));
+    session = start({ door: 'app' });
+    fetchMock.mockResolvedValueOnce(proposal());
+    fetchMock.mockResolvedValueOnce(answer());
+    await session.ask('Add a bin', 'app/layout');
+    await vi.waitFor(() => expect(state.exchanges[0]?.status).toBe('done'));
+    expect(bodyOf(1)).toMatchObject({
+      op: 'resume',
+      results: [{ callId: 'toolu_c', status: 'shared', data: { outcome: 'refused' } }],
+    });
+  });
+
+  it('leaves the door out of a docs request', async () => {
+    fetchMock.mockResolvedValueOnce(answer());
+    await session.ask('Q?', '/');
+    expect(bodyOf(0)).not.toHaveProperty('door');
   });
 });

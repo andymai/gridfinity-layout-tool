@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { runAgent } from './lib/docsAsk/agent.js';
 import type { AgentEvent, AgentProgress, AgentResult, RoundBudget } from './lib/docsAsk/agent.js';
-import { CLIENT_TOOLS } from './lib/docsAsk/clientTools.js';
+import { clientToolsFor } from './lib/docsAsk/clientTools.js';
 import type { ClientResult } from './lib/docsAsk/clientTools.js';
 import {
   askRequestSchema,
@@ -31,7 +31,7 @@ import {
   spendDay,
 } from './lib/docsAsk/spend.js';
 import { createToolRunner, toolDefinitions } from './lib/docsAsk/tools.js';
-import type { ToolRunner } from './lib/docsAsk/tools.js';
+import type { Door, ToolRunner } from './lib/docsAsk/tools.js';
 import { appOrigin } from './lib/docsAsk/origin.js';
 import { sendAskFeedback, sendAskTrace } from './lib/docsAsk/traces.js';
 import { logger } from './lib/logger.js';
@@ -46,8 +46,15 @@ import {
 
 const MAX_BODY_BYTES = 512 * 1024;
 
-function enabled(): boolean {
-  return process.env.DOCS_ASSISTANT_ENABLED === 'true' && Boolean(process.env.ANTHROPIC_API_KEY);
+// Each door has its own switch: Ask AI in the app stays off until it is set.
+function enabled(door: Door): boolean {
+  const flag =
+    door === 'app' ? process.env.APP_ASSISTANT_ENABLED : process.env.DOCS_ASSISTANT_ENABLED;
+  return flag === 'true' && Boolean(process.env.ANTHROPIC_API_KEY);
+}
+
+function doorOf(value: unknown): Door {
+  return value === 'app' ? 'app' : 'docs';
 }
 
 // The browser panel is same-origin, so a request from another site is a
@@ -65,10 +72,10 @@ function originAllowed(req: VercelRequest): boolean {
   }
 }
 
-async function resting(): Promise<boolean> {
+async function resting(door: Door): Promise<boolean> {
   const redis = getRedis();
   if (!redis) return process.env.VERCEL_ENV === 'production';
-  return (await readSpend(redis)) >= dailyCapUsd();
+  return (await readSpend(redis, spendDay(), door)) >= dailyCapUsd(door);
 }
 
 function logSpendError(caught: unknown): void {
@@ -77,25 +84,25 @@ function logSpendError(caught: unknown): void {
 
 // Once a round has run, a failed spend write must not fail it, or a retry would
 // ask the model again. A failed reserve fails the question before any call.
-function roundBudget(): RoundBudget {
+function roundBudget(door: Door): RoundBudget {
   const redis = getRedis();
   let held: string | null = null;
   return {
     async reserve() {
       if (!redis) return process.env.VERCEL_ENV !== 'production';
       const day = spendDay();
-      const ok = await reserveSpend(redis, ROUND_RESERVE_USD, dailyCapUsd(), day);
+      const ok = await reserveSpend(redis, ROUND_RESERVE_USD, dailyCapUsd(door), day, door);
       if (ok) held = day;
       return ok;
     },
     async charge(usd) {
-      if (redis) await addSpend(redis, usd).catch(logSpendError);
+      if (redis) await addSpend(redis, usd, spendDay(), door).catch(logSpendError);
     },
     async release() {
       if (!redis || held === null) return;
       const day = held;
       held = null;
-      await releaseSpend(redis, ROUND_RESERVE_USD, day).catch(logSpendError);
+      await releaseSpend(redis, ROUND_RESERVE_USD, day, door).catch(logSpendError);
     },
   };
 }
@@ -105,8 +112,12 @@ function derivedKey(purpose: string): string | null {
   return salt ? createHmac('sha256', salt).update(purpose).digest('hex') : null;
 }
 
-const turnKey = (): string | null => derivedKey('docs-ask turn signature');
-const pendingKey = (): string | null => derivedKey('docs-ask pending signature');
+// A key for each door, so a turn signed for one door does not replay in the
+// other, where its tools and its context differ.
+const turnKey = (door: Door): string | null =>
+  derivedKey(door === 'app' ? 'app-ask turn signature' : 'docs-ask turn signature');
+const pendingKey = (door: Door): string | null =>
+  derivedKey(door === 'app' ? 'app-ask pending signature' : 'docs-ask pending signature');
 
 function bodyBytes(req: VercelRequest): number {
   const declared = Number(req.headers['content-length'] ?? 0);
@@ -117,10 +128,11 @@ function writeEvent(res: VercelResponse, event: string, data: unknown): void {
   res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 }
 
-async function handleStatus(res: VercelResponse): Promise<VercelResponse> {
+async function handleStatus(req: VercelRequest, res: VercelResponse): Promise<VercelResponse> {
   res.setHeader('Cache-Control', 'no-store');
-  if (!enabled()) return res.status(200).json({ enabled: false, resting: false });
-  return res.status(200).json({ enabled: true, resting: await resting() });
+  const door = doorOf(req.query.door);
+  if (!enabled(door)) return res.status(200).json({ enabled: false, resting: false });
+  return res.status(200).json({ enabled: true, resting: await resting(door) });
 }
 
 async function handleFeedback(req: VercelRequest, res: VercelResponse): Promise<VercelResponse> {
@@ -133,6 +145,7 @@ async function handleFeedback(req: VercelRequest, res: VercelResponse): Promise<
 }
 
 interface TurnRequest {
+  readonly door: Door;
   readonly sessionId: string;
   readonly analytics: boolean;
   readonly question: string;
@@ -152,7 +165,8 @@ interface TurnRequest {
 
 async function prepare(
   turns: readonly StoredTurn[],
-  locale: string
+  locale: string,
+  door: Door
 ): Promise<{ source: DocsSource; run: ToolRunner; history: TurnRequest['messages'] }> {
   const source = await docsSource();
   const locales = new Set([
@@ -168,9 +182,15 @@ async function prepare(
     source.english,
     appOrigin()
   );
-  const key = turnKey();
-  const history = rebuildMessages(source.corpus, turns, run, source.locale, (turn) =>
-    key === null ? false : turnSigned(key, turn)
+  const key = turnKey(door);
+  const history = rebuildMessages(
+    source.corpus,
+    turns,
+    run,
+    source.locale,
+    (turn) => (key === null ? false : turnSigned(key, turn)),
+    clientToolsFor(door),
+    door
   );
   return { source, run, history };
 }
@@ -204,7 +224,7 @@ async function streamTurn(res: VercelResponse, turn: TurnRequest): Promise<undef
     result = await runAgent({
       client: new Anthropic(),
       corpus: source.corpus,
-      tools: toolDefinitions(source.corpus),
+      tools: toolDefinitions(source.corpus, turn.door),
       messages: turn.messages,
       locale: turn.locale,
       run: turn.run,
@@ -212,17 +232,17 @@ async function streamTurn(res: VercelResponse, turn: TurnRequest): Promise<undef
         if (event.type === 'message') sent.push(event.content);
         writeEvent(res, event.type, event);
       },
-      budget: roundBudget(),
+      budget: roundBudget(turn.door),
       progress,
       signal: abort.signal,
-      clientTools: CLIENT_TOOLS,
+      clientTools: clientToolsFor(turn.door),
       firstRound: turn.earlier.rounds,
       clientResults: turn.earlier.results.length,
     });
     const fields = { question: turn.question, page: turn.page, locale: turn.locale };
     const results = turn.earlier.results;
-    const key = turnKey();
-    const envelopeKey = pendingKey();
+    const key = turnKey(turn.door);
+    const envelopeKey = pendingKey(turn.door);
     if (result.pending !== null) {
       if (envelopeKey === null) throw new Error('No key to sign a pending turn');
       const pending = {
@@ -270,6 +290,7 @@ async function streamTurn(res: VercelResponse, turn: TurnRequest): Promise<undef
   const answer = result?.answer ?? '';
   sendAskTrace({
     traceId,
+    door: turn.door,
     sessionId: turn.sessionId,
     question: turn.question,
     page: turn.page,
@@ -290,18 +311,20 @@ async function handleAsk(
   req: VercelRequest,
   res: VercelResponse
 ): Promise<VercelResponse | undefined> {
-  const limit = await checkRateLimit(getClientIP(req), 'docs.ask');
+  const door = doorOf((req.body as { door?: unknown } | undefined)?.door);
+  const limit = await checkRateLimit(getClientIP(req), door === 'app' ? 'app.ask' : 'docs.ask');
   if (!limit.allowed)
     return rateLimited(res, limit.retryAfterSeconds, 'Too many questions. Try again later.');
   const body = askRequestSchema.safeParse(req.body);
   if (!body.success) return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid question');
-  if (await resting()) {
+  if (await resting(door)) {
     return res.status(429).json({ error: 'Ask AI is off until tomorrow', code: 'RESTING' });
   }
   const { sessionId, question, page, turns, analytics } = body.data;
-  const { source, run, history } = await prepare(turns, body.data.locale);
+  const { source, run, history } = await prepare(turns, body.data.locale, door);
   const locale = source.locale(body.data.locale);
   return streamTurn(res, {
+    door,
     sessionId,
     analytics,
     question,
@@ -309,7 +332,7 @@ async function handleAsk(
     locale,
     source,
     run,
-    messages: [...history, ...userTurn(source.corpus, question, page, locale)],
+    messages: [...history, ...userTurn(source.corpus, question, page, locale, door)],
     earlier: { messages: [], results: [], rounds: 0 },
   });
 }
@@ -325,15 +348,16 @@ async function handleResume(
 ): Promise<VercelResponse | undefined> {
   const body = resumeRequestSchema.safeParse(req.body);
   if (!body.success) return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid resume');
-  const key = pendingKey();
+  const { door, sessionId, pending, results, turns, analytics } = body.data;
+  const key = pendingKey(door);
   if (key === null) return serviceUnavailable(res, 'Ask AI is not available.');
-  const { sessionId, pending, results, turns, analytics } = body.data;
+  const clientTools = clientToolsFor(door);
   const check = pendingCheck(key, pending, Date.now());
   if (check === 'forged')
     return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid pending turn');
   if (check === 'expired')
     return res.status(410).json({ error: 'This request expired. Ask again.', code: 'EXPIRED' });
-  const awaited = awaitedCalls(pending, CLIENT_TOOLS);
+  const awaited = awaitedCalls(pending, clientTools);
   const answered = new Set(results.map((result) => result.callId));
   if (
     awaited === null ||
@@ -344,11 +368,11 @@ async function handleResume(
   ) {
     return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Give one result for each request');
   }
-  if (await resting()) {
+  if (await resting(door)) {
     return res.status(429).json({ error: 'Ask AI is off until tomorrow', code: 'RESTING' });
   }
-  const { source, run, history } = await prepare(turns, pending.locale);
-  const current = pendingMessages(source.corpus, pending, results, run, CLIENT_TOOLS);
+  const { source, run, history } = await prepare(turns, pending.locale, door);
+  const current = pendingMessages(source.corpus, pending, results, run, clientTools, door);
   if (current === null) {
     return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'A result does not fit its request');
   }
@@ -362,6 +386,7 @@ async function handleResume(
   if (claim === 'used')
     return res.status(409).json({ error: 'This request already ran.', code: 'USED' });
   return streamTurn(res, {
+    door,
     sessionId,
     analytics,
     question: pending.question,
@@ -382,8 +407,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET' && req.method !== 'POST') return methodNotAllowed(res, 'GET, POST');
   try {
-    if (req.method === 'GET') return await handleStatus(res);
-    if (!enabled()) return serviceUnavailable(res, 'Ask AI is not available.');
+    if (req.method === 'GET') return await handleStatus(req, res);
+    if (!enabled(doorOf((req.body as { door?: unknown } | undefined)?.door))) {
+      return serviceUnavailable(res, 'Ask AI is not available.');
+    }
     if (!originAllowed(req)) return sendError(res, 403, ErrorCode.UNAUTHORIZED, 'Wrong origin');
     if (bodyBytes(req) > MAX_BODY_BYTES) {
       return sendError(

@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Redis } from 'ioredis';
 import {
+  DEFAULT_APP_DAILY_CAP_USD,
   DEFAULT_DAILY_CAP_USD,
   costUsd,
   dailyCapUsd,
+  readSpend,
   releaseSpend,
   reserveSpend,
   spendDay,
@@ -39,6 +41,17 @@ describe('dailyCapUsd', () => {
     vi.stubEnv('DOCS_ASSISTANT_DAILY_CAP_USD', '-1');
     expect(dailyCapUsd()).toBe(DEFAULT_DAILY_CAP_USD);
   });
+});
+
+it('counts the app door apart, against its own cap', async () => {
+  vi.stubEnv('DOCS_ASSISTANT_DAILY_CAP_USD', '9');
+  expect(dailyCapUsd('app')).toBe(DEFAULT_APP_DAILY_CAP_USD);
+  vi.stubEnv('APP_ASSISTANT_DAILY_CAP_USD', '3');
+  expect(dailyCapUsd('app')).toBe(3);
+  const get = vi.fn(() => Promise.resolve('1.5'));
+  expect(await readSpend({ get } as unknown as Redis, '2026-11-27', 'app')).toBe(1.5);
+  expect(get).toHaveBeenCalledWith('appAsk:spend:2026-11-27');
+  vi.unstubAllEnvs();
 });
 
 it('counts the day in UTC', () => {

@@ -28,3 +28,12 @@ export type {
 export { binSizeForInput, printEstimateInput, splitPlanInput } from './contract/calculators';
 export type { BinSizeForInput, PrintEstimateInput, SplitPlanInput } from './contract/calculators';
 export { runBinSizeFor, runPrintEstimate, runSplitPlan } from './tools/calculators';
+export {
+  CHANGES_DECLINED,
+  CHANGES_UNAVAILABLE,
+  PROPOSE_CHANGES,
+  formatProposeChanges,
+  proposeChangesData,
+  proposeChangesInput,
+} from './contract/changes';
+export type { ProposeChangesData, ProposeChangesInput } from './contract/changes';

@@ -1,14 +1,24 @@
 import { z } from 'zod';
 import {
+  CHANGES_DECLINED,
+  CHANGES_UNAVAILABLE,
+  PROPOSE_CHANGES,
   formatMyLayouts,
   formatMySettings,
+  formatProposeChanges,
   formatReadMyLayout,
   myLayoutsData,
   mySettingsData,
+  proposeChangesData,
   readMyLayoutData,
 } from '../agent/index.js';
-import type { MyLayoutsData, MySettingsData, ReadMyLayoutData } from '../agent/index.js';
-import type { StepKind, ToolRun } from './tools.js';
+import type {
+  MyLayoutsData,
+  MySettingsData,
+  ProposeChangesData,
+  ReadMyLayoutData,
+} from '../agent/index.js';
+import type { Door, StepKind, StepText, ToolRun } from './tools.js';
 
 /**
  * A tool that the reader's browser runs on their own data once they allow it.
@@ -20,18 +30,24 @@ export interface ClientTool {
   readonly kind: StepKind;
   /** The step label, also while the panel waits for the reader. */
   label(input: unknown): string;
+  /** The same label as a key and values, for a panel that translates it. */
+  readonly step: StepText;
   readonly output: z.ZodType;
   format(data: unknown, input: unknown): string;
+  /** What the model reads when the reader says no, for a tool whose no is not a refusal to share. */
+  readonly declined?: string;
+  readonly unavailable?: string;
 }
 
 export type ClientTools = ReadonlyMap<string, ClientTool>;
 
-export const CLIENT_TOOLS: ClientTools = new Map<string, ClientTool>([
+const READS: readonly (readonly [string, ClientTool])[] = [
   [
     'list_my_layouts',
     {
       kind: 'yours',
       label: () => 'Listing your layouts',
+      step: { key: 'listLayouts' },
       output: myLayoutsData,
       format: (data) => formatMyLayouts(data as MyLayoutsData),
     },
@@ -41,6 +57,7 @@ export const CLIENT_TOOLS: ClientTools = new Map<string, ClientTool>([
     {
       kind: 'yours',
       label: () => 'Reading your layout',
+      step: { key: 'readLayout' },
       output: readMyLayoutData,
       format: (data) => formatReadMyLayout(data as ReadMyLayoutData),
     },
@@ -50,11 +67,41 @@ export const CLIENT_TOOLS: ClientTools = new Map<string, ClientTool>([
     {
       kind: 'yours',
       label: () => 'Reading your printer settings',
+      step: { key: 'readSettings' },
       output: mySettingsData,
       format: (data) => formatMySettings(data as MySettingsData),
     },
   ],
+];
+
+function summaryOf(input: unknown): string {
+  const summary = (input as { summary?: unknown } | null)?.summary;
+  return typeof summary === 'string' ? summary.slice(0, 200) : '';
+}
+
+/** The browser tools that the docs door lists: reads of the reader's own data. */
+export const CLIENT_TOOLS: ClientTools = new Map<string, ClientTool>(READS);
+
+/** The app door also lists propose_changes, an act that the reader applies. */
+export const APP_CLIENT_TOOLS: ClientTools = new Map<string, ClientTool>([
+  ...READS,
+  [
+    PROPOSE_CHANGES,
+    {
+      kind: 'change',
+      label: () => 'Preparing changes to your layout',
+      step: { key: 'proposeChanges' },
+      output: proposeChangesData,
+      format: (data, input) => formatProposeChanges(data as ProposeChangesData, summaryOf(input)),
+      declined: CHANGES_DECLINED,
+      unavailable: CHANGES_UNAVAILABLE,
+    },
+  ],
 ]);
+
+export function clientToolsFor(door: Door): ClientTools {
+  return door === 'app' ? APP_CLIENT_TOOLS : CLIENT_TOOLS;
+}
 
 export const MAX_CLIENT_RESULTS = 16;
 
@@ -87,9 +134,10 @@ export const UNAVAILABLE_CONTENT =
 
 export function clientRun(tool: ClientTool, input: unknown, result: ClientResult): ToolRun | null {
   const label = tool.label(input);
-  if (result.status === 'declined') return { isError: false, label, content: DECLINED_CONTENT };
+  if (result.status === 'declined')
+    return { isError: false, label, content: tool.declined ?? DECLINED_CONTENT };
   if (result.status === 'unavailable')
-    return { isError: true, label, content: UNAVAILABLE_CONTENT };
+    return { isError: true, label, content: tool.unavailable ?? UNAVAILABLE_CONTENT };
   if (Buffer.byteLength(JSON.stringify(result.data ?? null)) > MAX_RESULT_BYTES) return null;
   const parsed = tool.output.safeParse(result.data);
   if (!parsed.success) return null;

@@ -34,6 +34,7 @@ export type RateLimitAction =
   | 'community.report'
   | 'community.print'
   | 'docs.ask'
+  | 'app.ask'
   | 'mcp.call'
   | 'docs.feedback';
 
@@ -133,6 +134,7 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   // posting a print is the same order of deliberate act as publishing a design.
   'community.print': { limit: 10, windowSeconds: 24 * 60 * 60 }, // 10/day per user
   'docs.ask': { limit: 20, windowSeconds: 60 * 60 }, // 20/hour per IP; the daily spend cap backs it
+  'app.ask': { limit: 20, windowSeconds: 60 * 60 }, // Ask AI in the app, with its own spend cap
   'docs.feedback': { limit: 60, windowSeconds: 60 * 60 }, // 60/hour per IP
   // Hosted MCP clients share egress IPs across their users, so the per-IP
   // limit is loose; the daily cap in api/mcp.ts bounds the total.

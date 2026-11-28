@@ -45,11 +45,19 @@ function createResponse() {
   return res as unknown as VercelResponse & { _status: number; _body: unknown };
 }
 
-async function handle(method: string, body?: unknown, headers: Record<string, string> = {}) {
+async function handle(
+  method: string,
+  body?: unknown,
+  headers: Record<string, string> = {},
+  query: Record<string, string> = {}
+) {
   const res = createResponse();
   const mod = await import('./docs-ask.js');
   const sent = method === 'POST' ? { 'content-type': 'application/json', ...headers } : headers;
-  await mod.default({ method, headers: sent, body, on: vi.fn() } as unknown as VercelRequest, res);
+  await mod.default(
+    { method, headers: sent, body, query, on: vi.fn() } as unknown as VercelRequest,
+    res
+  );
   return res;
 }
 
@@ -154,6 +162,27 @@ describe('docs-ask', () => {
       '3f2b8c1e-5d4a-4c3b-9a2e-1f0e9d8c7b6a',
       -1
     );
+  });
+
+  it('gives the app door its own switch, cap and limit', async () => {
+    const app = { ...question, door: 'app', page: 'app/layout' };
+    expect((await handle('GET', undefined, {}, { door: 'app' }))._body).toEqual({
+      enabled: false,
+      resting: false,
+    });
+    expect((await handle('POST', app))._status).toBe(503);
+    vi.stubEnv('APP_ASSISTANT_ENABLED', 'true');
+    vi.stubEnv('APP_ASSISTANT_DAILY_CAP_USD', '2');
+    const get = vi.fn((key: string) => Promise.resolve(key.startsWith('appAsk:') ? '2.5' : '0'));
+    mocks.getRedis.mockReturnValue({ get });
+    expect((await handle('GET', undefined, {}, { door: 'app' }))._body).toEqual({
+      enabled: true,
+      resting: true,
+    });
+    expect((await handle('GET'))._body).toEqual({ enabled: true, resting: false });
+    mocks.checkRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 60 });
+    expect((await handle('POST', app))._status).toBe(429);
+    expect(mocks.checkRateLimit).toHaveBeenLastCalledWith('203.0.113.1', 'app.ask');
   });
 
   it('answers other methods with 405', async () => {

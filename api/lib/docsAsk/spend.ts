@@ -1,5 +1,6 @@
 import type { Redis } from 'ioredis';
-import { docsAskSpendKey } from '../redisKeys.js';
+import { appAskSpendKey, docsAskSpendKey } from '../redisKeys.js';
+import type { Door } from './tools.js';
 
 /** USD per million tokens: input, output, cache read, cache write (5-minute TTL). */
 interface Prices {
@@ -18,6 +19,8 @@ const PRICES: Readonly<Record<string, Prices>> = {
 const UNLISTED: Prices = { input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.25 };
 
 export const DEFAULT_DAILY_CAP_USD = 5;
+/** The app door's own share, counted apart, so neither door can spend the other's money. */
+export const DEFAULT_APP_DAILY_CAP_USD = 2;
 /**
  * Set aside before each round. It covers a round's full MAX_TOKENS of output
  * even at the unlisted price of a fallback model, so rounds that start
@@ -44,23 +47,40 @@ export function costUsd(model: string, usage: Usage): number {
   );
 }
 
-export function dailyCapUsd(): number {
-  const value = Number(process.env.DOCS_ASSISTANT_DAILY_CAP_USD);
-  return Number.isFinite(value) && value >= 0 ? value : DEFAULT_DAILY_CAP_USD;
+export function dailyCapUsd(door: Door = 'docs'): number {
+  const value = Number(
+    door === 'app'
+      ? process.env.APP_ASSISTANT_DAILY_CAP_USD
+      : process.env.DOCS_ASSISTANT_DAILY_CAP_USD
+  );
+  if (Number.isFinite(value) && value >= 0) return value;
+  return door === 'app' ? DEFAULT_APP_DAILY_CAP_USD : DEFAULT_DAILY_CAP_USD;
 }
+
+const spendKey = (day: string, door: Door): string =>
+  door === 'app' ? appAskSpendKey(day) : docsAskSpendKey(day);
 
 export function spendDay(now: Date = new Date()): string {
   return now.toISOString().slice(0, 10);
 }
 
-export async function readSpend(redis: Redis, day: string = spendDay()): Promise<number> {
-  const value = Number(await redis.get(docsAskSpendKey(day)));
+export async function readSpend(
+  redis: Redis,
+  day: string = spendDay(),
+  door: Door = 'docs'
+): Promise<number> {
+  const value = Number(await redis.get(spendKey(day, door)));
   return Number.isFinite(value) ? value : 0;
 }
 
-export async function addSpend(redis: Redis, usd: number, day: string = spendDay()): Promise<void> {
+export async function addSpend(
+  redis: Redis,
+  usd: number,
+  day: string = spendDay(),
+  door: Door = 'docs'
+): Promise<void> {
   if (!(usd > 0)) return;
-  const key = docsAskSpendKey(day);
+  const key = spendKey(day, door);
   await redis.multi().incrbyfloat(key, usd).expire(key, SPEND_TTL_SECONDS).exec();
 }
 
@@ -69,9 +89,10 @@ export async function reserveSpend(
   redis: Redis,
   usd: number,
   capUsd: number,
-  day: string = spendDay()
+  day: string = spendDay(),
+  door: Door = 'docs'
 ): Promise<boolean> {
-  const key = docsAskSpendKey(day);
+  const key = spendKey(day, door);
   const results = await redis.multi().incrbyfloat(key, usd).expire(key, SPEND_TTL_SECONDS).exec();
   const total = Number(results?.[0]?.[1]);
   if (Number.isFinite(total) && total - usd < capUsd) return true;
@@ -79,6 +100,11 @@ export async function reserveSpend(
   return false;
 }
 
-export async function releaseSpend(redis: Redis, usd: number, day: string): Promise<void> {
-  await redis.incrbyfloat(docsAskSpendKey(day), -usd);
+export async function releaseSpend(
+  redis: Redis,
+  usd: number,
+  day: string,
+  door: Door = 'docs'
+): Promise<void> {
+  await redis.incrbyfloat(spendKey(day, door), -usd);
 }

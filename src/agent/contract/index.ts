@@ -24,4 +24,13 @@ export type {
   ReaderToolName,
 } from './reader';
 export { binSizeForInput, printEstimateInput, splitPlanInput } from './calculators';
+export {
+  CHANGES_DECLINED,
+  CHANGES_UNAVAILABLE,
+  PROPOSE_CHANGES,
+  formatProposeChanges,
+  proposeChangesData,
+  proposeChangesInput,
+} from './changes';
+export type { ProposeChangesData, ProposeChangesInput } from './changes';
 export type { BinSizeForInput, PrintEstimateInput, SplitPlanInput } from './calculators';

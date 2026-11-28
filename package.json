@@ -88,7 +88,7 @@
     "docs:dev": "pnpm --filter gridfinity-docs dev",
     "docs:build": "pnpm --filter gridfinity-docs build",
     "docs:llms": "tsx --tsconfig tsconfig.app.json scripts/build-docs-llms.ts",
-    "docs:ask-eval": "tsx scripts/docs-ask-eval/run.ts",
+    "docs:ask-eval": "tsx --tsconfig tsconfig.app.json scripts/docs-ask-eval/run.ts",
     "validate:json": "tsx --tsconfig tsconfig.app.json scripts/validate-schema-json.ts",
     "gen:schema-docs": "tsx --tsconfig tsconfig.app.json scripts/gen-schema-docs.ts"
   },
