@@ -58,7 +58,10 @@ import {
   MAGNET_FLOOR,
   COPLANAR_OVERLAP,
 } from './generatorConstants';
-import { FOOT_UNDERSIDE_INSET_MM } from '@/shared/printSettings/gridfinityGeometry';
+import {
+  FOOT_HOLE_MIN_WALL_MM,
+  FOOT_UNDERSIDE_INSET_MM,
+} from '@/shared/printSettings/gridfinityGeometry';
 import type { CellInfo } from './cellDecomposition';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
@@ -163,21 +166,29 @@ function buildCellPads(
 }
 
 /**
- * Whether a pad around a hole at `[x, y]` reaches past the flat underside of
- * its cell's foot. A pad is wider than the underside's corner radius, so the
- * two axis bounds are the whole test.
+ * Whether the pad around a hole at `[x, y]` is clipped to its cell's foot:
+ * the pad reaches past the foot's flat underside, and the hole's own mouth
+ * keeps FOOT_HOLE_MIN_WALL_MM inside it. A hole wider than the underside
+ * allows (a 10mm magnet on a 16mm grid) keeps its whole pad, because the clip
+ * would open its bore through the flank. A pad is wider than the underside's
+ * corner radius, so the two axis bounds are the whole test.
  */
-function padLeavesFoot(
+function padIsClipped(
   [x, y]: readonly [number, number],
   cell: CellInfo,
   holeRadius: number,
+  mouthRadius: number,
   pitchX: number,
   pitchY: number
 ): boolean {
-  const reach = holeRadius + PAD_MARGIN;
   const halfW = (cell.widthUnits * pitchX) / 2 - FOOT_UNDERSIDE_INSET_MM + 1e-6;
   const halfD = (cell.depthUnits * pitchY) / 2 - FOOT_UNDERSIDE_INSET_MM + 1e-6;
-  return Math.abs(x - cell.centerX) + reach > halfW || Math.abs(y - cell.centerY) + reach > halfD;
+  const dx = Math.abs(x - cell.centerX);
+  const dy = Math.abs(y - cell.centerY);
+  const reach = holeRadius + PAD_MARGIN;
+  const leaves = dx + reach > halfW || dy + reach > halfD;
+  const wall = mouthRadius + FOOT_HOLE_MIN_WALL_MM;
+  return leaves && dx + wall <= halfW && dy + wall <= halfD;
 }
 
 /**
@@ -314,6 +325,13 @@ export function buildLightweightBase(
     const holeRadius = Math.max(withMagnet ? magnetRadius : 0, withScrew ? screwRadius : 0);
     const chamfer = padTakesChamfer(holeStyle);
     const padSites: Array<{ cell: CellInfo; positions: Array<[number, number]> }> = [];
+    const mouth = footHoleMouthRadius(
+      withMagnet ? magnetRadius : 0,
+      withScrew ? screwRadius : 0,
+      withMagnet && chamfer
+    );
+    const clips = (p: readonly [number, number], cell: CellInfo): boolean =>
+      padIsClipped(p, cell, holeRadius, mouth, unitX, unitY);
     if (withMagnet || withScrew) {
       forEachSocketCell(
         gridW,
@@ -338,11 +356,6 @@ export function buildLightweightBase(
                 withMagnet && chamfer
               )
             : magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
-          const mouth = footHoleMouthRadius(
-            withMagnet ? magnetRadius : 0,
-            withScrew ? screwRadius : 0,
-            withMagnet && chamfer
-          );
           padSites.push({
             cell,
             positions: keepFootHolesOffFlank(positions, cell, mouth, unitX, unitY),
@@ -355,27 +368,24 @@ export function buildLightweightBase(
         : () => true;
       for (const site of padSites) site.positions = site.positions.filter(keep);
     }
-    const clipPads = padSites.some(({ cell, positions }) =>
-      positions.some((p) => padLeavesFoot(p, cell, holeRadius, unitX, unitY))
-    );
-    // The foot of each cell the pads sit in, a hair inside its own faces, so a
-    // clipped pad never shares a face with the foot it is fused into. These
-    // are the whole cells, not the feet the plan splits them into: a half
-    // socket's pad bridges the gap between two half feet, and that bridge
+    // The foot of each cell with a clipped pad, a hair inside its own faces,
+    // so a clipped pad never shares a face with the foot it is fused into.
+    // These are the whole cells, not the feet the plan splits them into: a
+    // half socket's pad bridges the gap between two half feet, and that bridge
     // holds the pocket's wall and ceiling.
-    const padClips: Shape3D[] = clipPads
-      ? padSites.map(({ cell }) =>
-          translate(
-            scope.register(
-              buildFoot(
-                cell.widthUnits * unitX - CLEARANCE - 2 * COPLANAR_OVERLAP,
-                cell.depthUnits * unitY - CLEARANCE - 2 * COPLANAR_OVERLAP
-              )
-            ),
-            [cell.centerX, cell.centerY, 0]
-          )
+    const padClips: Shape3D[] = padSites
+      .filter(({ cell, positions }) => positions.some((p) => clips(p, cell)))
+      .map(({ cell }) =>
+        translate(
+          scope.register(
+            buildFoot(
+              cell.widthUnits * unitX - CLEARANCE - 2 * COPLANAR_OVERLAP,
+              cell.depthUnits * unitY - CLEARANCE - 2 * COPLANAR_OVERLAP
+            )
+          ),
+          [cell.centerX, cell.centerY, 0]
         )
-      : [];
+      );
 
     const feet: Shape3D[] = [];
     const voids: Shape3D[] = [];
@@ -485,20 +495,14 @@ export function buildLightweightBase(
     if (withMagnet || withScrew) {
       const floorDepth =
         (withMagnet ? magnetDepth : socketHeight) + (withMagnet ? MAGNET_FLOOR : 0);
-      const pads: Shape3D[] = [];
+      const clippedPads: Shape3D[] = [];
+      const wholePads: Shape3D[] = [];
       const drills: Shape3D[] = [];
-      for (const { positions } of padSites) {
+      for (const { cell, positions } of padSites) {
         if (positions.length > 0) {
-          for (const p of buildCellPads(
-            scope,
-            positions,
-            holeRadius,
-            floorDepth,
-            openDir,
-            socketHeight
-          )) {
-            pads.push(p);
-          }
+          buildCellPads(scope, positions, holeRadius, floorDepth, openDir, socketHeight).forEach(
+            (pad, i) => (clips(positions[i], cell) ? clippedPads : wholePads).push(pad)
+          );
           for (const [x, y] of positions) {
             if (withMagnet) {
               drills.push(
@@ -526,26 +530,35 @@ export function buildLightweightBase(
           }
         }
       }
-      if (pads.length > 0) {
-        let padUnion = scope.register(unwrap(fuseAll(pads as ValidSolid[])));
-        if (padClips.length > 0) {
-          // A pocket deeper than the foot takes its pad, and the ceiling over
-          // the magnet, above the foot's top. A slab keeps that part. It
-          // reaches PAD_TOP_OVERLAP_MM down into the feet, where the taper
-          // keeps every foot wider than any pad reaches.
-          const padTop = openDir === 'up' ? floorDepth - socketHeight : 0;
-          if (padTop > 0) {
-            const height = padTop + PAD_TOP_OVERLAP_MM + 1;
-            padClips.push(
-              box(gridW * unitX + 2, gridD * unitY + 2, height, {
-                at: [0, 0, -PAD_TOP_OVERLAP_MM + height / 2],
-              })
-            );
-          }
-          const footprint = scope.register(unwrap(fuseAll(padClips as ValidSolid[])));
-          for (const c of padClips) if (c !== footprint) c.delete();
-          padUnion = scope.register(unwrap(intersect(padUnion, footprint)));
+      const padParts: Shape3D[] = [];
+      if (clippedPads.length > 0) {
+        let clipped = scope.register(unwrap(fuseAll(clippedPads as ValidSolid[])));
+        // A pocket deeper than the foot takes its pad, and the ceiling over
+        // the magnet, above the foot's top. A slab keeps that part. It
+        // reaches PAD_TOP_OVERLAP_MM down into the feet, where the taper
+        // keeps every foot wider than any pad reaches.
+        const padTop = openDir === 'up' ? floorDepth - socketHeight : 0;
+        if (padTop > 0) {
+          const height = padTop + PAD_TOP_OVERLAP_MM + 1;
+          padClips.push(
+            box(gridW * unitX + 2, gridD * unitY + 2, height, {
+              at: [0, 0, -PAD_TOP_OVERLAP_MM + height / 2],
+            })
+          );
         }
+        const footprint = scope.register(unwrap(fuseAll(padClips as ValidSolid[])));
+        for (const c of padClips) if (c !== footprint) c.delete();
+        clipped = scope.register(unwrap(intersect(clipped, footprint)));
+        padParts.push(clipped);
+      }
+      if (wholePads.length > 0) {
+        padParts.push(scope.register(unwrap(fuseAll(wholePads as ValidSolid[]))));
+      }
+      if (padParts.length > 0) {
+        const padUnion =
+          padParts.length === 1
+            ? padParts[0]
+            : scope.register(unwrap(fuseAll(padParts as ValidSolid[])));
         const padded = unwrap(fuse(base, padUnion));
         if (padded !== base) base.delete();
         base = padded;

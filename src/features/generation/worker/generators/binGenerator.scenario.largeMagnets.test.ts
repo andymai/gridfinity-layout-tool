@@ -288,6 +288,26 @@ describe('magnets wider than the spec corner allows', () => {
     120_000
   );
 
+  it('leaves the pad whole around a hole wider than its foot allows', () => {
+    // A 10mm hole centred in a 16mm cell is wider than the foot's 9.6mm
+    // underside. Clipped to the foot, its bore would open through the flank.
+    const mesh = generateBin(
+      makeParams({ magnetDiameter: LARGEST, lightweight: true }, { gridUnitMm: 16 }),
+      undefined,
+      true
+    );
+    const holes = holeCentres(mesh, LARGEST / 2, DEPTH);
+    expect(holes).toEqual(['0,0']);
+    for (const axis of ['x', 'y'] as const) {
+      for (const dir of [1, -1] as const) {
+        expect(outboardWallMm(mesh, [0, 0], PROBE_Z, axis, dir)).toBeGreaterThan(1.15);
+      }
+    }
+    expectCeilings(mesh, holes, DEPTH);
+    assertStructurallyValid(mesh);
+    assertWatertight(mesh);
+  }, 120_000);
+
   it('pulls a chamfered 8mm hole in by its mouth', () => {
     const mesh = generateBin(
       makeParams({ magnetDiameter: 8, magnetChamfer: true }),
