@@ -1,0 +1,35 @@
+src/features/supporters/year/look/fonts.ts
+  s_cbdce95362cca9::t_c75a138275253d 95-103,108-112,114-115,121-127,132-133
+src/features/supporters/year/hooks/useShareImage.test.ts
+  s_cbdce95362cca9::t_06e54bdd35c11c 57
+src/features/supporters/year/hooks/useYearFonts.ts
+  s_cbdce95362cca9::t_c75a138275253d 23-32
+src/features/supporters/year/hooks/useShareImage.ts
+  s_cbdce95362cca9::t_06e54bdd35c11c 10-11,49
+  s_cbdce95362cca9::t_d41695b3aaafc9 36,40
+src/features/supporters/year/hooks/useYearFonts.test.ts
+  s_cbdce95362cca9::t_c997e158520fd5 2
+  s_cbdce95362cca9::t_20ee86b01b5bb2 46-50
+  s_cbdce95362cca9::t_8e806a4605628e 44-45,51-70
+  s_cbdce95362cca9::t_c28d686e191c80 11
+src/features/supporters/year/components/Your2026Page/Your2026Page.tsx
+  s_cbdce95362cca9::t_605c6772cecc94 12
+  s_cbdce95362cca9::t_06e54bdd35c11c 34,219,221,223,225-230
+  s_cbdce95362cca9::t_d41695b3aaafc9 241
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "467d91bfebcc95959dcc19fb1a155c84d1e745f4",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
