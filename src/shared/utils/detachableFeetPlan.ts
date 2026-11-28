@@ -561,16 +561,14 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
       )[0]
     : null;
 
-  // The arm is sized against the SHORTER pitch: a foot deep enough for the
-  // magnet on one axis is not automatically deep enough on the other, and a
-  // single arm value serves both. Screws share the magnets' corners, so one
-  // inset serves both attachments. A hole pulled in off the flank sits
-  // further from the edge, and the arm grows with it.
-  const cornerInsetFromEdgeMm =
-    spec && corner
-      ? Math.min(pitchX / 2 - spec[0], pitchY / 2 - spec[1]) +
-        Math.max(spec[0] - corner[0], spec[1] - corner[1])
-      : undefined;
+  // The arm is sized against the DEEPER inset: an edge bar holds its hole
+  // along one axis only, a centre anchor on a non-square grid sets the holes
+  // deeper along one axis, and a single arm value serves both. Screws share
+  // the magnets' corners, so one inset serves both attachments. A hole pulled
+  // in off the flank sits further from the edge, and the arm grows with it.
+  const cornerInsetFromEdgeMm = corner
+    ? Math.max(pitchX / 2 - corner[0], pitchY / 2 - corner[1])
+    : undefined;
 
   const armMm = footArmMm({
     pinDiameterMm,

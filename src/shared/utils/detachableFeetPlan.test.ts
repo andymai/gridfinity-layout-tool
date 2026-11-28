@@ -437,6 +437,8 @@ describe('holes on a grid smaller than the spec pitch', () => {
     [25, 25],
     [20, 20],
     [42, 25],
+    [30, 50],
+    [42, 50],
   ]) {
     for (const style of ['magnet', 'screw', 'magnet_and_screw'] as const) {
       for (const magnetDiameter of [4, 6, 6.5, 8, 10]) {
@@ -476,6 +478,14 @@ describe('holes on a grid smaller than the spec pitch', () => {
         expect(Math.abs(y) + mouth).toBeLessThanOrEqual(
           pitchY / 2 - FOOT_UNDERSIDE_INSET_MM - FOOT_HOLE_MIN_WALL_MM + 1e-9
         );
+        // One arm serves every foot, and an edge bar holds its hole along one
+        // axis only, so the arm reaches past the hole on both.
+        for (const [offset, pitch] of [
+          [x, pitchX],
+          [y, pitchY],
+        ]) {
+          expect(pitch / 2 - Math.abs(offset) + mouth + 1.2).toBeLessThanOrEqual(feet.armMm + 1e-9);
+        }
       }
     }
   );
