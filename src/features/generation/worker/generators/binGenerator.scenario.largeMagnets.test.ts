@@ -10,13 +10,17 @@
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
-import { assertStructurallyValid, assertWatertight } from './__kernel-tests__/meshAssertions';
+import { initBrepjs, getGenerateBin, getKernelName } from './__kernel-tests__/wasmInit';
+import {
+  assertStructurallyValid,
+  assertWatertight,
+  columnCrossings,
+} from './__kernel-tests__/meshAssertions';
 import { holeCentres, outboardWallMm, outerFaceMm } from './__kernel-tests__/holeProbes';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
 import type { BaseConfig, BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
-import { FOOT_HOLE_MIN_WALL_MM } from '@/shared/printSettings/gridfinityGeometry';
+import { FOOT_HOLE_MIN_WALL_MM, MAGNET_FLOOR } from '@/shared/printSettings/gridfinityGeometry';
 
 const PITCH = 42;
 const DEPTH = DEFAULT_BIN_PARAMS.base.magnetDepth;
@@ -177,6 +181,49 @@ describe('magnets wider than the spec corner allows', () => {
     },
     120_000
   );
+
+  it('keeps the ceiling over a deep 10mm pocket in a low-profile lightweight foot', () => {
+    // A 3.8mm pocket is deeper than the 3.65mm low-profile foot, so its pad
+    // rises past the foot's top into the floor opening over the cup.
+    const depth = 3.8;
+    const mesh = generateBin(
+      makeParams({
+        magnetDiameter: LARGEST,
+        magnetDepth: depth,
+        lightweight: true,
+        lowProfile: true,
+      }),
+      undefined,
+      true
+    );
+    const control = generateBin(
+      makeParams({ style: 'standard', lightweight: true, lowProfile: true }),
+      undefined,
+      true
+    );
+    const holes = holeCentres(mesh, LARGEST / 2, depth);
+    expect(holes).toEqual(corners(1, 12.4));
+    expect(worstBulge(mesh, control, holes, 1)).toBeLessThanOrEqual(0.01);
+    let minZ = Infinity;
+    for (let i = 2; i < mesh.vertices.length; i += 3) minZ = Math.min(minZ, mesh.vertices[i]);
+    // The faces above each pocket, not a parity count: the draft kernel and
+    // brepkit can leave a stray face across a pocket's mouth.
+    for (const site of holes) {
+      const [x, y] = parse(site);
+      const above = columnCrossings(mesh, x + 0.013, y + 0.013)
+        .map((z) => z - minZ)
+        .filter((z) => z > depth - 0.1);
+      expect(above[0]).toBeCloseTo(depth, 2);
+      expect(above[1]).toBeCloseTo(depth + MAGNET_FLOOR, 2);
+    }
+    // brepkit leaves a defect beside one pocket of this bin on main too: 16
+    // open edges and no wall at all there. The probe reads it as a thin wall.
+    if (getKernelName() !== 'brepkit') {
+      expect(thinnestWall(mesh, holes, 1)).toBeGreaterThanOrEqual(FOOT_HOLE_MIN_WALL_MM);
+    }
+    assertStructurallyValid(mesh);
+    assertWatertight(mesh);
+  }, 120_000);
 
   it('pulls a chamfered 8mm hole in by its mouth', () => {
     const mesh = generateBin(

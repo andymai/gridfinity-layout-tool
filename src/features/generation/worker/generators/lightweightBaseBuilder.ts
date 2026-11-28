@@ -91,6 +91,13 @@ import { UNDERSIDE_RELIEF_BORDER_MM } from '@/shared/types/bin';
 const PAD_MARGIN = 1.2;
 
 /**
+ * How far below a foot's top the pad clip stops following the foot. There the
+ * foot is still within 0.75mm of its cell's edge, and the hole rules keep
+ * every pad at least 1.8mm inside that edge.
+ */
+const PAD_TOP_OVERLAP_MM = 0.5;
+
+/**
  * Whether a pad's bore opens with the chamfer. A pad keeps only PAD_MARGIN of
  * wall around the bore, too thin for the chamfer to open into.
  */
@@ -519,6 +526,19 @@ export function buildLightweightBase(
       if (pads.length > 0) {
         let padUnion = scope.register(unwrap(fuseAll(pads as ValidSolid[])));
         if (padClips.length > 0) {
+          // A pocket deeper than the foot takes its pad, and the ceiling over
+          // the magnet, above the foot's top. A slab keeps that part. It
+          // reaches PAD_TOP_OVERLAP_MM down into the feet, where the taper
+          // keeps every foot wider than any pad reaches.
+          const padTop = openDir === 'up' ? floorDepth - socketHeight : 0;
+          if (padTop > 0) {
+            const height = padTop + PAD_TOP_OVERLAP_MM + 1;
+            padClips.push(
+              box(gridW * unitX + 2, gridD * unitY + 2, height, {
+                at: [0, 0, -PAD_TOP_OVERLAP_MM + height / 2],
+              })
+            );
+          }
           const footprint = scope.register(unwrap(fuseAll(padClips as ValidSolid[])));
           for (const c of padClips) if (c !== footprint) c.delete();
           padUnion = scope.register(unwrap(intersect(padUnion, footprint)));
