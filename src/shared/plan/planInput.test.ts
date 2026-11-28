@@ -18,6 +18,14 @@ describe('planInput', () => {
     );
   });
 
+  it('takes a drawer with no bins, and a half grid for it', () => {
+    const drawer = { width: 52, depth: 44, height: 8, unit: 'cm' };
+    expect(issues({ drawer, bins: [] })).toEqual([]);
+    expect(issues({ drawer, halfGrid: true, bins: [] })).toEqual([]);
+    expect(issues({ grid: { width: 8, depth: 6 }, bins: [] })).toEqual([]);
+    expect(issues({ drawer, halfGrid: 'yes', bins: [] })).not.toEqual([]);
+  });
+
   it('caps the bins after counts', () => {
     expect(
       issues({

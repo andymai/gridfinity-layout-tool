@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AskCorpus, AskLabels } from './corpus.js';
-import { createToolRunner, toolDefinitions } from './tools.js';
+import { OPEN_DRAWER_HINT, createToolRunner, toolDefinitions } from './tools.js';
 
 const corpus: AskCorpus = {
   version: 'test',
@@ -73,7 +73,7 @@ describe('search_docs', () => {
 });
 
 describe('drawer_fit', () => {
-  it('reports the grids, the stacks and the link', () => {
+  it('reports the grids and the stacks, then asks for the drawer as a plan', () => {
     const result = run('drawer_fit', { widthMm: 400, depthMm: 300, heightMm: 80 }, 'en');
     expect(result.label).toBe('Checking a 400 × 300 × 80 mm drawer');
     expect(result.content).toBe(
@@ -82,9 +82,11 @@ describe('drawer_fit', () => {
         'Whole-unit grid: 9 x 7 units (378 x 294 mm), spare room 22 mm in width and 6 mm in depth.',
         'Half-unit grid: 9.5 x 7 units (399 x 294 mm), spare room 1 mm in width and 6 mm in depth. It needs Half-grid mode.',
         'Tallest bins under 80 mm with the default baseplate: one bin: 10 units (74.4 mm); stacks of 2: 5 units each (74.1 mm in all); stacks of 3: 3 units each (66.7 mm in all).',
-        'Plan this drawer in the app: https://gridfinitylayouttool.com/?drawer=400x300x80',
+        OPEN_DRAWER_HINT,
       ].join('\n')
     );
+    expect(result.content).not.toContain('https://');
+    expect(result.link).toBeUndefined();
   });
 
   it('converts inches', () => {
@@ -93,10 +95,11 @@ describe('drawer_fit', () => {
     );
   });
 
-  it('refuses a drawer the app cannot plan', () => {
+  it('refuses a drawer the app cannot plan, and asks for no plan', () => {
     const result = run('drawer_fit', { widthMm: 20, depthMm: 300 }, 'en');
     expect(result.isError).toBe(true);
     expect(result.content).toContain('from 42 mm to 2100 mm');
+    expect(result.content).not.toContain('plan_layout');
   });
 
   it('refuses a height that the app does not take, rather than claim nothing fits', () => {
@@ -135,6 +138,20 @@ describe('plan_layout', () => {
 
   it('gives the same bytes on a replay', () => {
     expect(run('plan_layout', plan, 'en')).toEqual(run('plan_layout', plan, 'en'));
+  });
+
+  it('plans the drawer alone, at the half grid that the answer picks', () => {
+    const result = run(
+      'plan_layout',
+      { drawer: { width: 33, depth: 40, unit: 'cm' }, halfGrid: true, bins: [] },
+      'en'
+    );
+    expect(result.isError).toBe(false);
+    expect(result.content).toContain('on a 7.5 x 9.5 unit grid with half units.');
+    expect(result.content).toContain('No bins: the plan opens the empty drawer.');
+    expect(result.content).toMatch(/\nPlan handle: [0-9a-f]{8}\.$/);
+    expect(result.plan).toMatchObject({ grid: { width: 7.5, depth: 9.5 }, bins: [] });
+    expect(result.plan?.link).toMatch(/^https:\/\/gridfinitylayouttool\.com\/#plan=v2\./);
   });
 
   it('names the field that breaks a limit', () => {

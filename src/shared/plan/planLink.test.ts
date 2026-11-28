@@ -25,15 +25,29 @@ describe('plan links', () => {
     expect(isOk(url) && url.value).toMatch(/^https:\/\/example\.test\/#plan=v1\./);
   });
 
+  // An app from before v2 cannot read a drawer without bins or with halfGrid,
+  // so only those plans carry v2; it then asks to update.
+  it('marks a drawer without bins, or with halfGrid, as v2, and reads both versions', async () => {
+    const drawer = planInput.parse({ drawer: { width: 52, depth: 44, unit: 'cm' }, bins: [] });
+    const half = planInput.parse({ ...input, halfGrid: true });
+    expect(encoded(input)).toMatch(/^v1\./);
+    expect(encoded(drawer)).toMatch(/^v2\./);
+    expect(encoded(half)).toMatch(/^v2\./);
+    for (const plan of [input, drawer, half]) {
+      const decoded = await decodePlanLink(encoded(plan));
+      expect(isOk(decoded) && decoded.value).toEqual(plan);
+    }
+  });
+
   it('names a link from a newer app version apart from a damaged one', async () => {
-    const newer = await decodePlanLink(`v2.${encoded(input).slice(3)}`);
-    expect(!isOk(newer) && newer.error).toEqual({ kind: 'newer-version', version: 2 });
+    const newer = await decodePlanLink(`v3.${encoded(input).slice(3)}`);
+    expect(!isOk(newer) && newer.error).toEqual({ kind: 'newer-version', version: 3 });
     const damaged = await decodePlanLink('v1.not!base64');
     expect(!isOk(damaged) && damaged.error).toEqual({ kind: 'malformed' });
   });
 
   it('checks a decoded plan like any input', async () => {
-    const tampered = encoded({ ...input, bins: [] });
+    const tampered = encoded({ ...input, bins: [{ ...input.bins[0], width: 1.25 }] });
     const decoded = await decodePlanLink(tampered);
     expect(!isOk(decoded) && decoded.error.kind).toBe('invalid');
   });

@@ -4,12 +4,17 @@ import { describe, expect, it } from 'vitest';
 import { READER_TOOL_NAMES } from '../agent/index.js';
 import { createMcpServer, MCP_TOOL_NAMES } from './server.js';
 
-async function listTools() {
+async function connect(): Promise<Client> {
   const server = createMcpServer('https://example.test', 'test');
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
   await server.connect(serverSide);
   const client = new Client({ name: 'test', version: '1' });
   await client.connect(clientSide);
+  return client;
+}
+
+async function listTools() {
+  const client = await connect();
   const { tools } = await client.listTools();
   await client.close();
   return tools;
@@ -61,5 +66,18 @@ describe('createMcpServer', () => {
       expect(text, tool.name).not.toMatch(/panel/i);
       for (const name of READER_TOOL_NAMES) expect(text, tool.name).not.toContain(name);
     }
+  });
+
+  it('ends the drawer_fit text with the drawer link', async () => {
+    const client = await connect();
+    const result = await client.callTool({
+      name: 'drawer_fit',
+      arguments: { widthMm: 400, depthMm: 300, heightMm: 80 },
+    });
+    await client.close();
+    const [part] = result.content as { type: string; text?: string }[];
+    expect(part.text).toMatch(
+      /\nPlan this drawer in the app: https:\/\/example\.test\/\?drawer=400x300x80$/
+    );
   });
 });

@@ -89,13 +89,20 @@ export function planMapView(plan: PlanView): PlanMapView {
   };
 }
 
+function isEmptyDrawer(plan: PlanView): boolean {
+  return plan.bins.length === 0 && plan.stashed.length === 0;
+}
+
 export function planCaption(plan: PlanView): string {
-  const parts = [
-    `${plan.grid.width} × ${plan.grid.depth} units`,
-    `${plan.bins.length} ${plan.bins.length === 1 ? 'bin' : 'bins'}`,
-  ];
+  const grid = `${plan.grid.width} × ${plan.grid.depth} units`;
+  if (isEmptyDrawer(plan)) return `${grid} · empty drawer`;
+  const parts = [grid, `${plan.bins.length} ${plan.bins.length === 1 ? 'bin' : 'bins'}`];
   if (plan.stashed.length > 0) parts.push(`${plan.stashed.length} in the stash`);
   return parts.join(' · ');
+}
+
+export function planOpenLabel(plan: PlanView): string {
+  return isEmptyDrawer(plan) ? 'Open this drawer' : 'Open in the layout editor';
 }
 
 // Read by a screen reader in place of the drawing, which it reads as one image.

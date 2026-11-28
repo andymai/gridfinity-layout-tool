@@ -108,6 +108,57 @@ describe('buildPlanLayout', () => {
     expect(result.layout.baseplateParams?.paddingLeft).toBe(0.5);
   });
 
+  it('plans the drawer alone when there are no bins', () => {
+    const result = plan({ drawer: { width: 52, depth: 44, height: 8, unit: 'cm' }, bins: [] });
+    expect(result.half).toBe(false);
+    expect(result.placed).toEqual([]);
+    expect(result.stashed).toEqual([]);
+    expect(result.layout.bins).toEqual([]);
+    expect(result.layout.drawer).toMatchObject({
+      width: 12,
+      depth: 10,
+      height: 11.42,
+      measuredMm: { width: 520, depth: 440, height: 80 },
+    });
+    expect(result.layout.layers).toEqual([{ id: 'plan-layer-1', name: 'Layer 1', height: 3 }]);
+    expect(result.layout.baseplateParams).toMatchObject({ paddingLeft: 8, paddingFront: 10 });
+  });
+
+  it('fits a half grid for halfGrid where it fits tighter, and whole units where not', () => {
+    const tighter = plan({
+      drawer: { width: 330, depth: 400, unit: 'mm' },
+      halfGrid: true,
+      bins: [],
+    });
+    expect(tighter.half).toBe(true);
+    expect(tighter.layout.drawer).toMatchObject({ width: 7.5, depth: 9.5 });
+    expect(tighter.layout.baseplateParams).toMatchObject({ paddingLeft: 7.5, paddingFront: 0.5 });
+
+    const whole = plan({
+      drawer: { width: 38, depth: 51, unit: 'cm' },
+      halfGrid: true,
+      bins: [{ label: 'M3', width: 1, depth: 1, height: 3, count: 3 }],
+    });
+    expect(whole.half).toBe(false);
+    expect(whole.layout.drawer).toMatchObject({ width: 9, depth: 12 });
+    expect(whole.placed.map((bin) => [bin.x, bin.y])).toEqual([
+      [0, 0],
+      [1, 0],
+      [2, 0],
+    ]);
+  });
+
+  it('builds an empty drawer that the app imports', () => {
+    const imported = importLayoutJSON(
+      JSON.stringify(
+        plan({ drawer: { width: 15, depth: 21, unit: 'in' }, halfGrid: true, bins: [] }).layout
+      )
+    );
+    expect(imported.errors).toEqual([]);
+    expect(imported.layout?.drawer).toMatchObject({ width: 9, depth: 12.5 });
+    expect(imported.layout?.bins).toEqual([]);
+  });
+
   it('refuses a measured height outside what the app stores', () => {
     const built = buildPlanLayout(
       planInput.parse({

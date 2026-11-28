@@ -5,10 +5,12 @@ import { runDrawerFit } from './drawerFit';
 const context = { origin: 'https://example.test' };
 
 describe('runDrawerFit', () => {
-  it('links to the origin that the door passes', () => {
+  it('gives the drawer link apart from the text, at the origin that the door passes', () => {
     const result = runDrawerFit({ widthMm: 400, depthMm: 300 }, context);
     expect(result.isError).toBe(false);
-    expect(result.content).toContain('https://example.test/?drawer=400x300');
+    expect(result.drawerLink).toBe('https://example.test/?drawer=400x300');
+    expect(result.content).not.toContain('https://');
+    expect(runDrawerFit({ widthMm: 20, depthMm: 300 }, context).drawerLink).toBeNull();
   });
 
   // Ask AI runs each earlier tool call again on every request, so the prompt

@@ -9,7 +9,7 @@ import {
 } from '@/shared/plan/drawerPlan';
 import type { GridFit } from '@/shared/plan/drawerPlan';
 import type { DrawerFitInput } from '../contract/drawerFit';
-import type { ToolContext, ToolOutput } from '../contract/tool';
+import type { DrawerFitOutput, ToolContext } from '../contract/tool';
 
 function describeFit(name: string, fit: GridFit): string {
   return (
@@ -18,7 +18,7 @@ function describeFit(name: string, fit: GridFit): string {
   );
 }
 
-export function runDrawerFit(input: DrawerFitInput, context: ToolContext): ToolOutput {
+export function runDrawerFit(input: DrawerFitInput, context: ToolContext): DrawerFitOutput {
   const scale = input.unit === 'in' ? MM_PER_INCH : 1;
   // Rounded to 0.1 mm before the fit, as the docs calculator's toMm does: the
   // drawer link carries the rounded size, so the app then plans the same grid
@@ -37,6 +37,7 @@ export function runDrawerFit(input: DrawerFitInput, context: ToolContext): ToolO
     return {
       isError: true,
       content: `The app takes a drawer height from ${MEASURED_MM_MIN} mm to ${MEASURED_MM_MAX} mm. Leave the height out, or give one in that range.`,
+      drawerLink: null,
     };
   }
   const plan = planDrawer(size);
@@ -44,6 +45,7 @@ export function runDrawerFit(input: DrawerFitInput, context: ToolContext): ToolO
     return {
       isError: true,
       content: `The app plans drawers from ${MIN_DRAWER_MM} mm to ${MAX_DRAWER_MM} mm on each side. ${formatMm(size.widthMm)} x ${formatMm(size.depthMm)} mm is outside that range.`,
+      drawerLink: null,
     };
   }
   const lines = [
@@ -69,6 +71,9 @@ export function runDrawerFit(input: DrawerFitInput, context: ToolContext): ToolO
         : `No bin of 2 units or more fits under ${formatMm(size.heightMm)} mm.`
     );
   }
-  lines.push(`Plan this drawer in the app: ${drawerLink(context.origin, size)}`);
-  return { isError: false, content: lines.join('\n') };
+  return {
+    isError: false,
+    content: lines.join('\n'),
+    drawerLink: drawerLink(context.origin, size),
+  };
 }
