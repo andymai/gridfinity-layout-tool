@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { EFFORT, MODEL, runAgent } from './agent.js';
 import type { AgentEvent, AgentOptions, AgentProgress, RoundBudget } from './agent.js';
 import type { AskCorpus } from './corpus.js';
+import { SYSTEM_PROMPT } from './prompt.js';
 import { createToolRunner, toolDefinitions } from './tools.js';
 import { z } from 'zod';
 import type { ClientTool } from './clientTools.js';
@@ -308,7 +309,7 @@ describe('runAgent', () => {
         block_binding: { prefix_mismatch_behavior: 'drop_block' },
       },
       system: [
-        { type: 'text' },
+        { type: 'text', text: SYSTEM_PROMPT },
         { type: 'text', text: 'the page map', cache_control: { type: 'ephemeral' } },
       ],
     });

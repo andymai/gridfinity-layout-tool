@@ -41,7 +41,7 @@ export const GROUP_RULES: Readonly<Record<Group, string>> = {
   no: 'The first sentence says plainly that the app cannot do it. Then the answer gives the nearest thing the app can do.',
   gap: 'The answer says that the docs do not cover the question, names the nearest pages, and links the Q&A forum. It must not invent an answer.',
   language:
-    "The answer is in the language of the question. Each control reads as the reader's app shows it: in a non-English app, its label in the app's language and then the English label in parentheses; in an English app, the English label alone. The facts are correct.",
+    "The answer is in the language of the question. When the question has no clear language, such as a bare size, the answer is in the language of the chat so far, or in the app's language when the chat has no earlier turn. Each control reads as the reader's app shows it: in a non-English app, its label in the app's language and then the English label in parentheses; in an English app, the English label alone. The facts are correct.",
   followup:
     'The second answer uses the first turn: it reads as a reply in the same conversation, without asking the reader to repeat the context.',
 };
@@ -599,6 +599,47 @@ export const GOLDEN: readonly GoldenCase[] = [
     expect:
       'In English, because the question is English, with each control as its German label and the English label in parentheses, because the app is in German.',
   },
+  // The reply follows the question, not the app; labels follow the app.
+  {
+    id: 'X09',
+    group: 'language',
+    page: '/index',
+    locale: 'zh-CN',
+    turns: ['Do bins have to be rectangles, or can I give one another shape?'],
+    sources: ['/designer/size-and-shape'],
+    expect:
+      'In English, because the question is English, with each control as its Simplified Chinese label and the English label in parentheses, because the app is in Simplified Chinese. Yes: turn on Custom shape under Footprint, start from a preset such as L if one fits, and click cells to remove them. The shape must stay one piece.',
+  },
+  {
+    id: 'X10',
+    group: 'language',
+    page: '/baseplates/splitting',
+    locale: 'en',
+    turns: ['Meine Grundplatte ist größer als mein Druckbett. Wie teile ich sie in Stücke?'],
+    sources: ['/baseplates/splitting'],
+    expect:
+      'In German, because the question is German, with the English control labels alone, because the app is in English. Set the print bed size under Physical units; a plate bigger than the bed splits into pieces by itself.',
+  },
+  {
+    id: 'X11',
+    group: 'language',
+    page: '/designer/base',
+    locale: 'en',
+    turns: ['빈 바닥에 자석 구멍을 넣으려면 어떻게 하나요?'],
+    sources: ['/designer/base'],
+    expect:
+      'In Korean, because the question is Korean, with the English control labels alone, because the app is in English. Turn on Magnet holes under Mounting in the base settings, and set the diameter and depth to the magnets.',
+  },
+  {
+    id: 'X12',
+    group: 'language',
+    page: '/concepts/units',
+    locale: 'de',
+    turns: ['1x1?'],
+    sources: ['/concepts/units'],
+    expect:
+      'In German, because "1x1?" has no clear language and the app is in German, with each control as its German label and the English label in parentheses. A 1 x 1 bin takes one grid cell, 42 x 42 mm on the standard grid.',
+  },
 
   // Follow-up pairs
   {
@@ -657,6 +698,27 @@ export const GOLDEN: readonly GoldenCase[] = [
     turns: ['Can I share a layout with a friend?', 'Can we both edit it at the same time?'],
     sources: ['/sharing/share-links', '/sharing/live-collaboration'],
     expect: 'The second answer covers live sessions.',
+  },
+  // A follow-up keeps the language of the chat, not of the app.
+  {
+    id: 'F07',
+    group: 'followup',
+    page: '/designer/lids',
+    locale: 'ja',
+    turns: ['How do I add a lid to a bin?', 'Can it slide on instead?'],
+    sources: ['/designer/lids'],
+    expect:
+      'Both answers in English, the language of the chat, with each control as its Japanese label and the English label in parentheses, because the app is in Japanese. The second answer continues the first and covers sliding lids.',
+  },
+  {
+    id: 'F08',
+    group: 'followup',
+    page: '/layouts/drawer-setup',
+    locale: 'de',
+    turns: ['What grid fits a drawer that is 400 by 300 mm inside?', '450 x 320?'],
+    sources: ['/layouts/drawer-setup'],
+    expect:
+      'The second answer is in English, the language of the chat: "450 x 320?" has no clear language, so it does not switch to German, the language of the app. Each control is its German label and the English label in parentheses. The second answer gives the grid for a 450 x 320 mm drawer from drawer_fit.',
   },
 
   {
