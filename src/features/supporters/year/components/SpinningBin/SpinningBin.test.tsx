@@ -5,6 +5,8 @@ import type { MeshData } from '@/shared/types/generation';
 import type { ModelLook } from '../../cards/scene';
 import { SpinningBin } from './SpinningBin';
 
+const frames = vi.hoisted((): (() => void)[] => []);
+
 // jsdom has no WebGL; the canvas is checked in the browser pass, not here.
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({
@@ -20,6 +22,10 @@ vi.mock('@react-three/fiber', () => ({
       {children}
     </div>
   ),
+  // Each frame callback runs once, as a first frame would.
+  useFrame: (callback: () => void) => {
+    frames.push(callback);
+  },
   useThree: (select: (state: object) => unknown) =>
     select({
       set: () => undefined,
@@ -60,5 +66,28 @@ describe('SpinningBin', () => {
     expect(canvas).toHaveAttribute('data-frameloop', 'demand');
     // No tone mapping, so the tint lands as the card's own hue.
     expect(canvas).toHaveAttribute('data-flat', 'true');
+  });
+
+  it('reports its first frame once, for the share image', () => {
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((done) => {
+      done(0);
+      return 0;
+    });
+    frames.length = 0;
+    const onDrawn = vi.fn();
+    render(
+      <SpinningBin
+        mesh={mesh}
+        look={look}
+        angle={0}
+        resolution={1}
+        label="Tool caddy"
+        onDrawn={onDrawn}
+      />
+    );
+    for (const frame of frames) frame();
+    for (const frame of frames) frame();
+    expect(onDrawn).toHaveBeenCalledTimes(1);
+    vi.restoreAllMocks();
   });
 });

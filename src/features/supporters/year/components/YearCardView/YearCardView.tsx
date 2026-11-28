@@ -138,10 +138,11 @@ interface ModelViewProps {
   readonly name: string;
   readonly elapsed: number;
   readonly reduced: boolean;
+  readonly onDrawn?: () => void;
 }
 
 /** The real bin in its slot: the turning mesh, or the thumbnail until it can turn. */
-function ModelView({ slot, mesh, thumbnail, name, elapsed, reduced }: ModelViewProps) {
+function ModelView({ slot, mesh, thumbnail, name, elapsed, reduced, onDrawn }: ModelViewProps) {
   const { resolution } = useFrameSize();
   const pose = modelPose(slot, elapsed, reduced);
   // A thumbnail cannot print, so it fades in where the print would begin.
@@ -182,6 +183,7 @@ function ModelView({ slot, mesh, thumbnail, name, elapsed, reduced }: ModelViewP
               printTime={pose.printTime}
               printTiming={slot.kind === 'print' ? PRINT_TIMING : undefined}
               resolution={resolution}
+              onDrawn={onDrawn}
             />
           </Suspense>
         </ShowcaseBoundary>
@@ -373,6 +375,8 @@ export interface YearCardViewProps {
   readonly measure: Measure;
   /** While the first card's colour fills in, the card is there for screen readers only. */
   readonly hidden?: boolean;
+  /** The card's 3D bin drew its first frame. */
+  readonly onModelDrawn?: () => void;
   readonly onRollCredits: () => void;
   readonly onSupport: () => void;
 }
@@ -427,6 +431,7 @@ export function YearCardView({
   complicated,
   measure,
   hidden = false,
+  onModelDrawn,
   onRollCredits,
   onSupport,
 }: YearCardViewProps) {
@@ -476,6 +481,7 @@ export function YearCardView({
                 name={modelSource.name}
                 elapsed={elapsed}
                 reduced={reduced}
+                onDrawn={onModelDrawn}
               />
             )}
             {scene.texts.map((block) => (

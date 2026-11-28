@@ -185,6 +185,8 @@ function YearReview({ demo }: { readonly demo: boolean }) {
     [stats, meshes, triangles]
   );
   const [settledCard, setSettledCard] = useState<YearCard | null>(null);
+  const [modelFrames, setModelFrames] = useState(0);
+  const onModelDrawn = useCallback(() => setModelFrames((count) => count + 1), []);
   // Stable on purpose: a new handler makes the player call it again with no card
   // change, which would clear the image the settled card prepared.
   const onCardChange = useCallback(() => setSettledCard(null), []);
@@ -227,6 +229,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
       scene,
       thumbnail: design?.thumbnail ?? null,
       turns: mesh !== undefined && canSpin(mesh) && detectWebGL().available,
+      modelFrames,
     };
   }, [
     settledCard,
@@ -239,6 +242,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
     drawerPreview,
     fonts.measure,
     meshes,
+    modelFrames,
   ]);
   const shareTheme = useMemo(
     () => ({
@@ -363,6 +367,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
           complicated={complicated}
           onRollCredits={rollCredits}
           onSupport={support}
+          onModelDrawn={onModelDrawn}
         />
       )}
     />

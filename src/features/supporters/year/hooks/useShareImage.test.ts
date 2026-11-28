@@ -55,6 +55,7 @@ function request(kind: Scene['kind'], thumbnail: string | null = null): ShareReq
     },
     thumbnail,
     turns: false,
+    modelFrames: 0,
   };
 }
 

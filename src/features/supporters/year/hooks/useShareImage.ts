@@ -9,6 +9,11 @@ export interface ShareRequest {
   readonly thumbnail: string | null;
   /** The card turns a real mesh, so the image waits for its canvas to draw. */
   readonly turns: boolean;
+  /**
+   * Counts first frames of the card's 3D bin. A viewer that mounts after the
+   * image was made changes the request, so the image is made again with it.
+   */
+  readonly modelFrames: number;
 }
 
 /** The 3D canvas, not the thumbnail canvas that stands in while it loads. */

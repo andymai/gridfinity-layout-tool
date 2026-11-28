@@ -1,5 +1,5 @@
-import { useLayoutEffect, useMemo } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import { useLayoutEffect, useMemo, useRef } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import type { MeshData } from '@/shared/types/generation';
@@ -36,6 +36,19 @@ export interface SpinningBinProps {
   readonly printTiming?: PrintTiming;
   /** Device pixels per layout pixel, so the canvas matches the screen at any card scale. */
   readonly resolution: number;
+  /** Called once, on the first frame drawn, so a share image can copy the bin. */
+  readonly onDrawn?: () => void;
+}
+
+/** Reports the first frame; R3F runs frame callbacks just before it draws that frame. */
+function FirstFrame({ onDrawn }: { readonly onDrawn?: () => void }) {
+  const reported = useRef(false);
+  useFrame(() => {
+    if (reported.current) return;
+    reported.current = true;
+    if (onDrawn) requestAnimationFrame(onDrawn);
+  });
+  return null;
 }
 
 interface Planes {
@@ -188,7 +201,7 @@ function Assembly({
  * canvas draws on demand, when the card's time changes, and keeps its buffer
  * so the share image can copy it.
  */
-export function SpinningBin({ label, resolution, ...rest }: SpinningBinProps) {
+export function SpinningBin({ label, resolution, onDrawn, ...rest }: SpinningBinProps) {
   const { look } = rest;
   return (
     <div className="h-full w-full" role="img" aria-label={label}>
@@ -207,6 +220,7 @@ export function SpinningBin({ label, resolution, ...rest }: SpinningBinProps) {
         <directionalLight position={[-1.4, 2.4, 1.8]} intensity={2.2} color="#ffffff" />
         <directionalLight position={[1.8, 0.7, -1.6]} intensity={1.6} color={look.rim} />
         <Assembly {...rest} />
+        <FirstFrame onDrawn={onDrawn} />
       </Canvas>
     </div>
   );
