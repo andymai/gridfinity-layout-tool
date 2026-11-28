@@ -14,7 +14,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { holeCentres, outboardWallMm } from './__kernel-tests__/holeProbes';
-import { isSolidThrough } from './__kernel-tests__/meshAssertions';
+import { boundingBox, isSolidThrough } from './__kernel-tests__/meshAssertions';
 import { footCellCentre, footKind, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
@@ -162,5 +162,25 @@ describe('detachable feet on a grid smaller than the spec pitch', () => {
     );
     expect(holes).toEqual(['-7,-13', '-7,13', '7,-13', '7,13']);
     expect(thinnest).toBeGreaterThanOrEqual(1.15);
+  }, 120_000);
+
+  it('keeps the two bars of a centre-anchored foot on a 50 x 30mm grid apart', () => {
+    // The holes sit 12mm from the 50mm edges, but the bars run along the 30mm
+    // depth and only need to reach the holes 8mm in from those edges.
+    const params = makeParams(50, 6.5, { gridUnitMmY: 30, magnetAnchor: 'center' });
+    const { holes, thinnest } = drilledFeet(params);
+    expect(holes).toEqual(['-13,-7', '-13,7', '13,-7', '13,7']);
+    expect(thinnest).toBeGreaterThanOrEqual(1.15);
+    const feet = buildFeet(params) ?? [];
+    try {
+      const spans = feet
+        .map((foot) => boundingBox(meshOf(foot).vertices))
+        .map((box) => [box.minY, box.maxY] as const)
+        .sort((a, b) => a[0] - b[0]);
+      expect(spans).toHaveLength(2);
+      expect(spans[0][1]).toBeLessThan(spans[1][0]);
+    } finally {
+      for (const foot of feet) foot.delete();
+    }
   }, 120_000);
 });

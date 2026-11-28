@@ -561,34 +561,54 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
       )[0]
     : null;
 
-  // The arm is sized against the DEEPER inset: an edge bar holds its hole
-  // along one axis only, a centre anchor on a non-square grid sets the holes
-  // deeper along one axis, and a single arm value serves both. Screws share
-  // the magnets' corners, so one inset serves both attachments. A hole pulled
-  // in off the flank sits further from the edge, and the arm grows with it.
-  const cornerInsetFromEdgeMm = corner
-    ? Math.max(pitchX / 2 - corner[0], pitchY / 2 - corner[1])
-    : undefined;
+  // Screws share the magnets' corners, so one inset serves both attachments.
+  // A hole pulled in off the flank sits further from the edge, and the arm
+  // grows with it.
+  const armFor = (insetMm: number | undefined): number =>
+    footArmMm({
+      pinDiameterMm,
+      magnetDiameterMm: carriesMagnet ? params.base.magnetDiameter : undefined,
+      magnetInsetFromEdgeMm: carriesMagnet ? insetMm : undefined,
+      screwDiameterMm: carriesScrew ? params.base.screwDiameter : undefined,
+      screwInsetFromEdgeMm: carriesScrew ? insetMm : undefined,
+    });
+  const placementsFor = (armMm: number): FootPlacement[] =>
+    detachableFeetPlacements({
+      widthUnits: params.width,
+      depthUnits: params.depth,
+      pitchX,
+      pitchY,
+      fractionalEdgeX: params.fractionalEdgeX,
+      fractionalEdgeY: params.fractionalEdgeY,
+      latticeX: params.base.footLatticeX ?? 'grid',
+      latticeY: params.base.footLatticeY ?? 'grid',
+      armMm,
+    });
 
-  const armMm = footArmMm({
-    pinDiameterMm,
-    magnetDiameterMm: carriesMagnet ? params.base.magnetDiameter : undefined,
-    magnetInsetFromEdgeMm: carriesMagnet ? cornerInsetFromEdgeMm : undefined,
-    screwDiameterMm: carriesScrew ? params.base.screwDiameter : undefined,
-    screwInsetFromEdgeMm: carriesScrew ? cornerInsetFromEdgeMm : undefined,
-  });
-
-  const placed = detachableFeetPlacements({
-    widthUnits: params.width,
-    depthUnits: params.depth,
-    pitchX,
-    pitchY,
-    fractionalEdgeX: params.fractionalEdgeX,
-    fractionalEdgeY: params.fractionalEdgeY,
-    latticeX: params.base.footLatticeX ?? 'grid',
-    latticeY: params.base.footLatticeY ?? 'grid',
-    armMm,
-  });
+  // One arm value serves both axes, and a centre anchor on a non-square grid
+  // sets the holes deeper along one of them. An L holds its hole in either
+  // arm, so the arm reaches the shallower inset. A bar holds it only along the
+  // axis it is clipped on, so when every foot is a bar along one axis, the arm
+  // reaches that axis's inset instead.
+  const insetX = corner ? pitchX / 2 - corner[0] : undefined;
+  const insetY = corner ? pitchY / 2 - corner[1] : undefined;
+  const shallower =
+    insetX !== undefined && insetY !== undefined ? Math.min(insetX, insetY) : undefined;
+  let armMm = armFor(shallower);
+  let placed = placementsFor(armMm);
+  const edgeFeet = placed.filter((p) => p.dirX !== 0 || p.dirY !== 0);
+  const barInset =
+    edgeFeet.length === 0
+      ? shallower
+      : edgeFeet.every((p) => p.dirX === 0)
+        ? insetY
+        : edgeFeet.every((p) => p.dirY === 0)
+          ? insetX
+          : shallower;
+  if (barInset !== shallower) {
+    armMm = armFor(barInset);
+    placed = placementsFor(armMm);
+  }
 
   // A custom shape removes cells, and a foot on one of them hangs under nothing:
   // its pin holes cut empty space, so it ships as a part that cannot attach

@@ -439,6 +439,7 @@ describe('holes on a grid smaller than the spec pitch', () => {
     [42, 25],
     [30, 50],
     [42, 50],
+    [50, 30],
   ]) {
     for (const style of ['magnet', 'screw', 'magnet_and_screw'] as const) {
       for (const magnetDiameter of [4, 6, 6.5, 8, 10]) {
@@ -478,15 +479,40 @@ describe('holes on a grid smaller than the spec pitch', () => {
         expect(Math.abs(y) + mouth).toBeLessThanOrEqual(
           pitchY / 2 - FOOT_UNDERSIDE_INSET_MM - FOOT_HOLE_MIN_WALL_MM + 1e-9
         );
-        // One arm serves every foot, and an edge bar holds its hole along one
-        // axis only, so the arm reaches past the hole on both.
-        for (const [offset, pitch] of [
-          [x, pitchX],
-          [y, pitchY],
-        ]) {
-          expect(pitch / 2 - Math.abs(offset) + mouth + 1.2).toBeLessThanOrEqual(feet.armMm + 1e-9);
-        }
+        // A 1x1 bin stands on two bars along its Y edges, and a bar holds its
+        // hole along the axis it is clipped on.
+        expect(pitchY / 2 - Math.abs(y) + mouth + 1.2).toBeLessThanOrEqual(feet.armMm + 1e-9);
       }
+      // The two bars share one cell, so together they fit inside it.
+      expect(2 * feet.armMm).toBeLessThanOrEqual(pitchY + 1e-9);
     }
   );
+
+  it('keeps every pin of an L foot inside its cell on a centre-anchored 30 x 80mm grid', () => {
+    const feet = resolveDetachableFeet({
+      width: 2,
+      depth: 2,
+      gridUnitMm: 30,
+      gridUnitMmY: 80,
+      fractionalEdgeX: 'end',
+      fractionalEdgeY: 'end',
+      magnetAnchor: 'center',
+      base: { style: 'magnet', magnetDiameter: 6.5, magnetDepth: 2, screwDiameter: 3 },
+    });
+    expect(feet.placements.every((p) => p.shape === 'L')).toBe(true);
+    for (const foot of feet.placements) {
+      const centre = {
+        x: foot.x - (foot.dirX * foot.cellW) / 2,
+        y: foot.y - (foot.dirY * foot.cellD) / 2,
+      };
+      for (const pin of footPinPositions(foot, feet.armMm, feet.pinDiameterMm)) {
+        expect(Math.abs(pin.x - centre.x) + feet.pinDiameterMm / 2).toBeLessThanOrEqual(
+          foot.cellW / 2
+        );
+        expect(Math.abs(pin.y - centre.y) + feet.pinDiameterMm / 2).toBeLessThanOrEqual(
+          foot.cellD / 2
+        );
+      }
+    }
+  });
 });
