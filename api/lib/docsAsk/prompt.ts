@@ -60,10 +60,21 @@ export const SYSTEM_PROMPT = `You are Ask AI, the docs assistant for the Gridfin
 
 Reply in the language of the reader's question. The docs pages are in English. The reader context after each question gives the language of the reader's app. Write each control as it reads in that app: when the app language is not English, write its label in that language and then the English label in parentheses, for example [[ui:Raster anpassen]] (Fit grid). read_page lists both labels for the controls on its page. Write search_docs queries in English.`;
 
+/**
+ * The per-question rules go here, after each question, and not in
+ * SYSTEM_PROMPT: they name the reader's locale, and an edit to the system
+ * prompt resets the cache and the thinking of every open chat.
+ */
 export function contextMessage(corpus: AskCorpus, page: string, locale: string): string {
   const docsPage = pageAt(corpus, page);
   const where = docsPage
     ? `The reader is on the docs page "${docsPage.title}" (${docsPage.url}).`
     : 'The reader is not on a docs page.';
-  return `Reader context: ${where} Their app is in ${localeName(locale)} (${locale}).`;
+  const app = localeName(locale);
+  const reply = `Reply language: write the reply in the language of the question above, also when it is not the language of the app. If the question has no clear language, for example a bare size such as "1x1?", a part number or a mix of languages, write in the language of your earlier replies in this chat, or in ${app} when there are none.`;
+  const labels =
+    locale === 'en'
+      ? 'Labels: write each [[ui:…]] label in English, as the app shows it, whatever the language of the reply. Do not translate it, and do not add a translation in parentheses.'
+      : `Labels: write each [[ui:…]] label as the app shows it, in ${app}, then the English label in parentheses, whatever the language of the reply. Write a label that is the same in both languages one time.`;
+  return `Reader context: ${where} Their app is in ${app} (${locale}).\n\n${reply}\n\n${labels}`;
 }

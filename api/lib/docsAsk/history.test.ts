@@ -15,6 +15,7 @@ import {
   userTurn,
 } from './history.js';
 import type { PendingTurn, StoredTurn } from './history.js';
+import { contextMessage } from './prompt.js';
 import type { ToolRun } from './tools.js';
 
 const corpus: AskCorpus = {
@@ -66,11 +67,7 @@ describe('rebuildMessages', () => {
     );
     expect(messages).toEqual([
       { role: 'user', content: 'How do layers work?' },
-      {
-        role: 'system',
-        content:
-          'Reader context: The reader is on the docs page "Work in layers" (https://gridfinitylayouttool.com/docs/layouts/layers). Their app is in German (de).',
-      },
+      { role: 'system', content: contextMessage(corpus, '/layouts/layers', 'de') },
       {
         role: 'assistant',
         content: [
@@ -137,10 +134,20 @@ describe('rebuildMessages', () => {
 
 describe('userTurn', () => {
   it('says so when the reader is not on a docs page', () => {
-    expect(userTurn(corpus, 'Hi?', '', 'en')[1]).toEqual({
-      role: 'system',
-      content: 'Reader context: The reader is not on a docs page. Their app is in English (en).',
-    });
+    expect(userTurn(corpus, 'Hi?', '', 'en')[1]?.content).toMatch(
+      /^Reader context: The reader is not on a docs page\. Their app is in English \(en\)\./
+    );
+  });
+
+  it('puts the reply language rule after the question, not before it', () => {
+    const messages = userTurn(corpus, 'Can a bin have another shape?', '/layouts/layers', 'zh-CN');
+    expect(messages).toEqual([
+      { role: 'user', content: 'Can a bin have another shape?' },
+      { role: 'system', content: contextMessage(corpus, '/layouts/layers', 'zh-CN') },
+    ]);
+    expect(messages[1]?.content).toContain(
+      'Reply language: write the reply in the language of the question above'
+    );
   });
 });
 
