@@ -205,6 +205,19 @@ describe('checkPlans', () => {
     ).toEqual(['the answer does not name the 11 x 8.5 grid of its plan']);
   });
 
+  it('flags a plan marker that is not alone on its line, which the panel does not draw', () => {
+    expect(checkPlans(`An 11 x 8.5 grid fits. [[plan:${half.handle}]]`, [half])).toEqual([
+      `a plan marker is not alone on its line: An 11 x 8.5 grid fits. [[plan:${half.handle}]]`,
+    ]);
+  });
+
+  it('flags a link from a newer version than the app reads', () => {
+    const newer: PlanView = { ...half, link: half.link.replace('#plan=v2.', '#plan=v3.') };
+    expect(checkPlans(ending(newer), [newer], expected)).toContain(
+      'the plan link is v3, newer than the app reads'
+    );
+  });
+
   it('wants no plan and no link into the app for a drawer that nothing fits', () => {
     expect(checkPlans('No grid fits a 38 mm drawer.', [], null)).toEqual([]);
     expect(checkPlans(ending(half), [half], null)).toEqual([
@@ -213,5 +226,8 @@ describe('checkPlans', () => {
     expect(
       checkPlans('No grid fits. Try https://gridfinitylayouttool.com/?drawer=38x38', [], null)
     ).toEqual(['writes a link to the app: https://gridfinitylayouttool.com/?drawer=38x38']);
+    expect(
+      checkPlans('No grid fits. [Open](HTTP://GridfinityLayoutTool.com/?drawer=38x38)', [], null)
+    ).toEqual(['writes a link to the app: HTTP://GridfinityLayoutTool.com/?drawer=38x38']);
   });
 });

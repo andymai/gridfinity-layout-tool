@@ -1,5 +1,5 @@
 import { inflateRawSync } from 'node:zlib';
-import { planLayoutInput, runPlanLayout } from '../../api/lib/agent/index.js';
+import { PLAN_LINK_VERSION, planLayoutInput, runPlanLayout } from '../../api/lib/agent/index.js';
 import type { PlanLayoutInput, PlanView } from '../../api/lib/agent/index.js';
 import type { AskCorpus, AskLabels } from '../../api/lib/docsAsk/corpus.js';
 import { DISCUSSIONS_URL } from '../../api/lib/docsAsk/prompt.js';
@@ -90,7 +90,9 @@ export interface OpenDrawer {
 }
 
 const PLAN = /\[\[plan:([^\]]+)\]\]/g;
-const APP_LINK = /https:\/\/gridfinitylayouttool\.com(?!\/docs\b)[^\s)\]>"'`]*/g;
+// The panel draws a plan only from a line that holds the marker alone.
+const PLAN_LINE = /^\s*\[\[plan:([0-9a-f]{8})\]\]\s*$/;
+const APP_LINK = /https?:\/\/gridfinitylayouttool\.com(?!\/docs\b)[^\s)\]>"'`]*/gi;
 const MM_PER = { mm: 1, cm: 10, in: 25.4 } as const;
 
 const mmOf = (value: number, unit: keyof typeof MM_PER): number =>
@@ -101,6 +103,9 @@ const mmOf = (value: number, unit: keyof typeof MM_PER): number =>
 export function decodePlanUrl(url: string): PlanLayoutInput | string {
   const match = /#plan=v(\d+)\.([A-Za-z0-9_-]+)$/.exec(url);
   if (match === null) return `not a plan link: ${url}`;
+  if (Number(match[1]) > PLAN_LINK_VERSION) {
+    return `the plan link is v${match[1]}, newer than the app reads`;
+  }
   let json: unknown;
   try {
     json = JSON.parse(inflateRawSync(Buffer.from(match[2] as string, 'base64url')).toString());
@@ -135,6 +140,11 @@ export function checkPlans(
 ): string[] {
   const problems: string[] = [];
   const handles = [...answer.matchAll(PLAN)].map((m) => m[1] as string);
+  for (const line of answer.split('\n')) {
+    if (line.includes('[[plan:') && !PLAN_LINE.test(line)) {
+      problems.push(`a plan marker is not alone on its line: ${line.trim()}`);
+    }
+  }
   for (const handle of handles) {
     const plan = plans.find((p) => p.handle === handle);
     if (plan === undefined) {
@@ -162,8 +172,9 @@ export function checkPlans(
     problems.push('shows a plan for a drawer with no fit');
   if (expected) {
     if (handles.length !== 1) problems.push(`shows ${handles.length} plans, not 1`);
-    const last = answer.trim().split('\n').at(-1)?.trim() ?? '';
-    if (!/^\[\[plan:[^\]]+\]\]$/.test(last)) problems.push('does not end with the plan');
+    if (!PLAN_LINE.test(answer.trim().split('\n').at(-1) ?? '')) {
+      problems.push('does not end with the plan');
+    }
   }
   if (expected !== undefined) {
     const appLinks = answer.match(APP_LINK) ?? [];
