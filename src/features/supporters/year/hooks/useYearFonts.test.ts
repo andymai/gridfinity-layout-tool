@@ -39,4 +39,20 @@ describe('useYearFonts', () => {
     );
     Reflect.deleteProperty(document, 'fonts');
   });
+
+  it('stays ready when the text changes after the first load', async () => {
+    let release: () => void = () => undefined;
+    const load = vi.fn().mockResolvedValue([]);
+    vi.stubGlobal('FontFace', vi.fn());
+    Object.defineProperty(document, 'fonts', { value: { load, add: vi.fn() }, configurable: true });
+    const { result, rerender } = renderHook(({ text }) => useYearFonts(text), {
+      initialProps: { text: '1 triangle' },
+    });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    load.mockReturnValue(new Promise((resolve) => (release = () => resolve([]))));
+    rerender({ text: '8,010 triangles' });
+    expect(result.current.ready).toBe(true);
+    release();
+    Reflect.deleteProperty(document, 'fonts');
+  });
 });
