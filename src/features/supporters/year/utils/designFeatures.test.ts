@@ -120,6 +120,17 @@ describe('designWork', () => {
     expect(designWork(worked)).toBeGreaterThan(designWork(patterned));
   });
 
+  it('counts cutouts through an enabled lid like cutouts in the bin', () => {
+    const lid = { ...DEFAULT_BIN_PARAMS.lid, enabled: true, cutouts: [] };
+    const slot = {} as NonNullable<typeof lid.cutouts>[number];
+    const plain = designWork({ ...DEFAULT_BIN_PARAMS, lid });
+    const slotted = designWork({
+      ...DEFAULT_BIN_PARAMS,
+      lid: { ...lid, cutouts: [slot, slot, slot] },
+    });
+    expect(slotted - plain).toBe(6);
+  });
+
   it('caps a large compartment grid, which is one preset', () => {
     const grid = (rows: number, cols: number) => ({
       ...DEFAULT_BIN_PARAMS,

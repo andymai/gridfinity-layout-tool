@@ -72,7 +72,7 @@ export function designWork(params: BinParams, nozzleSizeMm?: number): number {
   ].filter(Boolean).length;
   return (
     Math.min(compartmentCount(params), COMPARTMENT_WORK_CAP) +
-    params.cutouts.length * 2 +
+    (params.cutouts.length + (params.lid.enabled ? (params.lid.cutouts?.length ?? 0) : 0)) * 2 +
     params.inserts.length * 2 +
     textCount(params, nozzleSizeMm) * 2 +
     features +
