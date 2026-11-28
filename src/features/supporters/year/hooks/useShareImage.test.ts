@@ -54,6 +54,7 @@ function request(kind: Scene['kind'], thumbnail: string | null = null): ShareReq
       ...(thumbnail ? { model: slot } : {}),
     },
     thumbnail,
+    turns: false,
   };
 }
 

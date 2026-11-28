@@ -20,8 +20,16 @@ export function useYearFonts(sample: string | null): {
   useEffect(() => {
     if (sample === null || !canLoadFonts()) return;
     let cancelled = false;
-    void loadYearFonts(sample).then(() => {
-      if (!cancelled) setLoaded(() => createMeasure());
+    const load = loadYearFonts(sample);
+    void load.ready.then(() => {
+      if (cancelled) return;
+      setLoaded(() => createMeasure());
+      // Started on the time limit: measure again once the faces arrive.
+      if (load.late()) {
+        void load.done.then(() => {
+          if (!cancelled) setLoaded(() => createMeasure());
+        });
+      }
     });
     return () => {
       cancelled = true;

@@ -9,6 +9,7 @@ import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { useYour2026Routing } from '@/shared/hooks/useYour2026Routing';
 import { markYearReviewSeen } from '@/shared/yearReview/dockRow';
 import { isYearReviewOpen, YEAR_REVIEW_YEAR } from '@/shared/yearReview/window';
+import { detectWebGL } from '@/shared/webgl/detectWebGL';
 import { useSupportersData } from '../../../hooks/useSupportersData';
 import { getSupporterCount } from '../../../utils/supportersData';
 import { SoundToggle } from '../../../components/SoundToggle';
@@ -30,6 +31,7 @@ import { hasYearActivity } from '../../utils/yearStats';
 import { StoryPlayer } from '../StoryPlayer';
 import { YearCardView, describeCard, preloadSpinningBin } from '../YearCardView';
 import { YearStage } from '../YearStage';
+import { canSpin } from '../SpinningBin/assembly';
 
 /** Status screens stand on the opening card's colours. */
 const STATUS_COLOURS = { bg: PALETTES.intro.bg, ink: PALETTES.intro.ink };
@@ -214,13 +216,18 @@ function YearReview({ demo }: { readonly demo: boolean }) {
       measure: fonts.measure,
     });
     if (!scene) return null;
-    const thumbnail =
+    const design =
       settledCard.kind === 'longest'
-        ? (stats.longestPrint?.thumbnail ?? null)
+        ? stats.longestPrint
         : settledCard.kind === 'complicated'
-          ? (complicated?.design.thumbnail ?? null)
+          ? (complicated?.design ?? null)
           : null;
-    return { scene, thumbnail };
+    const mesh = design ? meshes.get(design.id) : undefined;
+    return {
+      scene,
+      thumbnail: design?.thumbnail ?? null,
+      turns: mesh !== undefined && canSpin(mesh) && detectWebGL().available,
+    };
   }, [
     settledCard,
     stats,
@@ -231,6 +238,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
     complicated,
     drawerPreview,
     fonts.measure,
+    meshes,
   ]);
   const shareTheme = useMemo(
     () => ({

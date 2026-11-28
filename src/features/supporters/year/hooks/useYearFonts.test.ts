@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { useYearFonts } from './useYearFonts';
 
 describe('useYearFonts', () => {
@@ -8,6 +8,7 @@ describe('useYearFonts', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -37,6 +38,33 @@ describe('useYearFonts', () => {
       expect.stringContaining('Y26 Display'),
       expect.stringContaining('Schubladenfläche')
     );
+    Reflect.deleteProperty(document, 'fonts');
+  });
+
+  it('starts on the time limit, then measures again once slow faces arrive', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    // A canvas that measures, so each new measure is a new function.
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      font: '',
+      measureText: () => ({ width: 1 }),
+    } as unknown as CanvasRenderingContext2D);
+    let release: () => void = () => undefined;
+    const load = vi.fn().mockReturnValue(new Promise((resolve) => (release = () => resolve([]))));
+    vi.stubGlobal('FontFace', vi.fn());
+    Object.defineProperty(document, 'fonts', { value: { load, add: vi.fn() }, configurable: true });
+    const { result } = renderHook(() => useYearFonts('Your year'));
+    expect(result.current.ready).toBe(false);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+    expect(result.current.ready).toBe(true);
+    const early = result.current.measure;
+    await act(async () => {
+      release();
+      await Promise.resolve();
+    });
+    expect(result.current.measure).not.toBe(early);
+    vi.useRealTimers();
     Reflect.deleteProperty(document, 'fonts');
   });
 
