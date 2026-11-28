@@ -7,6 +7,8 @@ export interface ShareRequest {
   readonly scene: Scene;
   /** The turning bin's thumbnail, for when no 3D canvas is on screen. */
   readonly thumbnail: string | null;
+  /** The card turns a real mesh, so the image waits for its canvas to draw. */
+  readonly turns: boolean;
 }
 
 /** The 3D canvas, not the thumbnail canvas that stands in while it loads. */
@@ -31,11 +33,11 @@ function hasDrawn(canvas: HTMLCanvasElement): boolean {
   return false;
 }
 
+/** The 3D canvas once it has mounted and drawn; a card stepped to while paused may still be loading it. */
 async function drawnModelCanvas(): Promise<HTMLCanvasElement | null> {
   for (let frame = 0; frame < DRAW_WAIT_FRAMES; frame++) {
     const canvas = document.querySelector<HTMLCanvasElement>(MODEL_CANVAS);
-    if (!canvas) return null;
-    if (hasDrawn(canvas)) return canvas;
+    if (canvas && hasDrawn(canvas)) return canvas;
     await nextFrame();
   }
   return null;
@@ -44,7 +46,7 @@ async function drawnModelCanvas(): Promise<HTMLCanvasElement | null> {
 /** The card's own 3D canvas once it has drawn, else the design's thumbnail. */
 async function loadModel(request: ShareRequest): Promise<CanvasImageSource | undefined> {
   if (!request.scene.model) return undefined;
-  const canvas = await drawnModelCanvas();
+  const canvas = request.turns ? await drawnModelCanvas() : null;
   if (canvas) return canvas;
   if (!request.thumbnail) return undefined;
   return loadImage(request.thumbnail);

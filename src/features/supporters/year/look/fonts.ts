@@ -92,24 +92,43 @@ function register(): boolean {
 /** Past this the story starts with whatever is ready; the fallbacks still read. */
 const LOAD_LIMIT_MS = 3000;
 
+export interface FontLoad {
+  /** The faces are in, or the time limit passed: the story can start. */
+  readonly ready: Promise<void>;
+  /** The faces are in, or failed for good; late after a slow network. */
+  readonly done: Promise<void>;
+  /** True once `ready` resolved on the time limit with faces still loading. */
+  readonly late: () => boolean;
+}
+
 /**
  * Loads only the subsets the given text needs, in every face the cards use.
  * Text measured before its face loads would wrap against a fallback.
  */
-export async function loadYearFonts(sample: string): Promise<void> {
-  if (!register()) return;
+export function loadYearFonts(sample: string): FontLoad {
+  if (!register()) {
+    const now = Promise.resolve();
+    return { ready: now, done: now, late: () => false };
+  }
   const text = `${sample} 0123456789×`;
-  const loads = Promise.all([
+  let finished = false;
+  const done = Promise.all([
     document.fonts.load(`900 100px ${DISPLAY}`, text),
     document.fonts.load(`900 100px ${DISPLAY_TIGHT}`, text),
     document.fonts.load(`900 100px ${DISPLAY_WIDE}`, text),
     document.fonts.load(`600 56px ${TEXT}`, text),
     document.fonts.load(`500 44px ${TEXT}`, text),
-  ]).then(() => undefined);
+  ]).then(
+    () => undefined,
+    () => undefined
+  );
+  void done.then(() => {
+    finished = true;
+  });
   let timer: ReturnType<typeof setTimeout> | undefined;
   const limit = new Promise<void>((resolve) => {
     timer = setTimeout(resolve, LOAD_LIMIT_MS);
   });
-  await Promise.race([loads.catch(() => undefined), limit]);
-  clearTimeout(timer);
+  const ready = Promise.race([done, limit]).then(() => clearTimeout(timer));
+  return { ready, done, late: () => !finished };
 }
