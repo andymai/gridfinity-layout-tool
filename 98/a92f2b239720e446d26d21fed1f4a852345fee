@@ -1,0 +1,25 @@
+src/shared/utils/detachableFeetPlan.test.ts
+  s_cbdce95362cca9::t_29d78934454aad 442,482-484,486-487,490-517
+src/shared/utils/detachableFeetPlan.ts
+  s_cbdce95362cca9::t_72da9bd55118d3 564-611
+src/features/generation/worker/generators/binGenerator.scenario.detachableFeetHoles.test.ts
+  s_cbdce95362cca9::t_7bc77a64502d10 17,166-176,179-184
+  s_cbdce95362cca9::t_f67cbc9db78a75 177-178
+  s_cbdce95362cca9::t_9942a667ab4bfd 185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "98a92f2b239720e446d26d21fed1f4a852345fee",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
