@@ -12,6 +12,8 @@ import {
 } from './history';
 import type { StoredTurn } from './history';
 
+const KEY = 'gridfinity-docs:ask-ai';
+
 function memory(): Storage {
   const data = new Map<string, string>();
   return {
@@ -41,18 +43,20 @@ const turn = (question: string): StoredTurn => ({
 describe('the conversation store', () => {
   it('starts a new chat when nothing is stored, or the entry is broken', () => {
     const storage = memory();
-    expect(loadConversation(storage, () => 'id-1')).toEqual({ sessionId: 'id-1', turns: [] });
-    storage.setItem('gridfinity-docs:ask-ai', '{not json');
-    expect(loadConversation(storage, () => 'id-2').sessionId).toBe('id-2');
+    expect(loadConversation(storage, KEY, () => 'id-1')).toEqual({ sessionId: 'id-1', turns: [] });
+    storage.setItem(KEY, '{not json');
+    expect(loadConversation(storage, KEY, () => 'id-2').sessionId).toBe('id-2');
   });
 
   it('keeps the chat through a reload, and drops a turn that lost its fields', () => {
     const storage = memory();
-    saveConversation(storage, {
+    saveConversation(storage, KEY, {
       sessionId: 'id-1',
       turns: [turn('A?'), { question: 'B?' } as never],
     });
-    expect(loadConversation(storage, () => 'new').turns.map((t) => t.question)).toEqual(['A?']);
+    expect(loadConversation(storage, KEY, () => 'new').turns.map((t) => t.question)).toEqual([
+      'A?',
+    ]);
   });
 
   it('keeps the last turns the server takes, and drops the last one for a retry', () => {
@@ -65,11 +69,13 @@ describe('the conversation store', () => {
 
   it('keeps a trace id through a reload, and drops one that is not a string', () => {
     const storage = memory();
-    saveConversation(storage, {
+    saveConversation(storage, KEY, {
       sessionId: 'id-1',
       turns: [{ ...turn('A?'), traceId: 'trace-1' }, { ...turn('B?'), traceId: 7 } as never],
     });
-    expect(loadConversation(storage, () => 'new').turns.map((t) => t.traceId)).toEqual(['trace-1']);
+    expect(loadConversation(storage, KEY, () => 'new').turns.map((t) => t.traceId)).toEqual([
+      'trace-1',
+    ]);
   });
 
   it('keeps a plan through a reload, and drops a broken plan but not its turn', () => {
@@ -82,7 +88,7 @@ describe('the conversation store', () => {
       link: 'https://gridfinitylayouttool.com/#plan=v1.abc',
     };
     const storage = memory();
-    saveConversation(storage, {
+    saveConversation(storage, KEY, {
       sessionId: 'id-1',
       turns: [
         {
@@ -96,7 +102,7 @@ describe('the conversation store', () => {
         },
       ],
     });
-    const [loaded] = loadConversation(storage, () => 'new').turns;
+    const [loaded] = loadConversation(storage, KEY, () => 'new').turns;
     expect(loaded?.question).toBe('A?');
     expect(loaded?.plans).toEqual({ [plan.handle]: plan });
     expect(isPlanView(plan)).toBe(true);

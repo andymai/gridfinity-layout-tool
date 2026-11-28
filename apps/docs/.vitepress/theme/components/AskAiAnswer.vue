@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { data as captures } from '../askAi/captures.data';
-import { answerSegments, plainAnswer } from '../askAi/render';
-import { answerRequest, isLive } from '../askAi/useAskAi';
+import { answerSegments, plainAnswer } from '@/agent/client/render';
+import { answerRequest, isLive, noticeText } from '../askAi/useAskAi';
 import type { Exchange, StepKind } from '../askAi/useAskAi';
 import type { PlanView } from '@/agent/contract';
 import { mediaEntry } from '../media';
@@ -117,7 +117,7 @@ async function copy(): Promise<void> {
       </div>
 
       <p v-if="exchange.status === 'stopped'" class="notice">Stopped.</p>
-      <p v-if="exchange.notice" class="notice">{{ exchange.notice }}</p>
+      <p v-if="exchange.notice" class="notice">{{ noticeText(exchange.notice) }}</p>
 
       <div v-if="!live && exchange.status !== 'asking'" class="actions">
         <button v-if="exchange.text" type="button" @click="copy">
