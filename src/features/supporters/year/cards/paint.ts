@@ -42,6 +42,55 @@ export function cachedLayer(
   };
 }
 
+export interface GlyphPart {
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+  readonly r: number;
+  /** Drawn in the card's tint or its ink. */
+  readonly colour: 'tint' | 'edge';
+  readonly opacity: number;
+}
+
+/** A drawn bin on a 120-unit square, for a design with no mesh and no thumbnail. */
+export const BIN_GLYPH: readonly GlyphPart[] = [
+  { x: 14, y: 20, w: 92, h: 22, r: 8, colour: 'tint', opacity: 0.7 },
+  { x: 22, y: 25, w: 76, h: 12, r: 4, colour: 'edge', opacity: 0.35 },
+  { x: 14, y: 36, w: 92, h: 64, r: 5, colour: 'tint', opacity: 1 },
+  { x: 22, y: 100, w: 76, h: 10, r: 3, colour: 'edge', opacity: 0.5 },
+];
+
+/** The drawn bin's square is this share of its box's shorter side. */
+export const GLYPH_SHARE = 0.6;
+
+/** The drawn bin centred in a box, at the share of the box the page gives it. */
+export function paintBinGlyph(
+  ctx: Ctx,
+  box: { readonly x: number; readonly y: number; readonly w: number; readonly h: number },
+  tint: string,
+  edge: string
+): void {
+  const size = Math.min(box.w, box.h) * GLYPH_SHARE;
+  const k = size / 120;
+  const left = box.x + (box.w - size) / 2;
+  const top = box.y + (box.h - size) / 2;
+  ctx.save();
+  for (const part of BIN_GLYPH) {
+    ctx.globalAlpha = part.opacity;
+    roundRect(
+      ctx,
+      left + part.x * k,
+      top + part.y * k,
+      part.w * k,
+      part.h * k,
+      part.r * k,
+      part.colour === 'tint' ? tint : edge
+    );
+  }
+  ctx.restore();
+}
+
 /** A thumbnail standing in for a 3D bin is this many card px square. */
 export const THUMB_SIZE = 660;
 
@@ -220,6 +269,25 @@ export function topBin(
   ctx.clip();
   rect(ctx, x + side, y + shelf, fw, Math.min(fh, Math.min(6, unit * 0.14)), shade.shade);
   ctx.restore();
+}
+
+/**
+ * Where to put the baseline so a line sits centred in its line box, as the
+ * page lays it out. Browsers without font-box metrics get a typical split.
+ */
+export function lineBaseline(
+  metrics: TextMetrics,
+  top: number,
+  lineHeight: number,
+  size: number
+): number {
+  const ascent = Number.isFinite(metrics.fontBoundingBoxAscent)
+    ? metrics.fontBoundingBoxAscent
+    : size * 0.8;
+  const descent = Number.isFinite(metrics.fontBoundingBoxDescent)
+    ? metrics.fontBoundingBoxDescent
+    : size * 0.2;
+  return top + (lineHeight - (ascent + descent)) / 2 + ascent;
 }
 
 /** Text centred on its ink, not its em box, so a digit sits square in a block. */
