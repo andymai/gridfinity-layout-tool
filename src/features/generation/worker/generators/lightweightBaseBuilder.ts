@@ -51,7 +51,15 @@ import {
   withScope,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
-import { SIZE, CLEARANCE, SOCKET_HEIGHT, MAGNET_FLOOR } from './generatorConstants';
+import {
+  SIZE,
+  CLEARANCE,
+  SOCKET_HEIGHT,
+  MAGNET_FLOOR,
+  COPLANAR_OVERLAP,
+} from './generatorConstants';
+import { FOOT_UNDERSIDE_INSET_MM } from '@/shared/printSettings/gridfinityGeometry';
+import type { CellInfo } from './cellDecomposition';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
@@ -145,6 +153,24 @@ function buildCellPads(
   return positions.map(([x, y]) =>
     translate(scope.register(cylinder(padRadius, padHeight)), [x, y, -socketHeight])
   );
+}
+
+/**
+ * Whether a pad around a hole at `[x, y]` reaches past the flat underside of
+ * its cell's foot. A pad is wider than the underside's corner radius, so the
+ * two axis bounds are the whole test.
+ */
+function padLeavesFoot(
+  [x, y]: readonly [number, number],
+  cell: CellInfo,
+  holeRadius: number,
+  pitchX: number,
+  pitchY: number
+): boolean {
+  const reach = holeRadius + PAD_MARGIN;
+  const halfW = (cell.widthUnits * pitchX) / 2 - FOOT_UNDERSIDE_INSET_MM + 1e-6;
+  const halfD = (cell.depthUnits * pitchY) / 2 - FOOT_UNDERSIDE_INSET_MM + 1e-6;
+  return Math.abs(x - cell.centerX) + reach > halfW || Math.abs(y - cell.centerY) + reach > halfD;
 }
 
 /**
@@ -278,7 +304,60 @@ export function buildLightweightBase(
         ? buildSingleCellSocket(w, d, socketHeight)
         : buildSimplifiedCellSocket(w, d, socketHeight);
 
+    // The pads are placed before the feet are built. When a pad reaches past
+    // its foot's underside, each foot also builds a clip for the pads.
+    const holeRadius = Math.max(withMagnet ? magnetRadius : 0, withScrew ? screwRadius : 0);
+    const chamfer = padTakesChamfer(holeStyle);
+    const padSites: Array<{ cell: CellInfo; positions: Array<[number, number]> }> = [];
+    if (withMagnet || withScrew) {
+      forEachSocketCell(
+        gridW,
+        gridD,
+        cellMask,
+        gridUnitMm,
+        DEFAULT_SOCKET_CELL_PLAN,
+        (cell) => {
+          if (!cellHostsAttachmentHoles(cell, holeRadius, unitX, unitY)) return;
+          if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
+          // Fit-or-center magnet positions so a non-square/small foot's pads and
+          // drills stay inside the foot instead of breaching its side.
+          const positions = cornersOnly
+            ? cornerHoleCandidates(
+                cell,
+                holeRadius,
+                unitX,
+                unitY,
+                anchor,
+                gridW,
+                gridD,
+                withMagnet && chamfer
+              )
+            : magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
+          const mouth = footHoleMouthRadius(
+            withMagnet ? magnetRadius : 0,
+            withScrew ? screwRadius : 0,
+            withMagnet && chamfer
+          );
+          padSites.push({
+            cell,
+            positions: keepFootHolesOffFlank(positions, cell, mouth, unitX, unitY),
+          });
+        },
+        fractionalEdge
+      );
+      const keep = cornersOnly
+        ? outerCornerHoleFilter(padSites.flatMap((site) => site.positions))
+        : () => true;
+      for (const site of padSites) site.positions = site.positions.filter(keep);
+    }
+    const clipPads = padSites.some(({ cell, positions }) =>
+      positions.some((p) => padLeavesFoot(p, cell, holeRadius, unitX, unitY))
+    );
+
     const feet: Shape3D[] = [];
+    // The feet, a hair inside their own faces, so a clipped pad never shares a
+    // face with the foot it is fused into.
+    const padClips: Shape3D[] = [];
     const voids: Shape3D[] = [];
     const openingTools: Shape3D[] = [];
     const undersideSupports: Shape3D[] = [];
@@ -299,6 +378,16 @@ export function buildLightweightBase(
           0,
         ]);
         feet.push(foot);
+        if (clipPads) {
+          padClips.push(
+            translate(
+              scope.register(
+                buildFoot(cellW_mm - 2 * COPLANAR_OVERLAP, cellD_mm - 2 * COPLANAR_OVERLAP)
+              ),
+              [cell.centerX, cell.centerY, 0]
+            )
+          );
+        }
 
         const innerW = cellW_mm - 2 * shellOffset;
         const innerD = cellD_mm - 2 * shellOffset;
@@ -384,48 +473,11 @@ export function buildLightweightBase(
 
     // Retain magnet/screw pads as solid islands, then drill the pockets.
     if (withMagnet || withScrew) {
-      const holeRadius = Math.max(withMagnet ? magnetRadius : 0, withScrew ? screwRadius : 0);
       const floorDepth =
         (withMagnet ? magnetDepth : socketHeight) + (withMagnet ? MAGNET_FLOOR : 0);
       const pads: Shape3D[] = [];
       const drills: Shape3D[] = [];
-      const cellPositions: Array<Array<[number, number]>> = [];
-      const chamfer = padTakesChamfer(holeStyle);
-      forEachSocketCell(
-        gridW,
-        gridD,
-        cellMask,
-        gridUnitMm,
-        DEFAULT_SOCKET_CELL_PLAN,
-        (cell) => {
-          if (!cellHostsAttachmentHoles(cell, holeRadius, unitX, unitY)) return;
-          if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-          // Fit-or-center magnet positions so a non-square/small foot's pads and
-          // drills stay inside the foot instead of breaching its side.
-          const positions = cornersOnly
-            ? cornerHoleCandidates(
-                cell,
-                holeRadius,
-                unitX,
-                unitY,
-                anchor,
-                gridW,
-                gridD,
-                withMagnet && chamfer
-              )
-            : magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
-          const mouth = footHoleMouthRadius(
-            withMagnet ? magnetRadius : 0,
-            withScrew ? screwRadius : 0,
-            withMagnet && chamfer
-          );
-          cellPositions.push(keepFootHolesOffFlank(positions, cell, mouth, unitX, unitY));
-        },
-        fractionalEdge
-      );
-      const keep = cornersOnly ? outerCornerHoleFilter(cellPositions.flat()) : () => true;
-      for (const all of cellPositions) {
-        const positions = all.filter(keep);
+      for (const { positions } of padSites) {
         if (positions.length > 0) {
           for (const p of buildCellPads(
             scope,
@@ -465,7 +517,12 @@ export function buildLightweightBase(
         }
       }
       if (pads.length > 0) {
-        const padUnion = scope.register(unwrap(fuseAll(pads as ValidSolid[])));
+        let padUnion = scope.register(unwrap(fuseAll(pads as ValidSolid[])));
+        if (padClips.length > 0) {
+          const footprint = scope.register(unwrap(fuseAll(padClips as ValidSolid[])));
+          for (const c of padClips) if (c !== footprint) c.delete();
+          padUnion = scope.register(unwrap(intersect(padUnion, footprint)));
+        }
         const padded = unwrap(fuse(base, padUnion));
         if (padded !== base) base.delete();
         base = padded;
