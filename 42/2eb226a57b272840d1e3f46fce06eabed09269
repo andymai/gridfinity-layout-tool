@@ -1,0 +1,21 @@
+src/features/supporters/year/hooks/useYearFonts.test.ts
+  s_cbdce95362cca9::t_29563b3c872e6f 42-57
+src/features/supporters/year/hooks/useYearFonts.ts
+  s_cbdce95362cca9::t_5d408ed684e96a 8-11,18-19,24,31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "422eb226a57b272840d1e3f46fce06eabed09269",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
