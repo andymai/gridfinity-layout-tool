@@ -226,6 +226,35 @@ describe('corner-only attachment holes', () => {
       );
     });
 
+    it('moves the half foot hole when the screw is wider than the chamfered magnet mouth', () => {
+      // The 6mm screw bore swallows the 4mm magnet and its chamfer, so the
+      // bore is the mouth that has to keep its wall on the half foot.
+      const screwRadius = 3;
+      const mesh = generateBin(
+        makeParams(
+          {
+            style: 'magnet_and_screw',
+            magnetDiameter: 4,
+            screwDiameter: 2 * screwRadius,
+            magnetChamfer: true,
+            cornerHolesOnly: true,
+          },
+          { width: 1.5, depth: 1 }
+        ),
+        undefined,
+        true
+      );
+      const holes = probeHoleCentres(mesh, screwRadius, 0);
+      expect(holes).toEqual(CORNERS_1_5x1);
+      for (const hole of holes.map((site) => site.split(',').map(Number) as [number, number])) {
+        if (hole[0] > 0) {
+          expect(outboardWallMm(mesh, hole, 0.05)).toBeGreaterThanOrEqual(MAGNET_EDGE_CLEARANCE);
+        }
+      }
+      assertStructurallyValid(mesh);
+      assertWatertight(mesh);
+    }, 120_000);
+
     it('still centres the half foot holes when every foot is drilled', () => {
       // A baseplate's half pocket and a lid's half cell centre their magnets
       // too, so the every-foot pattern keeps them centred.

@@ -263,8 +263,9 @@ export function keepFootHolesOffFlank(
  * is what a baseplate's half pocket and a lid's half cell mate with.
  *
  * A borrowed hole must keep the wall {@link cellHostsAttachmentHoles} demands
- * of a centred one, between its mouth (widened when `chamfer`) and the edge of
- * the foot's flat underside. If one does not, the cell keeps its own placement.
+ * of a centred one, between its mouth ({@link footHoleMouthRadius}) and the
+ * edge of the foot's flat underside. If one does not, the cell keeps its own
+ * placement.
  */
 export function cornerHoleCandidates(
   cell: CellInfo,
@@ -274,7 +275,7 @@ export function cornerHoleCandidates(
   anchor: MagnetAnchor | undefined,
   binWidthUnits: number,
   binDepthUnits: number,
-  chamfer: boolean
+  mouthRadius: number
 ): Array<[number, number]> {
   const own = magnetPositionsForCell(cell, holeRadius, pitchX, pitchY, anchor);
   const x = fullCellAtEdge(cell.centerX, cell.widthUnits, binWidthUnits, pitchX);
@@ -291,7 +292,7 @@ export function cornerHoleCandidates(
   const borrowed = magnetPositionsForCell(full, holeRadius, pitchX, pitchY, anchor).filter(
     ([px, py]) => Math.abs(px - cell.centerX) <= halfW && Math.abs(py - cell.centerY) <= halfD
   );
-  const reach = holeRadius + (chamfer ? MAGNET_CHAMFER_MM : 0) + MAGNET_EDGE_CLEARANCE;
+  const reach = mouthRadius + MAGNET_EDGE_CLEARANCE;
   const spanX = footUndersideHalfSpan(cell.widthUnits, pitchX) - reach + EDGE_EPS;
   const spanY = footUndersideHalfSpan(cell.depthUnits, pitchY) - reach + EDGE_EPS;
   const fits = borrowed.every(
@@ -333,6 +334,7 @@ export function socketFootHoles(
     spec.magnetRadius > 0 &&
     spec.chamfer &&
     chamferFitsCell(cell, holeRadius, pitchX, pitchY, anchor, own);
+  const mouth = footHoleMouthRadius(spec.magnetRadius, spec.screwRadius, chamfer);
   const drilled = cornersOf
     ? cornerHoleCandidates(
         cell,
@@ -342,10 +344,9 @@ export function socketFootHoles(
         anchor,
         cornersOf.width,
         cornersOf.depth,
-        chamfer
+        mouth
       )
     : own;
-  const mouth = footHoleMouthRadius(spec.magnetRadius, spec.screwRadius, chamfer);
   return { positions: keepFootHolesOffFlank(drilled, cell, mouth, pitchX, pitchY), chamfer };
 }
 

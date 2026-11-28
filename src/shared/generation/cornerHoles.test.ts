@@ -6,6 +6,7 @@ import { forEachCell } from './cellDecomposition';
 import {
   cellHostsAttachmentHoles,
   cornerHoleCandidates,
+  footHoleMouthRadius,
   magnetPositionsForCell,
 } from './magnetPositions';
 
@@ -124,7 +125,7 @@ describe('cornerHoleCandidates', () => {
   function cornerSites(width: number, depth: number, opts: Options = {}): string[] {
     const pitch = opts.pitch ?? PITCH;
     const radius = opts.radius ?? RADIUS;
-    const chamfer = opts.chamfer ?? false;
+    const mouth = footHoleMouthRadius(radius, 0, opts.chamfer ?? false);
     const holes: Array<[number, number]> = [];
     forEachCell(
       width,
@@ -132,7 +133,7 @@ describe('cornerHoleCandidates', () => {
       (cell) => {
         if (!cellHostsAttachmentHoles(cell, radius, pitch, pitch)) return;
         holes.push(
-          ...cornerHoleCandidates(cell, radius, pitch, pitch, opts.anchor, width, depth, chamfer)
+          ...cornerHoleCandidates(cell, radius, pitch, pitch, opts.anchor, width, depth, mouth)
         );
       },
       { gridUnitMm: pitch, fractionalEdgeX: opts.edgeX }
@@ -175,11 +176,11 @@ describe('cornerHoleCandidates', () => {
 
   it('leaves a full cell, and a cell inside the bin, on their own holes', () => {
     const full = { widthUnits: 1, depthUnits: 1, centerX: -10.5, centerY: 0 };
-    expect(cornerHoleCandidates(full, RADIUS, PITCH, PITCH, undefined, 1.5, 1, false)).toEqual(
+    expect(cornerHoleCandidates(full, RADIUS, PITCH, PITCH, undefined, 1.5, 1, RADIUS)).toEqual(
       magnetPositionsForCell(full, RADIUS, PITCH, PITCH)
     );
     const inner = { widthUnits: 0.5, depthUnits: 1, centerX: 0, centerY: 0 };
-    expect(cornerHoleCandidates(inner, RADIUS, PITCH, PITCH, undefined, 1.5, 1, false)).toEqual(
+    expect(cornerHoleCandidates(inner, RADIUS, PITCH, PITCH, undefined, 1.5, 1, RADIUS)).toEqual(
       magnetPositionsForCell(inner, RADIUS, PITCH, PITCH)
     );
   });
@@ -194,7 +195,16 @@ describe('cornerHoleCandidates', () => {
       expect(cornerSites(1.5, 1, { radius: LARGEST_RADIUS })).toEqual(CENTRED);
       const halfFoot = { widthUnits: 0.5, depthUnits: 1, centerX: 21, centerY: 0 };
       expect(
-        cornerHoleCandidates(halfFoot, LARGEST_RADIUS, PITCH, PITCH, undefined, 1.5, 1, false)
+        cornerHoleCandidates(
+          halfFoot,
+          LARGEST_RADIUS,
+          PITCH,
+          PITCH,
+          undefined,
+          1.5,
+          1,
+          LARGEST_RADIUS
+        )
       ).toEqual(magnetPositionsForCell(halfFoot, LARGEST_RADIUS, PITCH, PITCH));
     });
 
