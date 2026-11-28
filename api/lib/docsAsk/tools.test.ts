@@ -98,7 +98,7 @@ describe('drawer_fit', () => {
   it('refuses a drawer the app cannot plan, and asks for no plan', () => {
     const result = run('drawer_fit', { widthMm: 20, depthMm: 300 }, 'en');
     expect(result.isError).toBe(true);
-    expect(result.content).toContain('from 42 mm to 2100 mm');
+    expect(result.content).toContain('from 42 mm (1 unit) to 2100 mm (50 units) on each side');
     expect(result.content).not.toContain('plan_layout');
   });
 

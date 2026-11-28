@@ -96,7 +96,7 @@ const ASKS_FIRST =
 // head every cached request. The `?drawer=` link stays out of it: the plan map
 // is the one way into the app that an answer shows.
 export const OPEN_DRAWER_HINT =
-  'So the reader can open this drawer in the app: call plan_layout with this drawer as the reader measured it (width, depth, the height if they gave one, and their unit), bins: [] unless they named things to store, and halfGrid: true only if your answer recommends the half-unit grid. End the answer with its [[plan:…]] line, and write no other link to the app.';
+  'So the reader can open this drawer in the app: pick the one grid that you recommend, whole or half units. Call plan_layout with this drawer as the reader measured it (width, depth, the height if they gave one, and their unit), bins: [] unless they named things to store, and halfGrid: true only for the half-unit grid. In the answer, say plainly which grid you recommend and name its size, then end with the [[plan:…]] line. Write no other link to the app.';
 
 const readPageInput = z.object({ link: z.string().max(200) }).strict();
 const searchInput = z.object({ query: z.string().min(1).max(200) }).strict();

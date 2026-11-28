@@ -44,7 +44,7 @@ export function runDrawerFit(input: DrawerFitInput, context: ToolContext): Drawe
   if (!plan) {
     return {
       isError: true,
-      content: `The app plans drawers from ${MIN_DRAWER_MM} mm to ${MAX_DRAWER_MM} mm on each side. ${formatMm(size.widthMm)} x ${formatMm(size.depthMm)} mm is outside that range.`,
+      content: `The drawer calculator fits whole grid units, so it takes drawers from ${MIN_DRAWER_MM} mm (1 unit) to ${MAX_DRAWER_MM} mm (${CONSTRAINTS.GRID_MAX} units) on each side. ${formatMm(size.widthMm)} x ${formatMm(size.depthMm)} mm is outside that range.`,
       drawerLink: null,
     };
   }
