@@ -23,10 +23,10 @@ import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SegmentedControl } from '@/design-system';
 import { EditableDimensions } from '@/shared/components/EditableDimensions';
 import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
-import { GridAlignmentControls } from '@/shared/components/GridAlignmentControls';
 import { MeasuredDrawerOverflow } from './MeasuredDrawerOverflow';
 import { PaddingSchematic } from './PaddingSchematic';
 import { GridDimensionStepper } from './GridDimensionStepper';
+import { ShapeControls } from './ShapeControls';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
 import { PADDING_MAX, roundMm } from '../PaddingStepper';
 import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
@@ -34,6 +34,7 @@ import { isMarginSeamStyle } from '@/shared/types/bin';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
 import { fitAxisUnits, halfUnitUpgrade } from '@/shared/utils/drawerFit';
 import { padOutline } from '@/shared/utils/padOutline';
+import type { ShapeEditorSlot } from '../../types/shapeEditor';
 import {
   finishBaseplateParamsDrag,
   replaceBaseplateParams,
@@ -48,7 +49,11 @@ type MarginFillMode = 'solid' | 'tile' | 'halfGrid';
 /** How the sub-21mm leftover after half-grid packing is rendered. */
 type LeftoverMode = 'grid' | 'solid';
 
-export function DimensionsSection() {
+interface DimensionsSectionProps {
+  shapeEditor?: ShapeEditorSlot;
+}
+
+export function DimensionsSection({ shapeEditor }: DimensionsSectionProps = {}) {
   const t = useTranslation();
   const { unit, symbol } = useMeasureUnit();
   const {
@@ -432,21 +437,7 @@ export function DimensionsSection() {
           />
         )}
 
-        {/* Where the lattice sits inside the shape. Padding cannot express this:
-            on a synced shaped plate the outer size comes from the drawer, so the
-            slack between shape and cells is the only thing left to distribute,
-            and moving the grid is what distributes it. Gated on the outline
-            rather than on slack existing — a shape that exactly fills its extent
-            has none yet, and gating it away there would make the first nudge
-            unreachable. */}
-        {outlineActive && (
-          <div className="space-y-2 border-t border-stroke-subtle pt-3">
-            <SubHeader info={t('baseplate.gridPositionDetail')}>
-              {t('baseplate.gridPosition')}
-            </SubHeader>
-            <GridAlignmentControls />
-          </div>
-        )}
+        <ShapeControls shapeEditor={shapeEditor} />
 
         {/* Padding — spatial schematic. Padding composes with every shape,
             so the controls stay live; a notice explains the shaped case. */}

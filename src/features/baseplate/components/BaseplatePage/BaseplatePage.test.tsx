@@ -6,6 +6,7 @@ import { BaseplatePage } from './BaseplatePage';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import type { BaseplatePiece, BaseplateTiling } from '../../types/tiling';
+import type { ShapeEditorSlot } from '../../types/shapeEditor';
 
 // Mock i18n
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -58,7 +59,9 @@ vi.mock('../../hooks/useBaseplateExport', () => ({
 
 // Mock child components to avoid Three.js
 vi.mock('../BaseplatePanel/BaseplatePanel', () => ({
-  BaseplatePanel: () => <div data-testid="panel">Panel</div>,
+  BaseplatePanel: ({ shapeEditor: ShapeEditor }: { shapeEditor?: ShapeEditorSlot }) => (
+    <div data-testid="panel">{ShapeEditor !== undefined && <ShapeEditor />}</div>
+  ),
 }));
 
 vi.mock('../BaseplatePreview/BaseplatePreview', () => ({
@@ -130,6 +133,19 @@ describe('BaseplatePage', () => {
     expect(screen.getByRole('button', { name: 'header.undo' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'header.redo' }));
     expect(redo).toHaveBeenCalledOnce();
+  });
+
+  // The page lays the panel out four ways, and each one has to keep the
+  // shape editor the shell hands in.
+  it.each([
+    ['desktop', { isDesktop: true, isLandscape: false, isMobile: false, isTablet: false }],
+    ['landscape', { isDesktop: false, isLandscape: true, isMobile: false, isTablet: true }],
+    ['tablet', { isDesktop: false, isLandscape: false, isMobile: false, isTablet: true }],
+    ['phone', { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false }],
+  ])('passes the shape editor to the panel on %s', (_width, responsive) => {
+    mocks.responsive = responsive;
+    render(<BaseplatePage shapeEditor={() => <div data-testid="shape-editor" />} />);
+    expect(screen.getByTestId('panel')).toContainElement(screen.getByTestId('shape-editor'));
   });
 
   it('renders panel and preview in desktop mode', () => {

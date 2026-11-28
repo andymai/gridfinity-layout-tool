@@ -49,6 +49,11 @@ describe('DimensionsSection', () => {
   // the same fit the layout's measured-drawer card offers. Snapping to whole
   // units while a half unit fits hands the user a plate 21mm short of the drawer
   // and buries the difference in padding.
+  it('hands the shape editor to the shape controls', () => {
+    render(<DimensionsSection shapeEditor={() => <div data-testid="shape-editor" />} />);
+    expect(screen.getByTestId('shape-editor')).toBeInTheDocument();
+  });
+
   describe('mm entry', () => {
     function commitMm(widthMm: string, depthMm: string): void {
       fireEvent.click(screen.getByLabelText('baseplate.editDimensions'));

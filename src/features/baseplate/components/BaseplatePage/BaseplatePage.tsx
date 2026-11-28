@@ -50,6 +50,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
 import type { ExportFileFormat } from '@/shared/types/bin';
+import type { ShapeEditorSlot } from '../../types/shapeEditor';
 
 const BaseplateLibraryModal = lazyWithRetry(() =>
   import('../BaseplateLibraryModal').then(namedExport('BaseplateLibraryModal'))
@@ -62,7 +63,11 @@ const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
   '3mf': '.3mf',
 };
 
-export function BaseplatePage() {
+interface BaseplatePageProps {
+  shapeEditor?: ShapeEditorSlot;
+}
+
+export function BaseplatePage({ shapeEditor }: BaseplatePageProps = {}) {
   const t = useTranslation();
   const { isDesktop, isLandscape, isMobile, isTablet } = useResponsive();
   const { shouldShowQuickstart, markQuickstartSeen } = useBaseplateFirstRun();
@@ -273,7 +278,7 @@ export function BaseplatePage() {
     />
   );
 
-  const panel = <BaseplatePanel />;
+  const panel = <BaseplatePanel shapeEditor={shapeEditor} />;
 
   return (
     <div className="relative flex h-screen flex-col bg-surface">

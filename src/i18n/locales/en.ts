@@ -5091,12 +5091,13 @@ const en: Record<string, string> = {
   'baseplate.printBedSize': 'Print bed size',
   'baseplate.sectionDimensions': 'Dimensions',
   'baseplate.syncWithLayout': 'Sync with layout',
+  'baseplate.editShapeNeedsSync': 'Turn on Sync with layout to edit the shape.',
   'baseplate.padding': 'Padding',
   'baseplate.gridPosition': 'Grid position',
   'baseplate.gridPositionDetail':
     "Move the grid inside the drawer shape — for example to sit it against the front-left corner. The plate keeps the shape's outer size; only where the cells land changes.",
   'baseplate.cornerShapedPaddingNotice':
-    'The drawer shape sets the corners (Layout tab). Padding grows the plate around it.',
+    'The drawer shape sets the corners. Padding grows the plate around it.',
   'baseplate.shapedPaddingNotice':
     "Padding extends the plate outward around the drawer's custom shape.",
   'baseplate.shapedPaddingTooLarge':
