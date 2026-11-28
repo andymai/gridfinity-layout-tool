@@ -19,7 +19,6 @@ export interface Conversation {
   readonly turns: readonly StoredTurn[];
 }
 
-const KEY = 'gridfinity-docs:ask-ai';
 // The server's MAX_TURNS: it refuses a request with more.
 export const MAX_TURNS = 8;
 
@@ -89,9 +88,9 @@ export function newConversation(newId: () => string): Conversation {
   return { sessionId: newId(), turns: [] };
 }
 
-function readStored(storage: Pick<Storage, 'getItem'> | null): unknown {
+function readStored(storage: Pick<Storage, 'getItem'> | null, key: string): unknown {
   try {
-    return JSON.parse(storage?.getItem(KEY) ?? 'null');
+    return JSON.parse(storage?.getItem(key) ?? 'null');
   } catch {
     return null;
   }
@@ -99,9 +98,10 @@ function readStored(storage: Pick<Storage, 'getItem'> | null): unknown {
 
 export function loadConversation(
   storage: Pick<Storage, 'getItem'> | null,
+  key: string,
   newId: () => string
 ): Conversation {
-  const stored = readStored(storage);
+  const stored = readStored(storage, key);
   if (isRecord(stored) && typeof stored.sessionId === 'string' && Array.isArray(stored.turns))
     return { sessionId: stored.sessionId, turns: stored.turns.filter(isTurn).map(withValidPlans) };
   return newConversation(newId);
@@ -109,10 +109,11 @@ export function loadConversation(
 
 export function saveConversation(
   storage: Pick<Storage, 'setItem'> | null,
+  key: string,
   conversation: Conversation
 ): void {
   try {
-    storage?.setItem(KEY, JSON.stringify(conversation));
+    storage?.setItem(key, JSON.stringify(conversation));
   } catch {
     // A full or blocked store keeps the chat for this page only.
   }
