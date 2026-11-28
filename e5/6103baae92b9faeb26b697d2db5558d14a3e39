@@ -1,0 +1,35 @@
+src/shared/generation/magnetPositions.test.ts
+  s_cbdce95362cca9::t_f088cf8a089dae 3,37-66
+  s_cbdce95362cca9::t_71efbed4e257d6 67
+src/features/generation/worker/generators/binGenerator.scenario.cornerHoles.test.ts
+  s_cbdce95362cca9::t_ae402440117ae7 229-257
+src/shared/generation/magnetPositions.ts
+  s_cbdce95362cca9::t_0bea51eb615ba7 266-268,278,295,337,347
+src/features/generation/worker/generators/floorPatterns.ts
+  s_cbdce95362cca9::t_0bea51eb615ba7 205,215
+src/shared/generation/meshPersistence.ts
+  s_cbdce95362cca9::t_bb0c04c0bf8b9d 160
+  s_cbdce95362cca9::t_44169145d34813 98-100
+src/features/generation/worker/generators/floorPatterns.test.ts
+  s_cbdce95362cca9::t_ad44e867ae8f4a 257-277
+src/features/generation/worker/generators/lightweightBaseBuilder.ts
+  s_cbdce95362cca9::t_0bea51eb615ba7 408-412
+src/shared/generation/cornerHoles.test.ts
+  s_cbdce95362cca9::t_5073eebe6748b7 9,128,136,179,183,198-207
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e56103baae92b9faeb26b697d2db5558d14a3e39",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
