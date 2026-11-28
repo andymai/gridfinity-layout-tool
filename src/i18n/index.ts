@@ -21,6 +21,7 @@ export {
   useCurrentLocale,
   useFormatting,
   getStaticTranslation,
+  getEnglishTranslation,
 } from './context';
 export type { TFunction } from './context';
 export { detectBrowserLocale } from './detection';

@@ -1,3 +1,4 @@
 {
-  "engagement": "Feedback and Ko-fi nudge toasts that show after steady use. Each toast explains itself, so no page describes them."
+  "engagement": "Feedback and Ko-fi nudge toasts that show after steady use. Each toast explains itself, so no page describes them.",
+  "ask-ai": "Ask AI in the app stays off until APP_ASSISTANT_ENABLED is set. Its docs page and privacy section come with the switch."
 }

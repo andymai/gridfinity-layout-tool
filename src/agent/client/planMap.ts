@@ -60,7 +60,7 @@ export function fitLabel(label: string, chars: number): string {
 // The grid's origin is the front-left corner, so the front of the drawer is at
 // the bottom of the map, as in the layout editor. Lines sit on whole units from
 // that corner, so a half unit shows at the back and the right.
-export function planMapView(plan: PlanView): PlanMapView {
+export function planMapView(plan: Pick<PlanView, 'grid' | 'bins'>): PlanMapView {
   const { width, depth } = plan.grid;
   const inside = (size: number): number[] =>
     Array.from({ length: Math.ceil(size) - 1 }, (_, i) => i + 1);

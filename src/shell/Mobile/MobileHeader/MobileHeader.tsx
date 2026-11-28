@@ -12,6 +12,7 @@ import { Button, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
+import { AskAiButton } from '@/features/ask-ai/components/AskAiButton';
 
 // Lazy: presence avatars pull the Liveblocks client; collab is opt-in.
 const PresenceAvatars = lazyWithRetry(() =>
@@ -268,6 +269,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
               />
             </svg>
           </IconButton>
+          <AskAiButton />
           <IconButton
             onClick={onMenuClick}
             aria-label={t('sidebar.openSettings')}

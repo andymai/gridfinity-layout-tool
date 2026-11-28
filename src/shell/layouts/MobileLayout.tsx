@@ -23,6 +23,7 @@ import {
 } from '@/shell/Mobile';
 import type { SaveStatus } from '@/shared/hooks';
 import { useOnboarding } from '@/features/onboarding';
+import { AskAiMount } from '@/shell/AskAi';
 
 // Lazy load design-linking dialogs
 const DesignLinkingDialogs = lazyWithRetry(() =>
@@ -68,6 +69,8 @@ export function MobileLayout({
         <ShellGrid shouldShowDrawTutorial={shouldShowDrawTutorial} />
         <Staging />
       </main>
+
+      <AskAiMount variant="phone" />
 
       <MobileAboutStrip />
 

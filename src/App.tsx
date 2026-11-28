@@ -64,6 +64,7 @@ import { PanelErrorBoundary } from '@/shared/components/PanelErrorBoundary';
 import { BackgroundMountBoundary } from '@/shell/BackgroundMountBoundary';
 import { BinContextMenuWrapper } from '@/shell/Mobile/BinContextMenuWrapper';
 import { TabletPanelOverlay, TabletPanelTriggers } from '@/shell/Tablet';
+import { AskAiMount } from '@/shell/AskAi';
 import { LiveRegion } from '@/shell/LiveRegion';
 import { ShellGrid } from '@/shell/layouts/ShellGrid';
 import { LocalMutationsProvider } from '@/shared/contexts';
@@ -380,6 +381,8 @@ export default function App() {
             </PanelErrorBoundary>
           </TabletPanelOverlay>
 
+          <AskAiMount variant="tablet" onShowSidebar={openLeftPanel} onOpen={closeRightPanel} />
+
           <DragPreview />
 
           {/* Panel trigger buttons (FABs) - shown when panels are closed */}
@@ -391,20 +394,14 @@ export default function App() {
           />
 
           {/* Context menu (long-press on bin) */}
-          {(() => {
-            if (contextMenu) {
-              const binIds = contextMenu.binIds;
-              return (
-                <BinContextMenuWrapper
-                  binIds={binIds}
-                  position={contextMenu.position}
-                  onClose={hideContextMenu}
-                  source={contextMenu.source}
-                />
-              );
-            }
-            return null;
-          })()}
+          {contextMenu && (
+            <BinContextMenuWrapper
+              binIds={contextMenu.binIds}
+              position={contextMenu.position}
+              onClose={hideContextMenu}
+              source={contextMenu.source}
+            />
+          )}
 
           {hasShareUrl && (
             <BackgroundMountBoundary mountName="SharedLayoutImporter">
@@ -455,26 +452,21 @@ export default function App() {
           <PanelErrorBoundary panelName="Inspector">
             <RightPanel />
           </PanelErrorBoundary>
+          <AskAiMount variant="desktop" />
         </div>
 
         {/* Floating drag preview */}
         <DragPreview />
 
         {/* Context menu (right-click on bin) */}
-        {(() => {
-          if (contextMenu) {
-            const binIds = contextMenu.binIds;
-            return (
-              <BinContextMenuWrapper
-                binIds={binIds}
-                position={contextMenu.position}
-                onClose={hideContextMenu}
-                source={contextMenu.source}
-              />
-            );
-          }
-          return null;
-        })()}
+        {contextMenu && (
+          <BinContextMenuWrapper
+            binIds={contextMenu.binIds}
+            position={contextMenu.position}
+            onClose={hideContextMenu}
+            source={contextMenu.source}
+          />
+        )}
 
         {/* Shared layout URL importer - only load when URL has share params */}
         {hasShareUrl && (

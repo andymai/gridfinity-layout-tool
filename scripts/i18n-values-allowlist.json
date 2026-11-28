@@ -359,7 +359,12 @@
     "labels.printer.niimbot-d",
     "labels.printer.phomemo-d30",
     "labels.row.copies",
-    "common.labelWithUnit"
+    "common.labelWithUnit",
+    "askAi.title",
+    "askAi.beta",
+    "askAi.send",
+    "askAi.count.plan_one",
+    "askAi.count.plan_other"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

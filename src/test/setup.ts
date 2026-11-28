@@ -143,6 +143,7 @@ vi.mock('@/i18n', async () => {
       locale: 'en' as const,
     }),
     getStaticTranslation: t,
+    getEnglishTranslation: (key: string) => en[key],
     LocaleProvider: ({ children }: { children: unknown }) => children,
     SUPPORTED_LOCALES: [{ code: 'en', nativeName: 'English', englishName: 'English' }],
     isLocale: (value: string) => value === 'en',

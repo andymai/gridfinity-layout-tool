@@ -35,26 +35,42 @@ function onSite(href: string): boolean {
   }
 }
 
-const uiChip = {
-  name: 'uiChip',
-  level: 'inline' as const,
-  start: (src: string) => {
-    const at = src.indexOf('[[ui:');
-    return at < 0 ? undefined : at;
-  },
-  tokenizer: (src: string) => {
-    const match = /^\[\[ui:([^\]]+)\]\]/.exec(src);
-    return match ? { type: 'uiChip', raw: match[0], label: match[1] } : undefined;
-  },
-  renderer: (token: Tokens.Generic) =>
-    `<span class="ui-label">${escapeHtml(String(token.label))}</span>`,
-};
+/**
+ * Labels that the panel can show in the app. A label for which `showMe` is
+ * true renders as a button that carries the label in `data-show-me`.
+ */
+export interface ShowMe {
+  readonly showMe: (label: string) => boolean;
+  /** The button's tooltip, in the reader's language. */
+  readonly title: string;
+}
+
+function uiChip(chips: ShowMe | null) {
+  return {
+    name: 'uiChip',
+    level: 'inline' as const,
+    start: (src: string) => {
+      const at = src.indexOf('[[ui:');
+      return at < 0 ? undefined : at;
+    },
+    tokenizer: (src: string) => {
+      const match = /^\[\[ui:([^\]]+)\]\]/.exec(src);
+      return match ? { type: 'uiChip', raw: match[0], label: match[1] } : undefined;
+    },
+    renderer: (token: Tokens.Generic) => {
+      const label = escapeHtml(String(token.label));
+      return chips?.showMe(String(token.label))
+        ? `<button type="button" class="ui-label ui-label-show" data-show-me="${label}" title="${escapeHtml(chips.title)}">${label}</button>`
+        : `<span class="ui-label">${label}</span>`;
+    },
+  };
+}
 
 // The answer is model output, so no raw HTML goes through but <kbd>, and a
 // link goes through only to the web or to this site. Once a turn holds the
 // reader's own data, only links to this site go through, so a crafted label
 // cannot make the model write a link that carries the data away.
-function createMarked(siteLinksOnly: boolean): Marked {
+function createMarked(siteLinksOnly: boolean, chips: ShowMe | null, copyLabel: string): Marked {
   const instance = new Marked({
     gfm: true,
     renderer: {
@@ -76,18 +92,36 @@ function createMarked(siteLinksOnly: boolean): Marked {
         return escapeHtml(text);
       },
       code({ text }: Tokens.Code): string {
-        return `<div class="code-block"><button type="button" class="copy-code" data-copy-code>Copy</button><pre><code>${escapeHtml(text)}</code></pre></div>`;
+        return `<div class="code-block"><button type="button" class="copy-code" data-copy-code>${escapeHtml(copyLabel)}</button><pre><code>${escapeHtml(text)}</code></pre></div>`;
       },
     },
   });
   // A chip is a token of its own, so a marker can only become one in text,
   // never inside a link target or another attribute.
-  instance.use({ extensions: [uiChip] });
+  instance.use({ extensions: [uiChip(chips)] });
   return instance;
 }
 
-const markedAll = createMarked(false);
-const markedSite = createMarked(true);
+const NO_CHIPS = {};
+const instances = new WeakMap<object, Map<string, Marked>>();
+
+// One parser for each set of options, so a panel that passes the same ShowMe
+// object on each render does not build a parser on each render.
+function markedFor(siteLinksOnly: boolean, chips: ShowMe | null, copyLabel: string): Marked {
+  const owner = chips ?? NO_CHIPS;
+  let byOptions = instances.get(owner);
+  if (!byOptions) {
+    byOptions = new Map();
+    instances.set(owner, byOptions);
+  }
+  const key = `${String(siteLinksOnly)}|${copyLabel}`;
+  let instance = byOptions.get(key);
+  if (!instance) {
+    instance = createMarked(siteLinksOnly, chips, copyLabel);
+    byOptions.set(key, instance);
+  }
+  return instance;
+}
 
 /**
  * An answer as HTML runs and the captures between them. While the answer
@@ -102,9 +136,16 @@ export function answerSegments(
     isPlan: (handle: string) => boolean;
     /** The turn holds the reader's own data: links go only to this site. */
     siteLinksOnly?: boolean;
+    showMe?: ShowMe;
+    /** The text of each code block's copy button. */
+    copyLabel?: string;
   }
 ): Segment[] {
-  const marked = options.siteLinksOnly === true ? markedSite : markedAll;
+  const marked = markedFor(
+    options.siteLinksOnly === true,
+    options.showMe ?? null,
+    options.copyLabel ?? 'Copy'
+  );
   const source = options.streaming ? text.replace(OPEN_MARKER, '') : text;
   const segments: Segment[] = [];
   let lines: string[] = [];

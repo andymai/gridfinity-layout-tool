@@ -25,6 +25,10 @@ const NOTICES: Readonly<Record<NoticeCode, string>> = {
   busy: 'Ask AI is busy. Try again in a minute.',
   expired: 'This request waited too long. Ask your question again.',
   failed: 'Ask AI did not answer. Try again.',
+  appliedRetry:
+    'Ask AI applied the changes, but its answer did not arrive. Retry gets the answer without changing the layout again.',
+  appliedNoAnswer:
+    'Ask AI applied the changes, but its answer did not arrive. One Undo reverts the changes.',
 };
 
 export const noticeText = (code: NoticeCode | null): string | null =>
@@ -179,7 +183,7 @@ export function useAskAiHost(): void {
 export const busy = (): boolean => chat.busy();
 export const ask = (question: string, page: string): Promise<void> => chat.ask(question, page);
 export const answerRequest = (target: Exchange, allow: boolean): Promise<void> =>
-  chat.answerRequest(target, allow);
+  chat.answerRequest(target, { reads: allow });
 export const stop = (): void => chat.stop();
 export const retry = (page: string): Promise<void> => chat.retry(page);
 export const newChat = (): void => chat.newChat();
