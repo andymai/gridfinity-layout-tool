@@ -5824,6 +5824,8 @@
   "askAi.notice.busy": "O Ask AI está ocupado. Tente novamente em um minuto.",
   "askAi.notice.expired": "Esta solicitação esperou demais. Faça sua pergunta de novo.",
   "askAi.notice.failed": "O Ask AI não respondeu. Tente novamente.",
+  "askAi.notice.appliedRetry": "O Ask AI aplicou as alterações, mas a resposta não chegou. Tentar Novamente busca a resposta sem alterar o layout de novo.",
+  "askAi.notice.appliedNoAnswer": "O Ask AI aplicou as alterações, mas a resposta não chegou. Um único Desfazer reverte as alterações.",
   "askAi.notice.stopped": "Interrompido.",
   "askAi.count.read_one": "{count} página lida",
   "askAi.count.read_other": "{count} páginas lidas",

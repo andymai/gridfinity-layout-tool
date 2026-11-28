@@ -5824,6 +5824,8 @@
   "askAi.notice.busy": "Ask AI est occupé. Réessayez dans une minute.",
   "askAi.notice.expired": "Cette demande a attendu trop longtemps. Posez à nouveau votre question.",
   "askAi.notice.failed": "Ask AI n'a pas répondu. Réessayez.",
+  "askAi.notice.appliedRetry": "Ask AI a appliqué les modifications, mais sa réponse n'est pas arrivée. Réessayer récupère la réponse sans modifier à nouveau le layout.",
+  "askAi.notice.appliedNoAnswer": "Ask AI a appliqué les modifications, mais sa réponse n'est pas arrivée. Une seule commande Annuler défait les modifications.",
   "askAi.notice.stopped": "Arrêté.",
   "askAi.count.read_one": "{count} page lue",
   "askAi.count.read_other": "{count} pages lues",

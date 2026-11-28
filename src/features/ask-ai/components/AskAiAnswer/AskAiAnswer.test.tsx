@@ -23,6 +23,7 @@ const exchange = (extra: Partial<Exchange> = {}): Exchange => ({
   request: null,
   personal: false,
   notice: null,
+  applied: false,
   traceId: '00000000-0000-4000-8000-000000000001',
   feedback: null,
   stored: true,
@@ -74,5 +75,18 @@ describe('AskAiAnswer', () => {
       <AskAiAnswer {...props} exchange={exchange({ text: '', status: 'error', notice: 'busy' })} />
     );
     expect(screen.getByText('Ask AI is busy. Try again in a minute.')).toBeInTheDocument();
+  });
+
+  it('offers no Retry once applied changes can get no answer', () => {
+    render(
+      <AskAiAnswer
+        {...props}
+        exchange={exchange({ status: 'error', applied: true, notice: 'appliedNoAnswer' })}
+      />
+    );
+    expect(
+      screen.getByText(/Ask AI applied the changes, but its answer did not arrive/)
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
   });
 });

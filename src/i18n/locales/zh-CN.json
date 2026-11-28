@@ -5663,6 +5663,8 @@
   "askAi.notice.busy": "Ask AI 正忙。请一分钟后再试。",
   "askAi.notice.expired": "此请求等待时间过长。请重新提问。",
   "askAi.notice.failed": "Ask AI 没有回答。请重试。",
+  "askAi.notice.appliedRetry": "Ask AI 已应用这些更改，但回答没有送达。重试只会获取回答，不会再次更改布局。",
+  "askAi.notice.appliedNoAnswer": "Ask AI 已应用这些更改，但回答没有送达。撤销一次即可还原这些更改。",
   "askAi.notice.stopped": "已停止。",
   "askAi.count.read_other": "已读 {count} 个页面",
   "askAi.count.search_other": "{count} 次搜索",

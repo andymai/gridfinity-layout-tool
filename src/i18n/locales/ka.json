@@ -5824,6 +5824,8 @@
   "askAi.notice.busy": "Ask AI დაკავებულია. სცადეთ ერთ წუთში.",
   "askAi.notice.expired": "ამ მოთხოვნამ ძალიან დიდხანს ილოდინა. კვლავ დასვით კითხვა.",
   "askAi.notice.failed": "Ask AI-მ არ უპასუხა. კვლავ სცადეთ.",
+  "askAi.notice.appliedRetry": "Ask AI-მ ცვლილებები გამოიყენა, მაგრამ პასუხი არ მოვიდა. „ხელახლა ცდა“ პასუხს მიიღებს განლაგების ხელახლა შეცვლის გარეშე.",
+  "askAi.notice.appliedNoAnswer": "Ask AI-მ ცვლილებები გამოიყენა, მაგრამ პასუხი არ მოვიდა. ერთი „გაუქმება“ ცვლილებებს დააბრუნებს.",
   "askAi.notice.stopped": "შეჩერდა.",
   "askAi.count.read_one": "{count} წაკითხული გვერდი",
   "askAi.count.read_other": "{count} წაკითხული გვერდი",

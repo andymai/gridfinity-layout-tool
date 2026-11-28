@@ -5824,6 +5824,8 @@
   "askAi.notice.busy": "Ask AI ist ausgelastet. Versuch es in einer Minute erneut.",
   "askAi.notice.expired": "Diese Anfrage hat zu lange gewartet. Stell deine Frage erneut.",
   "askAi.notice.failed": "Ask AI hat nicht geantwortet. Versuch es erneut.",
+  "askAi.notice.appliedRetry": "Ask AI hat die Änderungen angewendet, aber die Antwort kam nicht an. Erneut versuchen holt die Antwort, ohne das Layout noch einmal zu ändern.",
+  "askAi.notice.appliedNoAnswer": "Ask AI hat die Änderungen angewendet, aber die Antwort kam nicht an. Ein einziges Rückgängig nimmt die Änderungen zurück.",
   "askAi.notice.stopped": "Gestoppt.",
   "askAi.count.read_one": "{count} Seite gelesen",
   "askAi.count.read_other": "{count} Seiten gelesen",

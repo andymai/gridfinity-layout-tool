@@ -5824,6 +5824,8 @@
   "askAi.notice.busy": "Ask AI er opptatt. Prøv igjen om et minutt.",
   "askAi.notice.expired": "Denne forespørselen ventet for lenge. Still spørsmålet ditt på nytt.",
   "askAi.notice.failed": "Ask AI svarte ikke. Prøv igjen.",
+  "askAi.notice.appliedRetry": "Ask AI brukte endringene, men svaret kom ikke fram. Prøv igjen henter svaret uten å endre layouten på nytt.",
+  "askAi.notice.appliedNoAnswer": "Ask AI brukte endringene, men svaret kom ikke fram. Én Angre tilbakestiller endringene.",
   "askAi.notice.stopped": "Stoppet.",
   "askAi.count.read_one": "{count} side lest",
   "askAi.count.read_other": "{count} sider lest",

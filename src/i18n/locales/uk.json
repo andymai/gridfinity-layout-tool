@@ -6146,6 +6146,8 @@
   "askAi.notice.busy": "Ask AI зараз перевантажено. Спробуйте за хвилину.",
   "askAi.notice.expired": "Цей запит чекав надто довго. Поставте запитання ще раз.",
   "askAi.notice.failed": "Відповіді від Ask AI немає. Спробуйте ще раз.",
+  "askAi.notice.appliedRetry": "Зміни від Ask AI застосовано, але відповідь не надійшла. «Повторити» отримає відповідь, не змінюючи розкладку знову.",
+  "askAi.notice.appliedNoAnswer": "Зміни від Ask AI застосовано, але відповідь не надійшла. Одне «Скасувати» відмінить зміни.",
   "askAi.notice.stopped": "Зупинено.",
   "askAi.count.read_one": "{count} прочитана сторінка",
   "askAi.count.read_few": "{count} прочитані сторінки",

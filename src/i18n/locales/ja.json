@@ -5663,6 +5663,8 @@
   "askAi.notice.busy": "Ask AI は混み合っています。1 分ほどしてからもう一度お試しください。",
   "askAi.notice.expired": "このリクエストは待ち時間が長すぎました。もう一度質問してください。",
   "askAi.notice.failed": "Ask AI から回答がありませんでした。もう一度お試しください。",
+  "askAi.notice.appliedRetry": "Ask AI は変更を適用しましたが、回答が届きませんでした。「再試行」でレイアウトを再び変更せずに回答を取得します。",
+  "askAi.notice.appliedNoAnswer": "Ask AI は変更を適用しましたが、回答が届きませんでした。1 回の「元に戻す」で変更を取り消せます。",
   "askAi.notice.stopped": "停止しました。",
   "askAi.count.read_other": "{count}ページを参照",
   "askAi.count.search_other": "{count}回検索",

@@ -6146,6 +6146,8 @@
   "askAi.notice.busy": "Ask AI ma teraz dużo pracy. Spróbuj ponownie za minutę.",
   "askAi.notice.expired": "To zapytanie czekało zbyt długo. Zadaj pytanie ponownie.",
   "askAi.notice.failed": "Brak odpowiedzi od Ask AI. Spróbuj ponownie.",
+  "askAi.notice.appliedRetry": "Zmiany od Ask AI zostały zastosowane, ale odpowiedź nie dotarła. Ponów pobiera odpowiedź bez ponownej zmiany układu.",
+  "askAi.notice.appliedNoAnswer": "Zmiany od Ask AI zostały zastosowane, ale odpowiedź nie dotarła. Jedno Cofnij wycofuje zmiany.",
   "askAi.notice.stopped": "Zatrzymano.",
   "askAi.count.read_one": "{count} przeczytana strona",
   "askAi.count.read_few": "{count} przeczytane strony",

@@ -5987,6 +5987,8 @@
   "askAi.notice.busy": "Služba Ask AI je vytížená. Zkus to znovu za minutu.",
   "askAi.notice.expired": "Tento požadavek čekal příliš dlouho. Polož otázku znovu.",
   "askAi.notice.failed": "Odpověď od Ask AI nepřišla. Zkus to znovu.",
+  "askAi.notice.appliedRetry": "Ask AI změny použil, ale odpověď nepřišla. Tlačítko Zkusit znovu načte odpověď a rozvržení znovu nemění.",
+  "askAi.notice.appliedNoAnswer": "Ask AI změny použil, ale odpověď nepřišla. Jedno Zpět změny vrátí.",
   "askAi.notice.stopped": "Zastaveno.",
   "askAi.count.read_one": "{count} přečtená stránka",
   "askAi.count.read_few": "{count} přečtené stránky",

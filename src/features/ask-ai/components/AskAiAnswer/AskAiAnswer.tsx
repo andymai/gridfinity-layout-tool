@@ -205,7 +205,8 @@ export function AskAiAnswer({
               {copied ? t('askAi.copied') : t('askAi.copy')}
             </Button>
           )}
-          {last && (
+          {/* Its question asked again could propose the same changes again. */}
+          {last && exchange.notice !== 'appliedNoAnswer' && (
             <Button size="sm" variant="ghost" onClick={onRetry}>
               {t('askAi.retry')}
             </Button>

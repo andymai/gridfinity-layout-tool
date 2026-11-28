@@ -365,6 +365,51 @@ describe('the app door', () => {
     });
   });
 
+  describe('a change that applied before its answer failed', () => {
+    const applied = { outcome: 'applied', added: {} };
+
+    async function applyThenFail(status: number): Promise<ReturnType<typeof vi.fn>> {
+      const apply = vi.fn(() => Promise.resolve(applied));
+      prepareCalls = () => Promise.resolve(preview());
+      session = start({ door: 'app', apply });
+      fetchMock.mockResolvedValueOnce(proposal());
+      await session.ask('Add a bin', 'app/layout');
+      await asking();
+      fetchMock.mockResolvedValueOnce(new Response('{}', { status }));
+      const current = state.exchanges[0];
+      if (current) await session.answerRequest(current, { changes: true });
+      return apply;
+    }
+
+    it('says that the changes applied, and Retry gets only the answer', async () => {
+      const apply = await applyThenFail(503);
+      expect(state.exchanges[0]).toMatchObject({
+        status: 'error',
+        applied: true,
+        notice: 'appliedRetry',
+      });
+      fetchMock.mockResolvedValueOnce(answer());
+      await session.retry('app/layout');
+      // The same envelope and results go again: the question is not asked again.
+      expect(bodyOf(2)).toMatchObject({
+        op: 'resume',
+        pending: {},
+        results: [{ callId: 'toolu_c', status: 'shared', data: applied }],
+      });
+      expect(apply).toHaveBeenCalledOnce();
+      expect(state.exchanges).toHaveLength(1);
+      expect(state.exchanges[0]).toMatchObject({ status: 'done', notice: null });
+    });
+
+    it('never asks the question again once the answer cannot come back', async () => {
+      const apply = await applyThenFail(410);
+      expect(state.exchanges[0]).toMatchObject({ applied: true, notice: 'appliedNoAnswer' });
+      await session.retry('app/layout');
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(apply).toHaveBeenCalledOnce();
+    });
+  });
+
   it('sends a decline without applying, with the host label for a change', async () => {
     const apply = vi.fn(() => Promise.resolve({}));
     prepareCalls = () => Promise.resolve(preview());

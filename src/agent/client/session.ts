@@ -1,4 +1,3 @@
-import type { PlanView } from '@/agent/contract';
 import {
   MAX_TURNS,
   answerText,
@@ -14,140 +13,35 @@ import {
 } from './history';
 import type { Conversation, StoredTurn } from './history';
 import { readEvents } from './stream';
+import type {
+  BrowserCall,
+  CallResult,
+  Exchange,
+  NoticeCode,
+  PreparedCall,
+  RequestAnswer,
+  Session,
+  SessionHost,
+  Step,
+} from './sessionTypes';
 
-export type StepKind = 'read' | 'search' | 'check' | 'plan' | 'yours' | 'change';
+export type {
+  BrowserCall,
+  CallResult,
+  Door,
+  Exchange,
+  NoticeCode,
+  PreparedCall,
+  ReaderRequest,
+  RequestAnswer,
+  Session,
+  SessionHost,
+  SessionState,
+  Step,
+  StepKind,
+} from './sessionTypes';
 
-export interface Step {
-  readonly id: string;
-  readonly kind: StepKind;
-  readonly state: 'running' | 'waiting' | 'done' | 'error';
-  /** The label in English, as the server wrote it. */
-  readonly label: string;
-  /** The label as a key and its values, for a panel that translates it. */
-  readonly key?: string;
-  readonly vars?: Readonly<Record<string, string>>;
-}
-
-/** Which panel asks: the docs site, or the app, where Ask AI can also change a layout. */
-export type Door = 'docs' | 'app';
-
-/** What the browser sends back for one call. */
-export type CallResult =
-  | { readonly callId: string; readonly status: 'shared'; readonly data: unknown }
-  | { readonly callId: string; readonly status: 'declined' | 'unavailable' };
-
-/** A browser call as the server asked for it. */
-export interface BrowserCall {
-  readonly id: string;
-  readonly name: string;
-  readonly input: unknown;
-}
-
-/**
- * One browser call, run before the reader decides. For a read, `data` is
- * exactly what Allow sends. For a change, `data` is what the panel previews,
- * and Apply sends what the host's `apply` returns.
- */
-export interface PreparedCall {
-  readonly id: string;
-  /** A read of the reader's data (the default), or a change to their layout. */
-  readonly kind?: 'read' | 'change';
-  readonly title: string;
-  /** The text that the model would read, shown in the panel before the reader allows it. */
-  readonly preview: string | null;
-  readonly data: unknown;
-  readonly unavailable: boolean;
-  /**
-   * Data that goes back whatever the reader does, such as a change that the
-   * app refused. A request of only such calls goes back at once.
-   */
-  readonly settled?: unknown;
-}
-
-/** Browser calls that wait for the reader to allow or decline them. */
-export interface ReaderRequest {
-  /** The server's signed envelope, sent back as it came. */
-  readonly pending: unknown;
-  /** The turn's messages so far, kept for the turn once it ends. */
-  readonly messages: readonly unknown[];
-  calls: PreparedCall[];
-  state: 'loading' | 'asking' | 'sending';
-}
-
-/** Why an answer stopped or failed. Each panel words it in its own language. */
-export type NoticeCode =
-  'refusal' | 'truncated' | 'resting' | 'rateLimited' | 'tooLong' | 'busy' | 'expired' | 'failed';
-
-export interface Exchange {
-  readonly id: number;
-  readonly question: string;
-  text: string;
-  thinking: string;
-  steps: Step[];
-  /** The plans that the answer draws, by handle. */
-  plans: Record<string, PlanView>;
-  /** asking: the turn waits for the reader to allow a read of their data. */
-  status: 'waiting' | 'streaming' | 'asking' | 'done' | 'stopped' | 'error';
-  request: ReaderRequest | null;
-  /** The turn holds the reader's own data, so its answer may link only to this site. */
-  personal: boolean;
-  notice: NoticeCode | null;
-  traceId: string | null;
-  feedback: 1 | -1 | null;
-  stored: boolean;
-}
-
-/** What the session writes. A panel may hold it in a reactive object of its own. */
-export interface SessionState {
-  resting: boolean;
-  /** The chat holds MAX_TURNS turns, the most that the server takes back. */
-  full: boolean;
-  exchanges: Exchange[];
-}
-
-export interface SessionHost {
-  /** Absent for the docs panel. */
-  readonly door?: Door;
-  readonly state: SessionState;
-  /** Called after each change to the state, for a panel that does not track writes itself. */
-  readonly changed: () => void;
-  readonly endpoint: string;
-  /** The sessionStorage key of this panel's chat. */
-  readonly storageKey: string;
-  readonly storage: () => Pick<Storage, 'getItem' | 'setItem'> | null;
-  readonly settings: () => { readonly analytics: boolean; readonly locale: string };
-  /** Runs each call in the browser. It must resolve, with a call marked unavailable when it cannot run. */
-  readonly prepareCalls: (calls: readonly BrowserCall[]) => Promise<PreparedCall[]>;
-  /** Applies a change that the reader approved, and gives the data that goes back. */
-  readonly apply?: (call: PreparedCall) => Promise<unknown>;
-  /** The step label of a call that the reader did not allow. */
-  readonly declinedLabel: (call: PreparedCall) => string;
-  readonly newId: () => string;
-}
-
-/**
- * The reader's answer to a request. Reads and changes each take their own
- * yes, so Apply on a change never shares the reader's data with the model.
- * A kind without a yes goes back declined.
- */
-export interface RequestAnswer {
-  /** Allow: send the reads that the panel showed. */
-  readonly reads?: boolean;
-  /** Apply: apply the changes, and send what the host's `apply` returns. */
-  readonly changes?: boolean;
-}
-
-export interface Session {
-  /** Shows the chat that this tab kept, when the panel shows none yet. */
-  restore(): void;
-  ask(question: string, page: string): Promise<void>;
-  answerRequest(target: Exchange, answer: RequestAnswer): Promise<void>;
-  stop(): void;
-  retry(page: string): Promise<void>;
-  newChat(): void;
-  sendFeedback(target: Exchange, value: 1 | -1): void;
-  busy(): boolean;
-}
+const statusOf = (exchange: Exchange): Exchange['status'] => exchange.status;
 
 export function isLive(exchange: Exchange): boolean {
   return exchange.status === 'waiting' || exchange.status === 'streaming';
@@ -187,6 +81,7 @@ function exchange(id: number, question: string): Exchange {
     request: null,
     personal: false,
     notice: null,
+    applied: false,
     traceId: null,
     feedback: null,
     stored: false,
@@ -227,6 +122,15 @@ export function createSession(host: SessionHost): Session {
     });
 
   const inChat = (target: Exchange): boolean => state.exchanges.includes(target);
+
+  // A resume whose changes applied but whose answer failed, kept so that
+  // Retry can send it again without applying or asking anything again.
+  interface Resume {
+    readonly pending: unknown;
+    readonly results: readonly CallResult[];
+    readonly messages: readonly unknown[];
+  }
+  const unanswered = new Map<number, Resume>();
 
   function chat(): Conversation {
     conversation ??= loadConversation(host.storage(), host.storageKey, host.newId);
@@ -438,17 +342,30 @@ export function createSession(host: SessionHost): Session {
       return { ...rest, state: 'done', label: host.declinedLabel(call) };
     });
     if (results.some((result) => result.status === 'shared')) target.personal = true;
+    const appliedNow = results.some(
+      (result) =>
+        asked.get(result.callId)?.kind === 'change' &&
+        result.status === 'shared' &&
+        (result.data as { outcome?: unknown } | null)?.outcome === 'applied'
+    );
+    if (appliedNow) target.applied = true;
+    await resume(target, { pending: request.pending, results, messages: request.messages }, abort);
+  }
+
+  async function resume(target: Exchange, sent: Resume, abort: AbortController): Promise<void> {
     target.status = 'waiting';
+    target.notice = null;
     const { analytics } = host.settings();
     const before = chat();
     changed();
+    let gone = false;
     try {
       const response = await post(
         {
           op: 'resume',
           sessionId: before.sessionId,
-          pending: request.pending,
-          results,
+          pending: sent.pending,
+          results: sent.results,
           turns: sendable(before.turns),
           analytics,
         },
@@ -457,14 +374,25 @@ export function createSession(host: SessionHost): Session {
       target.request = null;
       if (!response.ok || !response.body) {
         await failed(target, response, true);
+        // Expired or already used: this envelope can never answer.
+        gone = response.status === 410 || response.status === 409;
         return;
       }
-      await consume(target, response.body, [...request.messages]);
+      unanswered.delete(target.id);
+      await consume(target, response.body, [...sent.messages]);
     } catch {
       target.request = null;
       target.status = abort.signal.aborted ? 'stopped' : 'error';
       if (target.status === 'error') target.notice = errorNotice(0, null);
     } finally {
+      // consume() moves the status on, which narrowing in this function cannot see.
+      const ended = statusOf(target);
+      if (target.applied && ended !== 'done' && ended !== 'asking') {
+        if (gone) unanswered.delete(target.id);
+        else unanswered.set(target.id, sent);
+        target.status = 'error';
+        target.notice = gone ? 'appliedNoAnswer' : 'appliedRetry';
+      }
       settle(target);
     }
   }
@@ -514,6 +442,15 @@ export function createSession(host: SessionHost): Session {
   async function retry(page: string): Promise<void> {
     const last = state.exchanges.at(-1);
     if (!last || controller) return;
+    const sent = unanswered.get(last.id);
+    if (sent) {
+      const abort = new AbortController();
+      controller = abort;
+      await resume(last, sent, abort);
+      return;
+    }
+    // Its question asked again could propose the same changes again.
+    if (last.applied) return;
     if (last.stored) keep(withoutLastTurn(chat()));
     state.exchanges.pop();
     await ask(last.question, page);
@@ -521,6 +458,7 @@ export function createSession(host: SessionHost): Session {
 
   function newChat(): void {
     stop();
+    unanswered.clear();
     keep(newConversation(host.newId));
     state.exchanges = [];
     changed();

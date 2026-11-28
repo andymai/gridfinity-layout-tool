@@ -5824,6 +5824,8 @@
   "askAi.notice.busy": "Ask AI está ocupado. Inténtalo de nuevo en un minuto.",
   "askAi.notice.expired": "Esta solicitud esperó demasiado. Vuelve a hacer tu pregunta.",
   "askAi.notice.failed": "Ask AI no respondió. Inténtalo de nuevo.",
+  "askAi.notice.appliedRetry": "Ask AI aplicó los cambios, pero su respuesta no llegó. Reintentar obtiene la respuesta sin volver a cambiar el diseño.",
+  "askAi.notice.appliedNoAnswer": "Ask AI aplicó los cambios, pero su respuesta no llegó. Un solo Deshacer revierte los cambios.",
   "askAi.notice.stopped": "Detenido.",
   "askAi.count.read_one": "{count} página leída",
   "askAi.count.read_other": "{count} páginas leídas",

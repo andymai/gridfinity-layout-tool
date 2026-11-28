@@ -5824,6 +5824,8 @@
   "askAi.notice.busy": "Ask AI è occupato. Riprova tra un minuto.",
   "askAi.notice.expired": "Questa richiesta ha atteso troppo. Fai di nuovo la tua domanda.",
   "askAi.notice.failed": "Ask AI non ha risposto. Riprova.",
+  "askAi.notice.appliedRetry": "Ask AI ha applicato le modifiche, ma la risposta non è arrivata. Riprova recupera la risposta senza modificare di nuovo il layout.",
+  "askAi.notice.appliedNoAnswer": "Ask AI ha applicato le modifiche, ma la risposta non è arrivata. Un solo Annulla annulla le modifiche.",
   "askAi.notice.stopped": "Interrotto.",
   "askAi.count.read_one": "{count} pagina letta",
   "askAi.count.read_other": "{count} pagine lette",

@@ -7058,6 +7058,10 @@ const en: Record<string, string> = {
   'askAi.notice.busy': 'Ask AI is busy. Try again in a minute.',
   'askAi.notice.expired': 'This request waited too long. Ask your question again.',
   'askAi.notice.failed': 'Ask AI did not answer. Try again.',
+  'askAi.notice.appliedRetry':
+    'Ask AI applied the changes, but its answer did not arrive. Retry gets the answer without changing the layout again.',
+  'askAi.notice.appliedNoAnswer':
+    'Ask AI applied the changes, but its answer did not arrive. One Undo reverts the changes.',
   'askAi.notice.stopped': 'Stopped.',
   'askAi.count.read_one': '{count} page read',
   'askAi.count.read_other': '{count} pages read',
