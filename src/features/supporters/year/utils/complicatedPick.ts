@@ -1,43 +1,29 @@
 import type { YearBinRef, YearShortlistEntry, YearStats } from '../types';
 
-/** How many of the highest-scored designs get a mesh, besides the longest print. */
-const SHORTLIST_MESHES = 5;
-
 export interface ComplicatedPick {
   readonly design: YearShortlistEntry;
-  /** Null when no shortlisted design has a mesh yet. */
+  /** Null until the design's mesh is ready; the card then shows no count. */
   readonly triangles: number | null;
 }
 
-/** The designs worth a mesh, the longest print first. */
+/** The designs worth a mesh: the longest print and the most complicated design, once each. */
 export function meshCandidates(stats: YearStats): YearBinRef[] {
   const designs: YearBinRef[] = [];
-  const seen = new Set<string>();
-  for (const design of [
-    stats.longestPrint,
-    ...stats.complexityShortlist.slice(0, SHORTLIST_MESHES),
-  ]) {
-    if (!design || seen.has(design.id)) continue;
-    seen.add(design.id);
-    designs.push(design);
+  for (const design of [stats.longestPrint, stats.complexityShortlist.at(0)]) {
+    if (design && !designs.some((each) => each.id === design.id)) designs.push(design);
   }
   return designs;
 }
 
 /**
- * The shortlisted design with the most triangles, or the top-scored one when
- * no mesh is ready, which the card shows without a count.
+ * The design with the most design work, which the shortlist lists first. Its
+ * triangle count is a fact for the card, never the ranking: a pattern or
+ * engraved text would otherwise win every year.
  */
 export function pickComplicated(
   shortlist: readonly YearShortlistEntry[],
   triangles: (id: string) => number | undefined
 ): ComplicatedPick | null {
-  let best: ComplicatedPick | null = null;
-  for (const design of shortlist) {
-    const count = triangles(design.id);
-    if (count !== undefined && (best?.triangles ?? -1) < count) best = { design, triangles: count };
-  }
-  if (best) return best;
   const top = shortlist.at(0);
-  return top ? { design: top, triangles: null } : null;
+  return top ? { design: top, triangles: triangles(top.id) ?? null } : null;
 }

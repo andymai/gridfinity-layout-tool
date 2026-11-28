@@ -21,7 +21,7 @@ import type {
   YearShortlistEntry,
   YearStats,
 } from '../types';
-import { compartmentCount, featureScore, hasLabelText, isBinParams } from './designFeatures';
+import { compartmentCount, designWork, hasLabelText, isBinParams } from './designFeatures';
 import {
   designCountsForYear,
   inYear,
@@ -57,7 +57,7 @@ function readBinDesign(source: YearDesignSource, settings: PrintSettings): BinDe
       params,
       minutes: estimate.minutes,
       grams: estimate.grams,
-      score: featureScore(params, settings.nozzleSizeMm),
+      score: designWork(params, settings.nozzleSizeMm),
       compartments: compartmentCount(params),
       labelled: hasLabelText(params, settings.nozzleSizeMm),
     };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
-import { compartmentCount, featureScore, hasLabelText, isBinParams } from './designFeatures';
+import { compartmentCount, designWork, hasLabelText, isBinParams } from './designFeatures';
 
 function withCompartments(rows: number, cols: number, cells: number[]): BinParams {
   return {
@@ -97,13 +97,34 @@ describe('hasLabelText', () => {
   });
 });
 
-describe('featureScore', () => {
-  it('ranks a patterned wall above a plain one', () => {
-    const plain = featureScore(DEFAULT_BIN_PARAMS);
-    const patterned = featureScore({
+describe('designWork', () => {
+  const patterned = {
+    ...DEFAULT_BIN_PARAMS,
+    wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
+  };
+
+  it('counts a wall pattern as one feature, like a scoop', () => {
+    const scooped = {
       ...DEFAULT_BIN_PARAMS,
-      wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+    };
+    expect(designWork(patterned)).toBe(designWork(scooped));
+  });
+
+  it('ranks a design with more built into it above a patterned plain bin', () => {
+    const worked = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, rows: 2, cols: 3, cells: [] },
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+    };
+    expect(designWork(worked)).toBeGreaterThan(designWork(patterned));
+  });
+
+  it('caps a large compartment grid, which is one preset', () => {
+    const grid = (rows: number, cols: number) => ({
+      ...DEFAULT_BIN_PARAMS,
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, rows, cols, cells: [] },
     });
-    expect(patterned).toBeGreaterThan(plain);
+    expect(designWork(grid(10, 10))).toBe(designWork(grid(4, 4)));
   });
 });
