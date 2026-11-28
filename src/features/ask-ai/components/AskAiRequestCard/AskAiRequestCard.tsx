@@ -1,6 +1,6 @@
-import { useId, useMemo } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import type { PreparedCall, ReaderRequest } from '@/agent/client/session';
+import type { PreparedCall, ReaderRequest, RequestAnswer } from '@/agent/client/session';
 import { useLayoutStore } from '@/core/store';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -10,7 +10,7 @@ import { AskAiDrawerMap } from '../AskAiDrawerMap';
 
 export interface AskAiRequestCardProps {
   readonly request: ReaderRequest;
-  readonly onAnswer: (allow: boolean) => void;
+  readonly onAnswer: (answer: RequestAnswer) => void;
 }
 
 const PRIVACY_LINK = '/docs/introduction/your-data#ask-ai';
@@ -71,6 +71,8 @@ function changeState(calls: readonly PreparedCall[]): 'none' | 'ok' | 'blocked' 
 /**
  * A request from Ask AI that waits for the reader: reads of their data, which
  * they allow or not, and changes to the open layout, which they apply or not.
+ * Each kind takes its own yes: in a request with both, the reader answers the
+ * reads first, so Apply never shares data that they did not allow.
  */
 export function AskAiRequestCard({ request, onAnswer }: AskAiRequestCardProps) {
   const t = useTranslation();
@@ -80,6 +82,16 @@ export function AskAiRequestCard({ request, onAnswer }: AskAiRequestCardProps) {
   const readable = reads.some((call) => !call.unavailable);
   const change = changeState(request.calls);
   const busy = request.state !== 'asking';
+  const [readsAnswer, setReadsAnswer] = useState<boolean | null>(null);
+
+  function answerReads(allow: boolean): void {
+    if (change === 'ok') setReadsAnswer(allow);
+    else onAnswer({ reads: allow });
+  }
+
+  function answerChanges(apply: boolean): void {
+    onAnswer({ ...(readable ? { reads: readsAnswer === true } : {}), changes: apply });
+  }
 
   if (request.state === 'loading') {
     return (
@@ -142,27 +154,40 @@ export function AskAiRequestCard({ request, onAnswer }: AskAiRequestCardProps) {
           )}
         </div>
       )}
+      {readable && readsAnswer === false && (
+        <p className="text-xs text-content-secondary">{t('askAi.step.notShared')}</p>
+      )}
       <div className="flex flex-wrap gap-2">
-        {change === 'ok' ? (
+        {readable && readsAnswer === null ? (
           <>
-            <Button size="sm" variant="primary" disabled={busy} onClick={() => onAnswer(true)}>
-              {t('askAi.change.apply')}
-            </Button>
-            <Button size="sm" variant="secondary" disabled={busy} onClick={() => onAnswer(false)}>
-              {t('askAi.change.dontApply')}
-            </Button>
-          </>
-        ) : readable ? (
-          <>
-            <Button size="sm" variant="primary" disabled={busy} onClick={() => onAnswer(true)}>
+            <Button size="sm" variant="primary" disabled={busy} onClick={() => answerReads(true)}>
               {t('askAi.request.allow')}
             </Button>
-            <Button size="sm" variant="secondary" disabled={busy} onClick={() => onAnswer(false)}>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={busy}
+              onClick={() => answerReads(false)}
+            >
               {t('askAi.request.deny')}
             </Button>
           </>
+        ) : change === 'ok' ? (
+          <>
+            <Button size="sm" variant="primary" disabled={busy} onClick={() => answerChanges(true)}>
+              {t('askAi.change.apply')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={busy}
+              onClick={() => answerChanges(false)}
+            >
+              {t('askAi.change.dontApply')}
+            </Button>
+          </>
         ) : (
-          <Button size="sm" variant="secondary" disabled={busy} onClick={() => onAnswer(false)}>
+          <Button size="sm" variant="secondary" disabled={busy} onClick={() => onAnswer({})}>
             {t('askAi.request.continue')}
           </Button>
         )}

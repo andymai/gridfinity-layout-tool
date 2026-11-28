@@ -125,12 +125,23 @@ export interface SessionHost {
   readonly newId: () => string;
 }
 
+/**
+ * The reader's answer to a request. Reads and changes each take their own
+ * yes, so Apply on a change never shares the reader's data with the model.
+ * A kind without a yes goes back declined.
+ */
+export interface RequestAnswer {
+  /** Allow: send the reads that the panel showed. */
+  readonly reads?: boolean;
+  /** Apply: apply the changes, and send what the host's `apply` returns. */
+  readonly changes?: boolean;
+}
+
 export interface Session {
   /** Shows the chat that this tab kept, when the panel shows none yet. */
   restore(): void;
   ask(question: string, page: string): Promise<void>;
-  /** Allow sends what the panel showed; Don't allow sends only that the reader declined. */
-  answerRequest(target: Exchange, allow: boolean): Promise<void>;
+  answerRequest(target: Exchange, answer: RequestAnswer): Promise<void>;
   stop(): void;
   retry(page: string): Promise<void>;
   newChat(): void;
@@ -249,7 +260,7 @@ export function createSession(host: SessionHost): Session {
     changed();
     if (prepared.length > 0 && prepared.every((call) => call.settled !== undefined)) {
       if (controller) settledRequest = current;
-      else void answerRequest(current, true);
+      else void answerRequest(current, {});
     }
   }
 
@@ -356,7 +367,7 @@ export function createSession(host: SessionHost): Session {
     changed();
     const next = settledRequest;
     settledRequest = null;
-    if (next !== null) void answerRequest(next, true);
+    if (next !== null) void answerRequest(next, {});
   }
 
   async function ask(question: string, page: string): Promise<void> {
@@ -399,14 +410,14 @@ export function createSession(host: SessionHost): Session {
     }
   }
 
-  async function answerRequest(target: Exchange, allow: boolean): Promise<void> {
+  async function answerRequest(target: Exchange, answer: RequestAnswer): Promise<void> {
     const request = target.request;
     if (request === null || request.state !== 'asking' || controller) return;
     request.state = 'sending';
     const abort = new AbortController();
     controller = abort;
     changed();
-    const results = await Promise.all(request.calls.map((call) => resultOf(call, allow)));
+    const results = await Promise.all(request.calls.map((call) => resultOf(call, answer)));
     const declined = new Set(
       results.filter((result) => result.status === 'declined').map((result) => result.callId)
     );
@@ -451,12 +462,15 @@ export function createSession(host: SessionHost): Session {
   }
 
   // A call that this browser could not run goes as unavailable either way.
-  async function resultOf(call: PreparedCall, allow: boolean): Promise<CallResult> {
+  async function resultOf(call: PreparedCall, answer: RequestAnswer): Promise<CallResult> {
     if (call.settled !== undefined)
       return { callId: call.id, status: 'shared', data: call.settled };
     if (call.unavailable) return { callId: call.id, status: 'unavailable' };
-    if (!allow) return { callId: call.id, status: 'declined' };
-    if (call.kind !== 'change') return { callId: call.id, status: 'shared', data: call.data };
+    const change = call.kind === 'change';
+    if ((change ? answer.changes : answer.reads) !== true) {
+      return { callId: call.id, status: 'declined' };
+    }
+    if (!change) return { callId: call.id, status: 'shared', data: call.data };
     if (host.apply === undefined) return { callId: call.id, status: 'unavailable' };
     try {
       return { callId: call.id, status: 'shared', data: await host.apply(call) };

@@ -127,7 +127,7 @@ describe('createSession', () => {
     fetchMock.mockImplementationOnce((_url, init) =>
       Promise.resolve(answer((JSON.parse(init?.body as string) as { results: unknown }).results))
     );
-    if (current) await session.answerRequest(current, true);
+    if (current) await session.answerRequest(current, { reads: true });
     expect(bodyOf(1)).toMatchObject({
       op: 'resume',
       pending: { n: 1 },
@@ -149,7 +149,7 @@ describe('createSession', () => {
     await asking();
     fetchMock.mockResolvedValueOnce(answer([{ callId: 'toolu_r', status: 'declined' }]));
     const current = state.exchanges[0];
-    if (current) await session.answerRequest(current, false);
+    if (current) await session.answerRequest(current, { reads: false });
     expect(bodyOf(1).results).toEqual([{ callId: 'toolu_r', status: 'declined' }]);
     expect(state.exchanges[0]?.personal).toBe(false);
     expect(state.exchanges[0]?.steps[0]).toMatchObject({ state: 'done', label: 'Not shared' });
@@ -181,7 +181,7 @@ describe('createSession', () => {
     await asking();
     fetchMock.mockResolvedValueOnce(new Response('{"code":"EXPIRED"}', { status: 410 }));
     const current = state.exchanges[0];
-    if (current) await session.answerRequest(current, true);
+    if (current) await session.answerRequest(current, { reads: true });
     expect(state.exchanges[0]).toMatchObject({ status: 'error', request: null, notice: 'expired' });
 
     fetchMock.mockResolvedValueOnce(new Response('{"code":"RESTING"}', { status: 429 }));
@@ -284,6 +284,63 @@ describe('the app door', () => {
     },
   ];
 
+  it('takes a separate yes for the reads of a request that also proposes changes', async () => {
+    const read = { type: 'tool_use', id: 'toolu_r', name: 'read_my_layout', input: {} };
+    const apply = vi.fn(() => Promise.resolve({ outcome: 'applied', added: {} }));
+    prepareCalls = () =>
+      Promise.resolve([
+        {
+          id: 'toolu_r',
+          title: 'Your layout',
+          preview: 'Layout',
+          data: { layout: 'private' },
+          unavailable: false,
+        },
+        ...preview(),
+      ]);
+    session = start({ door: 'app', apply });
+    const mixed = (): Response =>
+      sse([
+        ['message', { content: [read, change] }],
+        [
+          'pending',
+          {
+            calls: [
+              { id: 'toolu_r', name: 'read_my_layout', input: {} },
+              { id: 'toolu_c', name: 'propose_changes', input: {} },
+            ],
+            pending: {},
+          },
+        ],
+      ]);
+
+    // Apply alone applies the change and shares nothing.
+    fetchMock.mockResolvedValueOnce(mixed());
+    await session.ask('Add a bin', 'app/layout');
+    await asking();
+    fetchMock.mockResolvedValueOnce(answer());
+    const first = state.exchanges[0];
+    if (first) await session.answerRequest(first, { changes: true });
+    expect(apply).toHaveBeenCalledOnce();
+    expect(bodyOf(1).results).toEqual([
+      { callId: 'toolu_r', status: 'declined' },
+      { callId: 'toolu_c', status: 'shared', data: { outcome: 'applied', added: {} } },
+    ]);
+
+    // Allow shares the read only when the reader says so for the reads.
+    fetchMock.mockResolvedValueOnce(mixed());
+    await session.ask('Add another', 'app/layout');
+    await asking();
+    fetchMock.mockResolvedValueOnce(answer());
+    const second = state.exchanges[1];
+    if (second) await session.answerRequest(second, { reads: true, changes: false });
+    expect(bodyOf(3).results).toEqual([
+      { callId: 'toolu_r', status: 'shared', data: { layout: 'private' } },
+      { callId: 'toolu_c', status: 'declined' },
+    ]);
+    expect(apply).toHaveBeenCalledOnce();
+  });
+
   it('names its door, keeps the step key, and sends what Apply returns', async () => {
     const apply = vi.fn((call: PreparedCall) =>
       Promise.resolve({ outcome: 'applied', added: {}, from: call.data })
@@ -297,7 +354,7 @@ describe('the app door', () => {
     expect(state.exchanges[0]?.steps[0]).toMatchObject({ kind: 'change', key: 'k' });
     fetchMock.mockResolvedValueOnce(answer());
     const current = state.exchanges[0];
-    if (current) await session.answerRequest(current, true);
+    if (current) await session.answerRequest(current, { changes: true });
     expect(apply).toHaveBeenCalledOnce();
     expect(bodyOf(1)).toMatchObject({
       op: 'resume',
@@ -317,7 +374,7 @@ describe('the app door', () => {
     await asking();
     fetchMock.mockResolvedValueOnce(answer());
     const current = state.exchanges[0];
-    if (current) await session.answerRequest(current, false);
+    if (current) await session.answerRequest(current, { changes: false });
     expect(apply).not.toHaveBeenCalled();
     expect(bodyOf(1).results).toEqual([{ callId: 'toolu_c', status: 'declined' }]);
     expect(state.exchanges[0]?.steps[0]).toMatchObject({ state: 'done', label: 'Not applied' });

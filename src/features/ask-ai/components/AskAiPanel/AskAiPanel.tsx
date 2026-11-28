@@ -200,9 +200,9 @@ export function AskAiPanel({ variant, onClose, findControl, onLeave }: AskAiPane
             plans={plans}
             showMe={showMe}
             onShowMe={showControl}
-            onAnswer={(allow) => {
+            onAnswer={(answer) => {
               const live = liveExchange(exchange.id);
-              if (live) void chatSession().answerRequest(live, allow);
+              if (live) void chatSession().answerRequest(live, answer);
             }}
             onRetry={() => void chatSession().retry(page)}
             onFeedback={(value) => {

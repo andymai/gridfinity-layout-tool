@@ -179,7 +179,7 @@ export function useAskAiHost(): void {
 export const busy = (): boolean => chat.busy();
 export const ask = (question: string, page: string): Promise<void> => chat.ask(question, page);
 export const answerRequest = (target: Exchange, allow: boolean): Promise<void> =>
-  chat.answerRequest(target, allow);
+  chat.answerRequest(target, { reads: allow });
 export const stop = (): void => chat.stop();
 export const retry = (page: string): Promise<void> => chat.retry(page);
 export const newChat = (): void => chat.newChat();

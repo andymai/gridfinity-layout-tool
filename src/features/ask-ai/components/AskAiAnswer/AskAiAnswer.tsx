@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { answerSegments, plainAnswer } from '@/agent/client/render';
 import type { ShowMe } from '@/agent/client/render';
 import { isLive } from '@/agent/client/session';
-import type { Exchange } from '@/agent/client/session';
+import type { Exchange, RequestAnswer } from '@/agent/client/session';
 import type { PlanView } from '@/agent/contract';
 import { Button, IconButton, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -17,7 +17,7 @@ export interface AskAiAnswerProps {
   readonly plans: Readonly<Record<string, PlanView>>;
   readonly showMe?: ShowMe;
   readonly onShowMe: (label: string) => void;
-  readonly onAnswer: (allow: boolean) => void;
+  readonly onAnswer: (answer: RequestAnswer) => void;
   readonly onRetry: () => void;
   readonly onFeedback: (value: 1 | -1) => void;
   readonly onOpenPlan: (plan: PlanView) => void;
