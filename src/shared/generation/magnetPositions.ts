@@ -10,11 +10,19 @@ import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import {
   FOOT_UNDERSIDE_INSET_MM,
+  GRIDFINITY_SPEC,
+  MAGNET_HOLE_OFFSET_MM as HOLE_OFFSET,
   footHoleOffsetMm,
 } from '@/shared/printSettings/gridfinityGeometry';
 import { MAGNET_CHAMFER_MM } from './magnetHoleStyle';
-import { SIZE, HOLE_OFFSET, CLEARANCE, SOCKET_TAPER_WIDTH } from './generatorConstants';
 import type { CellInfo } from './cellDecomposition';
+
+// Read from the spec, not from `generatorConstants`, which loads the shared
+// bin constants: `detachableFeetPlan` loads this module while those are
+// still initialising.
+const SIZE = GRIDFINITY_SPEC.GRID_SIZE;
+const CLEARANCE = GRIDFINITY_SPEC.TOLERANCE;
+const SOCKET_TAPER_WIDTH = GRIDFINITY_SPEC.SOCKET_SMALL_TAPER + GRIDFINITY_SPEC.SOCKET_BIG_TAPER;
 
 /**
  * Center-to-wall inset (mm) of a standard magnet in a 42mm cell (`SIZE/2 −
@@ -263,8 +271,9 @@ export function keepFootHolesOffFlank(
  * is what a baseplate's half pocket and a lid's half cell mate with.
  *
  * A borrowed hole must keep the wall {@link cellHostsAttachmentHoles} demands
- * of a centred one, between its mouth (widened when `chamfer`) and the edge of
- * the foot's flat underside. If one does not, the cell keeps its own placement.
+ * of a centred one, between its mouth ({@link footHoleMouthRadius}) and the
+ * edge of the foot's flat underside. If one does not, the cell keeps its own
+ * placement.
  */
 export function cornerHoleCandidates(
   cell: CellInfo,
@@ -274,7 +283,7 @@ export function cornerHoleCandidates(
   anchor: MagnetAnchor | undefined,
   binWidthUnits: number,
   binDepthUnits: number,
-  chamfer: boolean
+  mouthRadius: number
 ): Array<[number, number]> {
   const own = magnetPositionsForCell(cell, holeRadius, pitchX, pitchY, anchor);
   const x = fullCellAtEdge(cell.centerX, cell.widthUnits, binWidthUnits, pitchX);
@@ -291,7 +300,7 @@ export function cornerHoleCandidates(
   const borrowed = magnetPositionsForCell(full, holeRadius, pitchX, pitchY, anchor).filter(
     ([px, py]) => Math.abs(px - cell.centerX) <= halfW && Math.abs(py - cell.centerY) <= halfD
   );
-  const reach = holeRadius + (chamfer ? MAGNET_CHAMFER_MM : 0) + MAGNET_EDGE_CLEARANCE;
+  const reach = mouthRadius + MAGNET_EDGE_CLEARANCE;
   const spanX = footUndersideHalfSpan(cell.widthUnits, pitchX) - reach + EDGE_EPS;
   const spanY = footUndersideHalfSpan(cell.depthUnits, pitchY) - reach + EDGE_EPS;
   const fits = borrowed.every(
@@ -333,6 +342,7 @@ export function socketFootHoles(
     spec.magnetRadius > 0 &&
     spec.chamfer &&
     chamferFitsCell(cell, holeRadius, pitchX, pitchY, anchor, own);
+  const mouth = footHoleMouthRadius(spec.magnetRadius, spec.screwRadius, chamfer);
   const drilled = cornersOf
     ? cornerHoleCandidates(
         cell,
@@ -342,10 +352,9 @@ export function socketFootHoles(
         anchor,
         cornersOf.width,
         cornersOf.depth,
-        chamfer
+        mouth
       )
     : own;
-  const mouth = footHoleMouthRadius(spec.magnetRadius, spec.screwRadius, chamfer);
   return { positions: keepFootHolesOffFlank(drilled, cell, mouth, pitchX, pitchY), chamfer };
 }
 

@@ -202,6 +202,7 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
   const holesOf = (cell: CellInfo, cornersOf?: SocketFootHoleSpec['cornersOf']) => {
     if (!cellHostsAttachmentHoles(cell, radius, pitch.x, pitch.y)) return [];
     if (!dim.lightweight) return socketFootHoles(cell, { ...spec, cornersOf }).positions;
+    const mouth = footHoleMouthRadius(spec.magnetRadius, spec.screwRadius, padChamfer);
     const own = cornersOf
       ? cornerHoleCandidates(
           cell,
@@ -211,10 +212,9 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
           anchor,
           cornersOf.width,
           cornersOf.depth,
-          padChamfer
+          mouth
         )
       : magnetPositionsForCell(cell, radius, pitch.x, pitch.y, anchor);
-    const mouth = footHoleMouthRadius(spec.magnetRadius, spec.screwRadius, padChamfer);
     return keepFootHolesOffFlank(own, cell, mouth, pitch.x, pitch.y);
   };
   const edge = { x: params.fractionalEdgeX, y: params.fractionalEdgeY };

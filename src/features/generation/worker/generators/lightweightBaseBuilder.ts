@@ -400,25 +400,16 @@ export function buildLightweightBase(
         (cell) => {
           if (!cellHostsAttachmentHoles(cell, holeRadius, unitX, unitY)) return;
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-          // Fit-or-center magnet positions so a non-square/small foot's pads and
-          // drills stay inside the foot instead of breaching its side.
-          const positions = cornersOnly
-            ? cornerHoleCandidates(
-                cell,
-                holeRadius,
-                unitX,
-                unitY,
-                anchor,
-                gridW,
-                gridD,
-                withMagnet && chamfer
-              )
-            : magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
           const mouth = footHoleMouthRadius(
             withMagnet ? magnetRadius : 0,
             withScrew ? screwRadius : 0,
             withMagnet && chamfer
           );
+          // Fit-or-center magnet positions so a non-square/small foot's pads and
+          // drills stay inside the foot instead of breaching its side.
+          const positions = cornersOnly
+            ? cornerHoleCandidates(cell, holeRadius, unitX, unitY, anchor, gridW, gridD, mouth)
+            : magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor);
           cellPositions.push(keepFootHolesOffFlank(positions, cell, mouth, unitX, unitY));
         },
         fractionalEdge
