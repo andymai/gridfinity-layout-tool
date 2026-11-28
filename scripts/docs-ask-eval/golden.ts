@@ -997,7 +997,7 @@ export const GOLDEN: readonly GoldenCase[] = [
     sources: ['/layouts/drawer-setup', '/concepts/units'],
     openDrawer: null,
     expect:
-      'No grid fits: one grid unit is 42 mm, and drawer_fit says that the app plans drawers from 42 mm on each side. It shows no plan and writes no link to the app.',
+      'No whole grid unit fits: one grid unit is 42 mm, and drawer_fit takes drawers from 42 mm on each side. Half-grid mode makes room for a 0.5 x 0.5 bin (21 mm). It shows no plan and writes no link to the app.',
   },
   {
     id: 'D07',
