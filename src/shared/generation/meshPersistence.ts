@@ -95,6 +95,9 @@ const MESH_CACHE_VERSION = 'v31';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin33`: on a grid smaller than 42mm, detachable feet drill the corners an
+ * integral foot drills in the same cell, and none when the cell centres its
+ * hole.
  * `bin34`: with corner-only holes, a half foot judges a moved corner hole by
  * the widest mouth it opens, so a screw wider than the chamfered magnet no
  * longer counts the chamfer twice.

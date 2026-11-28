@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { PlanView } from '@/agent/contract';
-import { FONT, planCaption, planDescription, planMapView, planOpenLabel } from '../askAi/planMap';
+import {
+  FONT,
+  planCaption,
+  planDescription,
+  planMapView,
+  planOpenLabel,
+} from '@/agent/client/planMap';
 
 const props = defineProps<{ plan: PlanView }>();
 

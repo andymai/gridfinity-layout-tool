@@ -184,27 +184,26 @@ function hasRoomForPins(engagementMm: number): boolean {
 }
 
 /**
- * The standard corner positions a given foot's footprint actually contains.
+ * The corner positions a given foot's footprint actually contains.
  *
- * One under an `L`, two under a `bar`. Shared by the magnet pocket and the
- * screw bore so the two can never disagree about which corners a foot owns.
+ * One under an `L`, two under an edge `bar`, none under a centred one. Shared
+ * by the magnet pocket and the screw bore so the two can never disagree about
+ * which corners a foot owns.
  */
 function coveredCorners(
   positions: ReadonlyArray<readonly [number, number]>,
   p: FootPlacement,
-  centre: { x: number; y: number },
-  armMm: number
+  centre: { x: number; y: number }
 ): Array<readonly [number, number]> {
-  // Bounds mirror `buildClip`'s footprint per axis, not the cell's: a CENTRED
-  // interior filler is only `armMm` wide across its spanned axis, so testing
-  // against the CELL would claim all four corners and drill attachment bores
-  // through the floor where no foot stands beneath them. The narrow bound
-  // applies to the centred fall-through cases ONLY, in `buildClip`'s own
-  // order — an edge bar that happens to sit on an interior station of the
-  // other axis still spans its full cell there and keeps its corners.
-  const centred = p.dirX === 0 && p.dirY === 0;
-  const halfX = centred && p.interiorX ? armMm / 2 : p.cellW / 2;
-  const halfY = centred && !p.interiorX && p.interiorY ? armMm / 2 : p.cellD / 2;
+  // A CENTRED interior filler holds no corner. It is only `armMm` wide across
+  // its spanned axis, and the arm is sized to reach a corner from the cell's
+  // EDGE, not from its centre: on a small grid a corner's bore would open
+  // through the filler's faces. An edge bar that happens to sit on an
+  // interior station of the other axis still spans its full cell there and
+  // keeps its corners.
+  if (p.dirX === 0 && p.dirY === 0) return [];
+  const halfX = p.cellW / 2;
+  const halfY = p.cellD / 2;
   return positions.filter(([mx, my]) => {
     const inX = p.dirX === 0 || Math.sign(mx - centre.x) === p.dirX;
     const inY = p.dirY === 0 || Math.sign(my - centre.y) === p.dirY;
@@ -372,7 +371,7 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       // construction — four on a rectangular bin against four per cell today.
       const magnet = opts.magnet;
       if (magnet) {
-        const covered = coveredCorners(magnet.positions, p, centre, armMm);
+        const covered = coveredCorners(magnet.positions, p, centre);
         // Open at the underside, exactly as an integral foot drills it: the
         // magnet is inserted from below, so a retaining floor under it would
         // seal it out rather than in.
@@ -402,7 +401,7 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       // pocket, exactly as an integral foot does.
       const screw = opts.screw;
       if (screw) {
-        const bores = coveredCorners(screw.positions, p, centre, armMm).map(([mx, my]) =>
+        const bores = coveredCorners(screw.positions, p, centre).map(([mx, my]) =>
           scope.register(
             translate(
               scope.register(
@@ -454,7 +453,7 @@ function buildFloorHoles(
   const holes: Shape3D[] = [];
   for (const p of placements) {
     if (screw) {
-      for (const [mx, my] of coveredCorners(screw.positions, p, footCellCentre(p), armMm)) {
+      for (const [mx, my] of coveredCorners(screw.positions, p, footCellCentre(p))) {
         holes.push(
           translate(
             scope.register(cylinder(screw.diameterMm / 2, floorThicknessMm + 2 * COPLANAR_MARGIN)),

@@ -43,13 +43,15 @@ import {
 import { isFractional } from '@/core/constants';
 import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
-import { MAGNET_CHAMFER_MM, magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
+import { magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
 import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
 import {
-  GRIDFINITY_SPEC,
-  footHoleOffsetMm,
-  magnetInsetFromCellEdgeMm,
-} from '@/shared/printSettings/gridfinityGeometry';
+  footHoleMouthRadius,
+  keepFootHolesOffFlank,
+  magnetPositionsForCell,
+} from '@/shared/generation/magnetPositions';
+import type { CellInfo } from '@/shared/generation/cellDecomposition';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 /**
  * Solid margin around anything embedded in a foot (mm) — a magnet pocket or a
@@ -57,6 +59,9 @@ import {
  * magnet pad, so a detachable foot is no thinner-walled than an integral one.
  */
 const FOOT_EMBED_MARGIN_MM = 1.2;
+
+/** One whole cell at the origin, the cell every foot is a section of. */
+const FOOT_CELL: CellInfo = { centerX: 0, centerY: 0, widthUnits: 1, depthUnits: 1 };
 
 /**
  * `L` hugs a cell corner; `bar` spans one axis of a cell at one edge.
@@ -167,10 +172,10 @@ const SOCKET_TAPER_WIDTH_MM = GRIDFINITY_SPEC.SOCKET_SMALL_TAPER + GRIDFINITY_SP
  * (8 + 3.25 + 1.2 = 12.45mm, against that 7.2mm floor).
  *
  * `magnetInsetFromEdgeMm` is supplied rather than computed because the magnet
- * placement rule is not this module's to restate: the inset is only the
- * familiar 8mm at 42mm pitch, and a cell smaller than that pulls the magnet
- * toward its own edge instead. Callers pass what the placement actually
- * resolved to.
+ * placement rule is not this module's to restate: the inset is the familiar
+ * 8mm only until a hole too wide for its corner moves in off the flank, or a
+ * `center` anchor on a large grid holds it 13mm from the cell's centre.
+ * Callers pass what the placement actually resolved to.
  */
 export function footArmMm(opts: {
   readonly pinDiameterMm: number;
@@ -467,13 +472,14 @@ export interface ResolvedDetachableFeet {
      */
     readonly style: MagnetHoleStyle;
     /**
-     * Every STANDARD corner position the feet could cover, in bin-centred mm.
-     * The builder keeps the ones a given foot's footprint actually contains.
+     * Every corner position the feet could cover, in bin-centred mm. The
+     * builder keeps the ones a given foot's footprint actually contains.
      *
-     * These are the spec positions, not somewhere convenient inside the foot:
-     * the whole point of a magnet in the foot is that it lands on the magnet in
-     * the baseplate pocket beneath it, so an offset derived from the foot's own
-     * dimensions would mate with nothing.
+     * These are the corners an integral foot drills in the same cell, not
+     * somewhere convenient inside the foot: the whole point of a magnet in the
+     * foot is that it lands on the magnet in the baseplate pocket beneath it,
+     * so an offset derived from the foot's own dimensions would mate with
+     * nothing. Empty when the cell is too small for corners.
      */
     readonly positions: ReadonlyArray<readonly [number, number]>;
   };
@@ -528,48 +534,81 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
 
   const anchor = params.magnetAnchor ?? 'edge';
   const chamfer = params.base.magnetChamfer === true && magnetChamferFits(FOOT_EMBED_MARGIN_MM);
-  const mouthRadius = Math.max(
-    carriesMagnet ? params.base.magnetDiameter / 2 + (chamfer ? MAGNET_CHAMFER_MM : 0) : 0,
-    carriesScrew ? params.base.screwDiameter / 2 : 0
-  );
-  // A foot is a section of the full socket profile, so a hole too wide for the
-  // spec corner moves in off its flank exactly as an integral foot's does.
-  const insetX = magnetInsetFromCellEdgeMm(pitchX, anchor);
-  const insetY = magnetInsetFromCellEdgeMm(pitchY, anchor);
-  const specOffX = pitchX / 2 - insetX;
-  const specOffY = pitchY / 2 - insetY;
-  const cornerOffX = footHoleOffsetMm(specOffX, pitchX, mouthRadius);
-  const cornerOffY = footHoleOffsetMm(specOffY, pitchY, mouthRadius);
-
-  // The arm is sized against the SHORTER pitch: a foot deep enough for the
-  // magnet on one axis is not automatically deep enough on the other, and a
-  // single arm value serves both. Screws share the magnets' spec corners, so
-  // one inset serves both attachments. A hole pulled in off the flank sits
-  // further from the edge, and the arm grows with it.
-  const cornerInsetFromEdgeMm =
+  const magnetRadius = carriesMagnet ? params.base.magnetDiameter / 2 : 0;
+  const screwRadius = carriesScrew ? params.base.screwDiameter / 2 : 0;
+  // A foot is a section of the full socket profile, so it takes the holes an
+  // integral foot drills in the same cell: the corners that fit the cell, each
+  // kept off the flank. A cell too small for corners centres its hole, where
+  // no foot stands, so its feet carry none.
+  const pattern =
     carriesMagnet || carriesScrew
-      ? Math.min(insetX, insetY) + Math.max(specOffX - cornerOffX, specOffY - cornerOffY)
-      : undefined;
+      ? magnetPositionsForCell(
+          FOOT_CELL,
+          Math.max(magnetRadius, screwRadius),
+          pitchX,
+          pitchY,
+          anchor
+        )
+      : [];
+  const spec = pattern.length === 4 && pattern[2][0] > 0 && pattern[2][1] > 0 ? pattern[2] : null;
+  const corner = spec
+    ? keepFootHolesOffFlank(
+        [spec],
+        FOOT_CELL,
+        footHoleMouthRadius(magnetRadius, screwRadius, chamfer),
+        pitchX,
+        pitchY
+      )[0]
+    : null;
 
-  const armMm = footArmMm({
-    pinDiameterMm,
-    magnetDiameterMm: carriesMagnet ? params.base.magnetDiameter : undefined,
-    magnetInsetFromEdgeMm: carriesMagnet ? cornerInsetFromEdgeMm : undefined,
-    screwDiameterMm: carriesScrew ? params.base.screwDiameter : undefined,
-    screwInsetFromEdgeMm: carriesScrew ? cornerInsetFromEdgeMm : undefined,
-  });
+  // Screws share the magnets' corners, so one inset serves both attachments.
+  // A hole pulled in off the flank sits further from the edge, and the arm
+  // grows with it.
+  const armFor = (insetMm: number | undefined): number =>
+    footArmMm({
+      pinDiameterMm,
+      magnetDiameterMm: carriesMagnet ? params.base.magnetDiameter : undefined,
+      magnetInsetFromEdgeMm: carriesMagnet ? insetMm : undefined,
+      screwDiameterMm: carriesScrew ? params.base.screwDiameter : undefined,
+      screwInsetFromEdgeMm: carriesScrew ? insetMm : undefined,
+    });
+  const placementsFor = (armMm: number): FootPlacement[] =>
+    detachableFeetPlacements({
+      widthUnits: params.width,
+      depthUnits: params.depth,
+      pitchX,
+      pitchY,
+      fractionalEdgeX: params.fractionalEdgeX,
+      fractionalEdgeY: params.fractionalEdgeY,
+      latticeX: params.base.footLatticeX ?? 'grid',
+      latticeY: params.base.footLatticeY ?? 'grid',
+      armMm,
+    });
 
-  const placed = detachableFeetPlacements({
-    widthUnits: params.width,
-    depthUnits: params.depth,
-    pitchX,
-    pitchY,
-    fractionalEdgeX: params.fractionalEdgeX,
-    fractionalEdgeY: params.fractionalEdgeY,
-    latticeX: params.base.footLatticeX ?? 'grid',
-    latticeY: params.base.footLatticeY ?? 'grid',
-    armMm,
-  });
+  // One arm value serves both axes, and a centre anchor on a non-square grid
+  // sets the holes deeper along one of them. An L holds its hole in either
+  // arm, so the arm reaches the shallower inset. A bar holds it only along the
+  // axis it is clipped on, so when every foot is a bar along one axis, the arm
+  // reaches that axis's inset instead.
+  const insetX = corner ? pitchX / 2 - corner[0] : undefined;
+  const insetY = corner ? pitchY / 2 - corner[1] : undefined;
+  const shallower =
+    insetX !== undefined && insetY !== undefined ? Math.min(insetX, insetY) : undefined;
+  let armMm = armFor(shallower);
+  let placed = placementsFor(armMm);
+  const edgeFeet = placed.filter((p) => p.dirX !== 0 || p.dirY !== 0);
+  const barInset =
+    edgeFeet.length === 0
+      ? shallower
+      : edgeFeet.every((p) => p.dirX === 0)
+        ? insetY
+        : edgeFeet.every((p) => p.dirY === 0)
+          ? insetX
+          : shallower;
+  if (barInset !== shallower) {
+    armMm = armFor(barInset);
+    placed = placementsFor(armMm);
+  }
 
   // A custom shape removes cells, and a foot on one of them hangs under nothing:
   // its pin holes cut empty space, so it ships as a part that cannot attach
@@ -579,7 +618,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
     ? placed.filter((foot) => cellIsFilled(foot, params.cellMask, pitchX, pitchY, params))
     : placed;
 
-  const corners = standardMagnetCorners(placements, cornerOffX, cornerOffY);
+  const corners = corner ? standardMagnetCorners(placements, corner[0], corner[1]) : [];
   const holePositions =
     params.base.cornerHolesOnly === true ? corners.filter(outerCornerHoleFilter(corners)) : corners;
 
@@ -610,7 +649,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
 /**
  * The four magnet positions of every cell a foot sits in, deduplicated.
  *
- * Offsets come from the same inset the magnet placement resolves to, so a foot
+ * Offsets come from the corners the magnet placement resolves to, so a foot
  * carrying one lines up with the pocket magnet under it. A candidate list, not
  * a final one: the builder drops the corners a given foot does not cover.
  */

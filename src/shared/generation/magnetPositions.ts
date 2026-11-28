@@ -10,11 +10,19 @@ import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import {
   FOOT_UNDERSIDE_INSET_MM,
+  GRIDFINITY_SPEC,
+  MAGNET_HOLE_OFFSET_MM as HOLE_OFFSET,
   footHoleOffsetMm,
 } from '@/shared/printSettings/gridfinityGeometry';
 import { MAGNET_CHAMFER_MM } from './magnetHoleStyle';
-import { SIZE, HOLE_OFFSET, CLEARANCE, SOCKET_TAPER_WIDTH } from './generatorConstants';
 import type { CellInfo } from './cellDecomposition';
+
+// Read from the spec, not from `generatorConstants`, which loads the shared
+// bin constants: `detachableFeetPlan` loads this module while those are
+// still initialising.
+const SIZE = GRIDFINITY_SPEC.GRID_SIZE;
+const CLEARANCE = GRIDFINITY_SPEC.TOLERANCE;
+const SOCKET_TAPER_WIDTH = GRIDFINITY_SPEC.SOCKET_SMALL_TAPER + GRIDFINITY_SPEC.SOCKET_BIG_TAPER;
 
 /**
  * Center-to-wall inset (mm) of a standard magnet in a 42mm cell (`SIZE/2 −

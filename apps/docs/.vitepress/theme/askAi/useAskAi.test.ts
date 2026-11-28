@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { answerRequest, ask, askAi, newChat } from './useAskAi';
+import { answerRequest, ask, askAi, newChat, noticeText } from './useAskAi';
 
 vi.mock('./reads', () => ({
   prepareRead: (call: { id: string }) =>
@@ -121,6 +121,6 @@ describe('reads of the reader data', () => {
     const current = askAi.exchanges[0];
     if (current) await answerRequest(current, true);
     expect(askAi.exchanges[0]).toMatchObject({ status: 'error', request: null });
-    expect(askAi.exchanges[0]?.notice).toContain('waited too long');
+    expect(noticeText(askAi.exchanges[0]?.notice ?? null)).toContain('waited too long');
   });
 });

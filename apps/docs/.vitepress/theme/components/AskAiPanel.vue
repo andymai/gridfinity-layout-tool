@@ -8,6 +8,7 @@ import {
   closeAskAi,
   isLive,
   newChat,
+  noticeText,
   retry,
   sendFeedback,
   stop,
@@ -44,7 +45,7 @@ const announcement = computed(() => {
   const last = askAi.exchanges.at(-1);
   if (!last) return '';
   if (isLive(last)) return 'Ask AI is answering.';
-  return last.notice ?? ANNOUNCEMENTS[last.status] ?? '';
+  return noticeText(last.notice) ?? ANNOUNCEMENTS[last.status] ?? '';
 });
 
 // The composer gives way to the full-chat prompt and back. Focus that was in
