@@ -1,0 +1,75 @@
+/* The player's controls sit on every card colour, so they take the card's ink. */
+.y26-controls button {
+  color: inherit;
+}
+
+.y26-controls button:hover,
+.y26-controls button:active {
+  background-color: rgb(0 0 0 / 0.12);
+}
+
+.y26-controls button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Toy keys: the face sinks into a wall that stays put. */
+.y26-key {
+  position: absolute;
+}
+
+.y26-key .y26-key-wall {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  width: 100%;
+  height: 128px;
+  border-radius: 30px;
+  background: var(--key-wall);
+}
+
+.y26-key .y26-key-face {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 128px;
+  padding: 0 40px;
+  border: 0;
+  border-radius: 30px;
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1;
+  background: var(--key-face);
+  color: var(--key-ink);
+  box-shadow: inset 0 7px 0 var(--key-lip);
+  transition:
+    transform 140ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 160ms ease;
+}
+
+.y26-key .y26-key-face:active {
+  transform: translateY(8px);
+}
+
+.y26-key .y26-key-face:focus-visible {
+  outline: 6px solid #ffffff;
+  outline-offset: 8px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .y26-key .y26-key-face:hover {
+    background: var(--key-hover);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .y26-key .y26-key-face {
+    transition: background-color 160ms ease;
+  }
+
+  .y26-key .y26-key-face:active {
+    transform: none;
+    filter: brightness(0.94);
+  }
+}

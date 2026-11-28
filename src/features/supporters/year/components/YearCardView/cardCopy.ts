@@ -159,24 +159,51 @@ export function cardCopy(kind: YearCardKind, ctx: CopyContext): CardCopy | null 
   }
 }
 
+export interface SummaryEntry {
+  readonly kind: 'drawers' | 'bins' | 'designs' | 'printerTime' | 'type';
+  readonly label: string;
+  readonly value: string;
+}
+
+/** The summary card's rows, with the card each one sums up. */
+export function summaryEntries(ctx: Omit<CopyContext, 'shown'>): SummaryEntry[] {
+  const { t, locale, stats } = ctx;
+  const rows: SummaryEntry[] = [];
+  if (stats.drawers > 0) {
+    rows.push({
+      kind: 'drawers',
+      label: t('your2026.summary.drawers'),
+      value: formatCount(locale, stats.drawers),
+    });
+  }
+  if (stats.binsPlaced > 0) {
+    rows.push({
+      kind: 'bins',
+      label: t('your2026.summary.bins'),
+      value: formatCount(locale, stats.binsPlaced),
+    });
+  }
+  if (stats.designs > 0) {
+    rows.push({
+      kind: 'designs',
+      label: t('your2026.summary.designs'),
+      value: formatCount(locale, stats.designs),
+    });
+  }
+  if (stats.filament) {
+    rows.push({
+      kind: 'printerTime',
+      label: t('your2026.summary.printerTime'),
+      value: formatDuration(locale, stats.filament.printMinutes),
+    });
+  }
+  rows.push({ kind: 'type', label: t('your2026.summary.type'), value: typeName(t, stats.type.id) });
+  return rows;
+}
+
 /** The summary card's rows, label first. */
 export function summaryRows(ctx: Omit<CopyContext, 'shown'>): [string, string][] {
-  const { t, locale, stats } = ctx;
-  const rows: [string, string][] = [];
-  if (stats.drawers > 0)
-    rows.push([t('your2026.summary.drawers'), formatCount(locale, stats.drawers)]);
-  if (stats.binsPlaced > 0)
-    rows.push([t('your2026.summary.bins'), formatCount(locale, stats.binsPlaced)]);
-  if (stats.designs > 0)
-    rows.push([t('your2026.summary.designs'), formatCount(locale, stats.designs)]);
-  if (stats.filament) {
-    rows.push([
-      t('your2026.summary.printerTime'),
-      formatDuration(locale, stats.filament.printMinutes),
-    ]);
-  }
-  rows.push([t('your2026.summary.type'), typeName(t, stats.type.id)]);
-  return rows;
+  return summaryEntries(ctx).map((entry) => [entry.label, entry.value]);
 }
 
 export interface CopyInput {

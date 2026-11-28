@@ -33,7 +33,7 @@ export function ShareButton({ blob, fileName }: ShareButtonProps) {
       title={label}
       disabled={!blob}
       onClick={save}
-      className="text-white/80 hover:text-white"
+      className="opacity-85 hover:opacity-100"
     >
       <svg
         className="h-4 w-4"

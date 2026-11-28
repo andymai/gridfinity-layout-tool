@@ -57,6 +57,8 @@ function visit(path: string) {
 }
 
 beforeEach(() => {
+  // jsdom has no 2D canvas; the cards draw in the browser pass.
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
   supportersState.settled = true;
   vi.mocked(trackEvent).mockClear();
   review.data = { status: 'ready', stats: active };
@@ -67,6 +69,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
   window.history.replaceState(null, '', '/');
 });
 

@@ -1,37 +1,34 @@
-import { describe, expect, it } from 'vitest';
-import type { ShareSpec } from '../components/YearCardView/shareSpec';
-import { drawShareCard, type ShareTheme } from './shareCard';
+import { describe, expect, it, vi } from 'vitest';
+import { buildScene } from '../cards/buildScene';
+import { sceneInput } from '../cards/sceneFixtures.testUtils';
+import { SHARE_HEIGHT, SHARE_WIDTH, drawShareCard, type ShareTheme } from './shareCard';
 
 interface Drawn {
   readonly text: string;
-  readonly baseline: string;
   readonly font: string;
+  readonly fill: string;
 }
 
-function recordingContext(): { ctx: CanvasRenderingContext2D; drawn: Drawn[] } {
+function recordingContext(): { ctx: CanvasRenderingContext2D; drawn: Drawn[]; fills: string[] } {
   const drawn: Drawn[] = [];
-  const keys = [
-    'textBaseline',
-    'textAlign',
-    'font',
-    'fillStyle',
-    'shadowBlur',
-    'globalAlpha',
-  ] as const;
-  const stack: Record<string, unknown>[] = [];
-  const state: Record<string, unknown> = { textBaseline: 'alphabetic', font: '' };
-  const gradient = { addColorStop: () => undefined };
+  const fills: string[] = [];
+  const state: Record<string, unknown> = { font: '', fillStyle: '' };
   const noop = (): void => undefined;
   const ctx = new Proxy(state, {
     get(target, key) {
-      if (key === 'save')
-        return () => stack.push(Object.fromEntries(keys.map((k) => [k, target[k]])));
-      if (key === 'restore') return () => Object.assign(target, stack.pop());
       if (key === 'fillText')
         return (text: string) =>
-          drawn.push({ text, baseline: String(target.textBaseline), font: String(target.font) });
-      if (key === 'measureText') return (text: string) => ({ width: text.length * 40 });
-      if (key === 'createLinearGradient' || key === 'createRadialGradient') return () => gradient;
+          drawn.push({ text, font: String(target.font), fill: String(target.fillStyle) });
+      if (key === 'fillRect') return () => fills.push(String(target.fillStyle));
+      if (key === 'measureText')
+        return (text: string) => ({
+          width: text.length * 40,
+          fontBoundingBoxAscent: 80,
+          fontBoundingBoxDescent: 20,
+          actualBoundingBoxAscent: 70,
+          actualBoundingBoxDescent: 0,
+        });
+      if (key === 'getTransform') return () => ({ a: 1, d: 1 });
       if (typeof key === 'string' && key in target) return target[key];
       return noop;
     },
@@ -40,40 +37,48 @@ function recordingContext(): { ctx: CanvasRenderingContext2D; drawn: Drawn[] } {
       return true;
     },
   }) as unknown as CanvasRenderingContext2D;
-  return { ctx, drawn };
+  return { ctx, drawn, fills };
 }
 
 const theme: ShareTheme = {
-  accent: '#f59e0b',
-  accentText: '#f59e0b',
-  appFont: 'Inter',
-  pixelFont: '"Press Start 2P"',
   kicker: 'Your 2026',
-  site: 'gridfinitylayouttool.com',
+  locale: 'en',
+  keys: ['Roll the credits', 'Support on Ko-fi'],
 };
 
 describe('drawShareCard', () => {
-  it('sets the title on the alphabetic baseline after a big-number visual', () => {
-    const { ctx, drawn } = recordingContext();
-    const spec: ShareSpec = {
-      title: '148 bins placed.',
-      lines: [],
-      visual: { kind: 'big', text: '148' },
-    };
-    drawShareCard(ctx, spec, theme, {});
-    expect(drawn.find((each) => each.text === '148 bins placed.')?.baseline).toBe('alphabetic');
+  it('is the 9:16 card', () => {
+    expect(SHARE_WIDTH / SHARE_HEIGHT).toBeCloseTo(9 / 16);
   });
 
-  it('keeps a very long design name to three title lines', () => {
+  it("fills the card's colour, then sets its copy where the card does", () => {
+    const scene = buildScene(sceneInput('bins'));
+    if (!scene) throw new Error('no scene');
+    const { ctx, drawn, fills } = recordingContext();
+    drawShareCard(ctx, scene, theme, {});
+    expect(fills[0]).toBe('#2EE6A8');
+    expect(drawn.map((each) => each.text)).toEqual(
+      expect.arrayContaining(['148 bins placed.', 'gridfinitylayouttool.com', 'Your 2026'])
+    );
+    expect(drawn.find((each) => each.text === '148 bins placed.')?.fill).toBe('#053B26');
+  });
+
+  it('draws the scene at its settled frame', () => {
+    const scene = buildScene(sceneInput('drawers'));
+    if (!scene) throw new Error('no scene');
+    const draw = vi.spyOn(scene, 'draw');
+    drawShareCard(recordingContext().ctx, scene, theme, {});
+    expect(draw.mock.calls[0]?.[0].t).toBeGreaterThan(scene.still);
+    expect(draw.mock.calls[0]?.[0].reduced).toBe(false);
+  });
+
+  it("draws the thank-you card's keys with their labels", () => {
+    const scene = buildScene(sceneInput('thanks'));
+    if (!scene) throw new Error('no scene');
     const { ctx, drawn } = recordingContext();
-    const spec: ShareSpec = {
-      title: 'Most complicated: ' + 'Very long imported design name '.repeat(12),
-      lines: [],
-      visual: { kind: 'glyph' },
-    };
-    drawShareCard(ctx, spec, theme, {});
-    const title = drawn.filter((each) => each.font.startsWith('700 84px'));
-    expect(title).toHaveLength(3);
-    expect(title.at(-1)?.text.endsWith('…')).toBe(true);
+    drawShareCard(ctx, scene, theme, {});
+    expect(drawn.map((each) => each.text)).toEqual(
+      expect.arrayContaining(['Roll the credits', 'Support on Ko-fi'])
+    );
   });
 });

@@ -1,41 +1,64 @@
 import { useEffect, useState } from 'react';
-import type { ShareSpec, ShareVisual } from '../components/YearCardView/shareSpec';
+import type { Scene } from '../cards/scene';
+import { loadImage } from '../utils/loadImage';
 import { SHARE_HEIGHT, SHARE_WIDTH, drawShareCard, type ShareTheme } from '../utils/shareCard';
 
-async function loadImage(visual: ShareVisual): Promise<CanvasImageSource | undefined> {
-  let src: string | null = null;
-  if (visual.kind === 'canvas') {
-    const canvas = document.querySelector<HTMLCanvasElement>(
-      'section[aria-roledescription="slide"] canvas'
-    );
-    if (canvas) return canvas;
-    src = visual.thumbnail;
-  } else if (visual.kind === 'image') {
-    src = visual.src;
-  }
-  if (!src) return undefined;
-  const image = new Image();
-  image.src = src;
-  await image.decode();
-  return image;
+export interface ShareRequest {
+  readonly scene: Scene;
+  /** The turning bin's thumbnail, for when no 3D canvas is on screen. */
+  readonly thumbnail: string | null;
 }
 
-async function render(spec: ShareSpec, theme: ShareTheme): Promise<Blob | null> {
-  // Canvas text uses whatever font is ready; load both first or the image
-  // falls back to a system font.
-  // A font or image that fails to load still leaves a card worth saving: the
-  // text falls back to a system font and the visual to the drawn bin.
-  await Promise.all([
-    document.fonts.load(`400 34px ${theme.pixelFont}`),
-    document.fonts.load(`700 84px ${theme.appFont}`),
-  ]).catch(() => undefined);
-  const image = await loadImage(spec.visual).catch(() => undefined);
+/** The 3D canvas, not the thumbnail canvas that stands in while it loads. */
+const MODEL_CANVAS = '[data-year-model] [role="img"] canvas';
+/** About a second of frames for a just-mounted canvas to draw its first one. */
+const DRAW_WAIT_FRAMES = 60;
+
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+/** Whether the canvas holds any drawn pixel yet; a fresh WebGL canvas is clear. */
+function hasDrawn(canvas: HTMLCanvasElement): boolean {
+  const probe = document.createElement('canvas');
+  probe.width = 32;
+  probe.height = 32;
+  const ctx = probe.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return true;
+  ctx.drawImage(canvas, 0, 0, probe.width, probe.height);
+  const data = ctx.getImageData(0, 0, probe.width, probe.height).data;
+  for (let i = 3; i < data.length; i += 4) if ((data[i] ?? 0) > 0) return true;
+  return false;
+}
+
+async function drawnModelCanvas(): Promise<HTMLCanvasElement | null> {
+  for (let frame = 0; frame < DRAW_WAIT_FRAMES; frame++) {
+    const canvas = document.querySelector<HTMLCanvasElement>(MODEL_CANVAS);
+    if (!canvas) return null;
+    if (hasDrawn(canvas)) return canvas;
+    await nextFrame();
+  }
+  return null;
+}
+
+/** The card's own 3D canvas once it has drawn, else the design's thumbnail. */
+async function loadModel(request: ShareRequest): Promise<CanvasImageSource | undefined> {
+  if (!request.scene.model) return undefined;
+  const canvas = await drawnModelCanvas();
+  if (canvas) return canvas;
+  if (!request.thumbnail) return undefined;
+  return loadImage(request.thumbnail);
+}
+
+async function render(request: ShareRequest, theme: ShareTheme): Promise<Blob | null> {
+  // A thumbnail that fails to load still leaves a card worth saving.
+  const model = await loadModel(request).catch(() => undefined);
   const canvas = document.createElement('canvas');
   canvas.width = SHARE_WIDTH;
   canvas.height = SHARE_HEIGHT;
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
-  drawShareCard(ctx, spec, theme, { image });
+  drawShareCard(ctx, request.scene, theme, { model });
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
 }
 
@@ -43,22 +66,22 @@ async function render(spec: ShareSpec, theme: ShareTheme): Promise<Blob | null> 
  * The share PNG for a card, rendered ahead of the click: a share sheet needs
  * a fresh user gesture, and drawing inside the click would spend it.
  */
-export function useShareImage(spec: ShareSpec | null, theme: ShareTheme): Blob | null {
-  const [result, setResult] = useState<{ spec: ShareSpec; blob: Blob } | null>(null);
+export function useShareImage(request: ShareRequest | null, theme: ShareTheme): Blob | null {
+  const [result, setResult] = useState<{ request: ShareRequest; blob: Blob } | null>(null);
 
   useEffect(() => {
-    if (!spec) return;
+    if (!request) return;
     let cancelled = false;
-    render(spec, theme).then(
+    render(request, theme).then(
       (blob) => {
-        if (blob && !cancelled) setResult({ spec, blob });
+        if (blob && !cancelled) setResult({ request, blob });
       },
       () => undefined
     );
     return () => {
       cancelled = true;
     };
-  }, [spec, theme]);
+  }, [request, theme]);
 
-  return result?.spec === spec ? result.blob : null;
+  return result?.request === request ? result.blob : null;
 }

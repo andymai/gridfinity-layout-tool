@@ -1,2 +1,2 @@
-export { YearStage, STAGE_BACKGROUND } from './YearStage';
+export { YearStage } from './YearStage';
 export type { YearStageProps } from './YearStage';

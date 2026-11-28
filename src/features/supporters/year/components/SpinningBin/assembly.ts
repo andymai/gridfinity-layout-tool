@@ -41,6 +41,8 @@ export function assemblyParts(mesh: MeshData, restOffset?: YearMesh['restOffset'
  */
 export function assemblyBox(parts: readonly PlacedPart[]): {
   readonly center: readonly [number, number, number];
+  readonly min: readonly [number, number, number];
+  readonly max: readonly [number, number, number];
   readonly radius: number;
 } {
   const min = [Infinity, Infinity, Infinity];
@@ -55,8 +57,15 @@ export function assemblyBox(parts: readonly PlacedPart[]): {
       }
     }
   }
-  if (!Number.isFinite(min[0])) return { center: [0, 0, 0], radius: 0 };
+  if (!Number.isFinite(min[0])) {
+    return { center: [0, 0, 0], min: [0, 0, 0], max: [0, 0, 0], radius: 0 };
+  }
   const center = [0, 1, 2].map((axis) => (min[axis] + max[axis]) / 2) as [number, number, number];
   const radius = Math.hypot(max[0] - min[0], max[1] - min[1], max[2] - min[2]) / 2;
-  return { center, radius };
+  return {
+    center,
+    min: [min[0], min[1], min[2]] as [number, number, number],
+    max: [max[0], max[1], max[2]] as [number, number, number],
+    radius,
+  };
 }

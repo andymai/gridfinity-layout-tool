@@ -3,21 +3,26 @@ import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useCreditsClock } from '../../../hooks/useCreditsClock';
-import type { YearCard } from '../../utils/yearCards';
+import { BEAT } from '../../look/motion';
+import { STAGE_COLOURS, cardColours } from '../../look/palettes';
+import { DISSOLVE_BEATS, ENTRANCE_BEATS, type YearCard } from '../../utils/yearCards';
 import {
   buildTimeline,
   nextTime,
   positionAt,
   previousTime,
   startOf,
+  transitionAt,
   type StoryPosition,
 } from '../../utils/storyTimeline';
+import { CardFrame } from '../CardFrame';
+import { TileFill } from '../TileFill';
 import { YearStage } from '../YearStage';
 
 export interface StoryPlayerProps {
   readonly cards: readonly YearCard[];
   readonly initialIndex?: number;
-  readonly accent: string;
+  readonly reducedMotion?: boolean;
   readonly onClose: () => void;
   /** Called once, when the last card first shows. */
   readonly onReachEnd: () => void;
@@ -29,7 +34,11 @@ export interface StoryPlayerProps {
   readonly onPausedChange?: (paused: boolean) => void;
   /** Controls beside the pause button, such as the sound toggle. */
   readonly extraControls?: ReactNode;
-  readonly renderCard: (card: YearCard, position: StoryPosition) => ReactNode;
+  /**
+   * The card in its 1080 × 1920 layout. `entering` is true while the first
+   * card's colour fills the empty stage, before the card shows.
+   */
+  readonly renderCard: (card: YearCard, position: StoryPosition, entering: boolean) => ReactNode;
   /**
    * The card's final words, announced once when it shows. The card itself
    * counts its numbers up, which a live region would read frame by frame.
@@ -37,8 +46,8 @@ export interface StoryPlayerProps {
   readonly describeCard?: (card: YearCard) => string;
 }
 
-/** By this many seconds into a card, every entrance animation has finished. */
-const SETTLED_S = 2.5;
+const ENTRANCE_S = ENTRANCE_BEATS * BEAT;
+const DISSOLVE_S = DISSOLVE_BEATS * BEAT;
 /** A press shorter than this is a tap; longer is a hold that only pauses. */
 const TAP_MS = 300;
 const SWIPE_PX = 50;
@@ -60,7 +69,7 @@ function PauseIcon({ paused }: { readonly paused: boolean }) {
 export function StoryPlayer({
   cards,
   initialIndex = 0,
-  accent,
+  reducedMotion = false,
   onClose,
   onReachEnd,
   onCardChange,
@@ -71,10 +80,20 @@ export function StoryPlayer({
   describeCard,
 }: StoryPlayerProps) {
   const t = useTranslation();
-  const timeline = useMemo(() => buildTimeline(cards.map((card) => card.duration)), [cards]);
+  const timeline = useMemo(
+    () =>
+      buildTimeline(
+        cards.map((card) => card.duration),
+        ENTRANCE_S
+      ),
+    [cards]
+  );
+  // The first card arrives as a fill of its colour on an empty stage; a story
+  // opened on a later card cuts straight to it.
+  const openAt = initialIndex === 0 ? 0 : startOf(timeline, initialIndex);
   const ignoreEnd = useCallback(() => {}, []);
   const { clock, paused, setPaused } = useCreditsClock(true, ignoreEnd);
-  const [time, setTime] = useState(() => startOf(timeline, initialIndex));
+  const [time, setTime] = useState(openAt);
   const hiddenPause = useRef(false);
   const press = useRef<{
     pointerId: number;
@@ -87,9 +106,9 @@ export function StoryPlayer({
 
   useEffect(() => {
     clock.setDuration(timeline.total);
-    clock.seek(startOf(timeline, initialIndex));
+    clock.seek(openAt);
     return clock.subscribe((c) => setTime(c.time));
-  }, [clock, timeline, initialIndex]);
+  }, [clock, timeline, openAt]);
 
   const position = positionAt(timeline, time);
   const lastIndex = cards.length - 1;
@@ -104,7 +123,7 @@ export function StoryPlayer({
   useEffect(() => {
     if (card) onCardChange?.(card);
   }, [card, onCardChange]);
-  const settledNow = position.elapsed >= SETTLED_S - 0.01;
+  const settledNow = card !== undefined && position.elapsed >= card.settle - 0.01;
   useEffect(() => {
     if (card && settledNow) onCardSettled?.(card);
   }, [card, settledNow, onCardSettled]);
@@ -116,9 +135,8 @@ export function StoryPlayer({
   // A paused step lands where the card has settled; at its start the entrance
   // has not run, and the card would sit empty until play resumes.
   const settled = useCallback(
-    (index: number) =>
-      startOf(timeline, index) + Math.min(SETTLED_S, (timeline.durations.at(index) ?? 1) - 0.05),
-    [timeline]
+    (index: number) => startOf(timeline, index) + (cards.at(index)?.settle ?? 0),
+    [timeline, cards]
   );
   const goNext = useCallback(() => {
     const { index } = positionAt(timeline, clock.time);
@@ -211,22 +229,34 @@ export function StoryPlayer({
   };
 
   const pauseLabel = paused ? t('your2026.controls.play') : t('your2026.controls.pause');
+  const entering = time < (timeline.starts[0] ?? 0);
+  const transition = transitionAt(
+    timeline,
+    cards.map((item) => item.beats * BEAT),
+    time,
+    DISSOLVE_S
+  );
+  const colours = entering || !card ? STAGE_COLOURS : cardColours(card.kind);
+  const target = transition ? cards.at(transition.target) : undefined;
+  const track = `${colours.ink}40`;
 
   return (
     <YearStage
-      accent={accent}
+      colours={colours}
       onClose={onClose}
       header={
         <div className="flex gap-[0.3em]" aria-hidden="true">
           {cards.map((item, index) => (
             <div
               key={item.kind}
-              className="h-[0.22em] flex-1 overflow-hidden rounded-full bg-white/20"
+              className="h-[0.22em] flex-1 overflow-hidden rounded-full"
+              style={{ background: track }}
             >
               <div
-                className="h-full rounded-full bg-white"
+                className="h-full w-full origin-left rounded-full"
                 style={{
-                  width: `${(index < position.index ? 1 : index === position.index ? position.progress : 0) * 100}%`,
+                  background: colours.ink,
+                  transform: `scaleX(${index < position.index ? 1 : index === position.index && !entering ? position.progress : 0})`,
                 }}
               />
             </div>
@@ -242,7 +272,8 @@ export function StoryPlayer({
             aria-label={pauseLabel}
             title={pauseLabel}
             onClick={togglePause}
-            className="text-white/80 hover:text-white"
+            className="opacity-85 hover:bg-black/10 hover:opacity-100"
+            style={{ color: 'inherit' }}
           >
             <PauseIcon paused={paused} />
           </IconButton>
@@ -260,19 +291,30 @@ export function StoryPlayer({
         onPointerCancel={onPointerCancel}
         onLostPointerCapture={onPointerCancel}
       >
-        {card && (
-          <section
-            key={card.kind}
-            aria-roledescription="slide"
-            aria-label={t('your2026.controls.slide', {
-              index: position.index + 1,
-              total: cards.length,
-            })}
-            className="flex min-h-0 flex-1 flex-col"
-          >
-            {renderCard(card, position)}
-          </section>
-        )}
+        <CardFrame
+          background={colours.bg}
+          overlay={
+            <TileFill
+              transition={transition}
+              background={target ? cardColours(target.kind).bg : colours.bg}
+              reduced={reducedMotion}
+            />
+          }
+        >
+          {card && (
+            <section
+              key={card.kind}
+              aria-roledescription="slide"
+              aria-label={t('your2026.controls.slide', {
+                index: position.index + 1,
+                total: cards.length,
+              })}
+              className="absolute inset-0"
+            >
+              {renderCard(card, position, entering)}
+            </section>
+          )}
+        </CardFrame>
       </div>
     </YearStage>
   );

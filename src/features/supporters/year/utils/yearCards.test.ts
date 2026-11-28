@@ -57,6 +57,21 @@ describe('buildYearCards', () => {
     expect(kinds.indexOf('complicated')).toBe(kinds.indexOf('longest') + 1);
   });
 
+  it('holds each card for its beats at 88 BPM, with a one-beat fill after all but the last', () => {
+    const cards = buildYearCards(full);
+    const beat = 60 / 88;
+    const intro = cards[0];
+    const thanks = cards.at(-1);
+    expect(intro?.beats).toBe(7);
+    expect(intro?.duration).toBeCloseTo(8 * beat);
+    expect(thanks?.kind).toBe('thanks');
+    expect(thanks?.duration).toBeCloseTo(8 * beat);
+    for (const card of cards) {
+      expect(card.settle).toBeGreaterThan(0);
+      expect(card.settle).toBeLessThan(card.beats * beat);
+    }
+  });
+
   it('leaves out cards with no numbers behind them', () => {
     const designsOnly: YearStats = {
       ...full,
