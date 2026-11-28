@@ -1,0 +1,112 @@
+src/shared/plan/planInput.ts
+  s_cbdce95362cca9::t_39c51b26b0bfd6 99-102
+  s_cbdce95362cca9::t_abe933d7541b6c 87-92
+api/lib/mcp/server.test.ts
+  s_cbdce95362cca9::t_d61d3a5fc56921 70-82
+  s_cbdce95362cca9::t_2c62f2d3ae224e 7,13-17
+src/shared/plan/planLink.ts
+  s_cbdce95362cca9::t_cb5e7cc6836b5b 37-43,45
+  s_cbdce95362cca9::t_248fd302688370 7-8
+src/shared/plan/planLink.test.ts
+  s_cbdce95362cca9::t_f36681e54fdd4c 28-41,43-44,50
+src/shared/plan/buildPlanLayout.test.ts
+  s_cbdce95362cca9::t_7824425bc85f67 111-161
+scripts/docs-ask-eval/checks.test.ts
+  s_cbdce95362cca9::t_aec6ac8e86848c 2-3,6-7
+  s_cbdce95362cca9::t_298145a55dcae1 102-203
+src/shared/plan/planInput.test.ts
+  s_cbdce95362cca9::t_b7716f34487e09 21-28
+apps/docs/.vitepress/theme/askAi/planMap.test.ts
+  s_cbdce95362cca9::t_84bf41dba0e344 3-11
+  s_cbdce95362cca9::t_ec0bfba7d49c30 65-73
+api/lib/agent/index.ts
+  s_cbdce95362cca9::t_2e9d1e6b512e5b 28
+src/agent/tools/planLayout.ts
+  s_cbdce95362cca9::t_189def510d8314 57-59,61,65-67
+src/agent/server.ts
+  s_cbdce95362cca9::t_91ad8e30155a39 3
+api/lib/docsAsk/tools.ts
+  s_cbdce95362cca9::t_805cecf3cd3f1c 138
+  s_cbdce95362cca9::t_55bc60f62daee6 95-100
+  s_cbdce95362cca9::t_adf4d68321179d 268-273
+  s_cbdce95362cca9::t_dddec3e332fb55 145
+apps/docs/reference/faq.md
+  s_cbdce95362cca9::t_60f1285a01d18f 52
+src/core/storage/planLinkImport.test.ts
+  s_cbdce95362cca9::t_b6c98fc49b46be 32-47
+api/lib/mcp/server.ts
+  s_cbdce95362cca9::t_06ff5994219c37 59-66
+scripts/docs-ask-eval/golden.ts
+  s_cbdce95362cca9::t_39cc9a7fa685bd 1007-1009
+  s_cbdce95362cca9::t_f7e543a54c3410 8,12-21,42-43,47-48
+  s_cbdce95362cca9::t_44f544e629981b 923-1006,1010-1020
+src/agent/contract/tool.ts
+  s_cbdce95362cca9::t_0dce54f3cb8e0d 16
+  s_cbdce95362cca9::t_06c5a5f4c77e86 15,17-19
+apps/docs/.vitepress/theme/components/PlanMap.vue
+  s_cbdce95362cca9::t_d98cf0345c7386 73
+  s_cbdce95362cca9::t_2d8e0fb7dc01bf 4,10
+src/agent/tools/drawerFit.test.ts
+  s_cbdce95362cca9::t_6d113e5c60f5c2 8,11-13
+src/agent/tools/planLayout.test.ts
+  s_cbdce95362cca9::t_00f64033292f5d 2-3,5-7
+  s_cbdce95362cca9::t_4a7f8141539264 79-143
+  s_cbdce95362cca9::t_b5cac561ed002a 44-59
+  s_cbdce95362cca9::t_04a036a949f1d0 144
+api/lib/docsAsk/tools.test.ts
+  s_cbdce95362cca9::t_1567b156dfc532 76,85,88-89
+  s_cbdce95362cca9::t_25658eb4a25728 98,102
+  s_cbdce95362cca9::t_130ec0fc60d84f 143-156
+  s_cbdce95362cca9::t_dabec48b24d6ff 3
+src/agent/contract/index.ts
+  s_cbdce95362cca9::t_29a6ec96bd316e 1
+src/shared/plan/buildPlanLayout.ts
+  s_cbdce95362cca9::t_8eaa8ed0ae7f9c 62,68-72
+  s_cbdce95362cca9::t_0fac856958837f 20
+  s_cbdce95362cca9::t_e2dbb6ded2d269 179,183,185-188
+scripts/docs-ask-eval/run.ts
+  s_cbdce95362cca9::t_d9252ba22129b4 28,37,84-85,183,202,319-321,329,367,389,429,459,474
+skills/gridfinity-layout-tool/references/tools.md
+  s_cbdce95362cca9::t_8f8666b97b1e56 30-52
+apps/docs/.vitepress/theme/askAi/planMap.ts
+  s_cbdce95362cca9::t_dde62a7c73b730 92-95,97-99,104-106
+  s_cbdce95362cca9::t_3a1f4e2f09a608 107
+scripts/docs-ask-eval/checks.ts
+  s_cbdce95362cca9::t_c559b95822dc16 1-3
+  s_cbdce95362cca9::t_158f3fbe98f2d5 86
+  s_cbdce95362cca9::t_4f40f641dd3058 169-170
+  s_cbdce95362cca9::t_0acfcdc6d6488d 85,87-98,101-115,118,123-168,171-200
+  s_cbdce95362cca9::t_4903ba7fad185a 116-117,119-122
+  s_cbdce95362cca9::t_6024cf935c136d 99-100
+src/agent/tools/drawerFit.ts
+  s_cbdce95362cca9::t_035d5319ccbce6 12
+  s_cbdce95362cca9::t_f99227d4118f36 40,48
+  s_cbdce95362cca9::t_d54644d275dff4 21
+  s_cbdce95362cca9::t_81350f1b470063 74
+  s_cbdce95362cca9::t_6533c263a00960 75-77
+  s_d25cf1576814d8::t_455e88d23e6ff6 78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fa6d2635c0f656dd3dd2245945d9cd512b26eb3e",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_d25cf1576814d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a72edc3cd8ca169d6",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
