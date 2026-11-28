@@ -1,0 +1,66 @@
+src/shared/generation/magnetPositions.ts
+  s_cbdce95362cca9::t_05e996c3c22428 13-14,20-25
+  s_cbdce95362cca9::t_c21f38d61acb30 26
+src/shared/generation/meshPersistence.ts
+  s_cbdce95362cca9::t_05e996c3c22428 98-100
+src/agent/client/render.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-149
+apps/docs/.vitepress/theme/components/AskAiPanel.vue
+  s_cbdce95362cca9::t_05e996c3c22428 11,48
+apps/docs/.vitepress/theme/askAi/useAskAi.ts
+  s_cbdce95362cca9::t_05e996c3c22428 2-9,13-14,17,19,23-27,30-31,56-57,60-66,69-80,125,179-187
+src/shared/utils/detachableFeetPlan.test.ts
+  s_cbdce95362cca9::t_05e996c3c22428 13-14,17-18,394,396-405,408-409,412-413,415-514
+apps/docs/.vitepress/theme/components/PlanMap.vue
+  s_cbdce95362cca9::t_05e996c3c22428 4-10
+apps/docs/.vitepress/theme/askAi/useAskAi.test.ts
+  s_cbdce95362cca9::t_05e996c3c22428 3,124
+src/agent/client/render.test.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-116
+src/features/generation/worker/generators/binGenerator.scenario.detachableFeetHoles.test.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-186
+src/features/generation/worker/generators/detachableFeetBuilder.ts
+  s_cbdce95362cca9::t_05e996c3c22428 187,189-191,196,198-206,374,404,456
+src/shared/utils/detachableFeetPlan.ts
+  s_cbdce95362cca9::t_05e996c3c22428 46,49-54,63-65,175-178,475-476,478-482,537-543,545-586,588-611,621,652
+src/agent/client/session.test.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-264
+src/agent/client/planMap.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-118
+src/agent/client/stream.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-34
+apps/docs/introduction/your-data.md
+  s_cbdce95362cca9::t_05e996c3c22428 22
+apps/docs/.vitepress/theme/askAi/reads.ts
+  s_cbdce95362cca9::t_05e996c3c22428 13,48
+apps/docs/.vitepress/theme/components/AskAiAnswer.vue
+  s_cbdce95362cca9::t_05e996c3c22428 4-5,120
+src/agent/client/history.test.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-127
+src/agent/client/history.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-153
+src/agent/client/session.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-476
+src/agent/client/stream.test.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-51
+src/agent/client/planMap.test.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-75
+src/shared/constants/bin.test.ts
+  s_cbdce95362cca9::t_05e996c3c22428 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c6e3fc20fdabb411751cf7615142d2e6a21ea452",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
