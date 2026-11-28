@@ -304,6 +304,11 @@ describe('BaseplatePanel', () => {
     expect(screen.getByText('baseplate.sectionDimensions')).toBeInTheDocument();
   });
 
+  it('hands the shape editor to the dimensions section', () => {
+    render(<BaseplatePanel shapeEditor={() => <div data-testid="shape-editor" />} />);
+    expect(screen.getByTestId('shape-editor')).toBeInTheDocument();
+  });
+
   it('renders base section', () => {
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.sectionBase')).toBeInTheDocument();

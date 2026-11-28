@@ -27,8 +27,8 @@ export const SharedLayoutBanner = lazyWithRetry(() =>
 export const DesignerPage = lazyWithRetry(() =>
   import('@/features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );
-export const BaseplatePage = lazyWithRetry(() =>
-  import('@/features/baseplate').then(namedExport('BaseplatePage'))
+export const BaseplateRoute = lazyWithRetry(() =>
+  import('@/shell/BaseplateRoute/BaseplateRoute').then(namedExport('BaseplateRoute'))
 );
 export const BaseplateLibraryInitMount = lazyWithRetry(() =>
   import('@/features/baseplate/components/BaseplateLibraryInitMount').then(

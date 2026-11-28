@@ -28,6 +28,11 @@ the stored outline is never mutated by the frame (#3149).
   rectangle); the cell editor needs one first.
   It sits in the toggle's `trailing` slot, beside the label and outside the
   switch button, so it stays its own control for assistive tech.
+- `components/DrawerShapeEditButton` — "Edit shape" on the baseplate page: the
+  corner and pen dialogs behind a labelled trigger, disabled with a reason while
+  the plate is out of sync. The shell's `BaseplateRoute` hands it to
+  `BaseplatePage` as `shapeEditor`, because the baseplate slice cannot import
+  this one.
 - `@/shared/components/GridAlignmentControls` — grid↔perimeter alignment:
   X/Y mm steppers writing `drawer.gridShiftX/Y` through `drawer.update`
   (undoable, displaces newly-outside bins), a reset, and a hint reporting the

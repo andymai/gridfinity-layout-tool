@@ -32,13 +32,18 @@ import { DimensionsSection } from './DimensionsSection';
 import { BaseSection } from './BaseSection';
 import { PhysicalUnitsSection } from './PhysicalUnitsSection';
 import type { SplitOverride, StackPrintParams } from '@/core/types';
+import type { ShapeEditorSlot } from '../../types/shapeEditor';
 import {
   replaceBaseplateParams,
   updateBaseplateParams,
   useBaseplatePanelDerived,
 } from './panelState';
 
-export function BaseplatePanel() {
+interface BaseplatePanelProps {
+  shapeEditor?: ShapeEditorSlot;
+}
+
+export function BaseplatePanel({ shapeEditor }: BaseplatePanelProps = {}) {
   const t = useTranslation();
 
   const stackPrint = useLayoutStore(
@@ -83,7 +88,7 @@ export function BaseplatePanel() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        <DimensionsSection />
+        <DimensionsSection shapeEditor={shapeEditor} />
         <StackPrintSection stackPrint={stackPrint} onChange={setStackPrint} />
         <BaseSection />
         <PhysicalUnitsSection />

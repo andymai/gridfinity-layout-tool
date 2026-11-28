@@ -20,9 +20,19 @@ Not every drawer is a neat rectangle. Some have round corners, a cut corner, or 
 
 ## Give the drawer a shape
 
-You draw the shape in the layout editor, not in the baseplate generator.
+The shape belongs to the drawer in your layout. You can change it from the baseplate generator or from the layout editor.
 
-1. In the layout editor, turn on <Ui k="drawerShape.toggle" />. A grid opens where you can remove cells from the drawer.
+In the baseplate generator:
+
+1. In <Ui k="baseplate.sectionDimensions" />, click <Ui k="drawerShape.edit" />.
+2. Choose <Ui k="drawerShape.corners.open" /> for cut, round or notched corners, or <Ui k="drawerShape.penOpen" /> for a free outline.
+3. Click <Ui k="drawerShape.editor.apply" />.
+
+The button works only while <Ui k="baseplate.syncWithLayout" /> is on. The new shape also changes the drawer in your layout, so bins outside the shape move to the stash. <Ui k="common.undo" /> takes back the shape and the bins in one step.
+
+In the layout editor:
+
+1. Turn on <Ui k="drawerShape.toggle" />. A grid opens where you can remove cells from the drawer.
 2. For other ways to make the shape, open the <Ui k="drawerShape.actions" /> menu next to the toggle. It has <Ui k="drawerShape.corners.open" /> for cut corners and <Ui k="drawerShape.penOpen" /> for a free outline. Once the drawer has a shape, it also has <Ui k="drawerShape.edit" />.
 
 With <Ui k="drawerShape.penOpen" /> you can drag corners, curve edges, and import an outline from an SVG or DXF file. See [Set up the drawer](../layouts/drawer-setup) for the full steps.
@@ -84,6 +94,12 @@ Give a shaped plate a moment after each change. The quick preview doesn't draw s
 :::
 
 ## When it goes wrong
+
+### The Edit shape button is off
+
+Turn on <Ui k="baseplate.syncWithLayout" /> in <Ui k="baseplate.sectionDimensions" />.
+
+A plate with a custom size has no link to the drawer, so a drawer shape can't change it.
 
 ### The plate stays a rectangle
 

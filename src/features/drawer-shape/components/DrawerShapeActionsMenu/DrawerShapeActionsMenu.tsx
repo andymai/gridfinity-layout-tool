@@ -83,7 +83,7 @@ export function DrawerShapeActionsMenu({
   );
 }
 
-function CornerCutIcon() {
+export function CornerCutIcon() {
   return (
     <svg
       viewBox="0 0 24 24"

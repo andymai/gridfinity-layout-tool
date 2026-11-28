@@ -36,7 +36,7 @@ import {
   SharedLayoutImporter,
   SharedLayoutBanner,
   DesignerPage,
-  BaseplatePage,
+  BaseplateRoute,
   BaseplateLibraryInitMount,
   SupportersPage,
   Your2026Page,
@@ -302,7 +302,7 @@ export default function App() {
     const page = isDesignerRoute
       ? { Page: DesignerPage, loading: t('loading.designer') }
       : isBaseplateRoute
-        ? { Page: BaseplatePage, loading: t('loading.baseplate') }
+        ? { Page: BaseplateRoute, loading: t('loading.baseplate') }
         : isLabelsRoute
           ? { Page: LabelsPage, loading: t('loading.labels') }
           : isSupportersRoute
