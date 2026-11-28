@@ -154,6 +154,16 @@ describe('checkPlans', () => {
     );
   });
 
+  it('flags a link whose bins differ from the map, even at the same grid and count', () => {
+    const shelf = { grid: { width: 3, depth: 2 } };
+    const wide = drawerPlan({ ...shelf, bins: [{ label: 'M3', width: 2, depth: 1, height: 3 }] });
+    const small = drawerPlan({ ...shelf, bins: [{ label: 'M3', width: 1, depth: 1, height: 3 }] });
+    const swapped: PlanView = { ...wide, link: small.link };
+    expect(checkPlans(`A 3 x 2 grid.\n\n[[plan:${wide.handle}]]`, [swapped])).toEqual([
+      `the link of [[plan:${wide.handle}]] opens another layout than its map shows`,
+    ]);
+  });
+
   it('flags a drawer of another size, with bins, or at a grid that does not fit', () => {
     const noHeight = drawerPlan({ drawer: { width: 48, depth: 36, unit: 'cm' }, bins: [] });
     expect(checkPlans(ending(noHeight, '11 x 8'), [noHeight], expected)).toEqual([
@@ -195,10 +205,13 @@ describe('checkPlans', () => {
     ).toEqual(['the answer does not name the 11 x 8.5 grid of its plan']);
   });
 
-  it('wants no plan for a drawer that nothing fits', () => {
+  it('wants no plan and no link into the app for a drawer that nothing fits', () => {
     expect(checkPlans('No grid fits a 38 mm drawer.', [], null)).toEqual([]);
     expect(checkPlans(ending(half), [half], null)).toEqual([
       'shows a plan for a drawer with no fit',
     ]);
+    expect(
+      checkPlans('No grid fits. Try https://gridfinitylayouttool.com/?drawer=38x38', [], null)
+    ).toEqual(['writes a link to the app: https://gridfinitylayouttool.com/?drawer=38x38']);
   });
 });

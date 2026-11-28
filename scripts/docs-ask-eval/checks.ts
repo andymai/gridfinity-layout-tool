@@ -147,16 +147,12 @@ export function checkPlans(
       continue;
     }
     const rebuilt = runPlanLayout(input, { origin: 'https://gridfinitylayouttool.com' }).plan;
-    const grid = [plan.grid.width, plan.grid.depth] as const;
-    if (
-      rebuilt === null ||
-      rebuilt.grid.width !== grid[0] ||
-      rebuilt.grid.depth !== grid[1] ||
-      rebuilt.bins.length !== plan.bins.length ||
-      rebuilt.stashed.length !== plan.stashed.length
-    ) {
+    const drawn = (view: PlanView): string =>
+      JSON.stringify([view.title, view.grid, view.bins, view.stashed]);
+    if (rebuilt === null || drawn(rebuilt) !== drawn(plan)) {
       problems.push(`the link of [[plan:${handle}]] opens another layout than its map shows`);
     }
+    const grid = [plan.grid.width, plan.grid.depth] as const;
     if (!namesGrid(answer, grid)) {
       problems.push(`the answer does not name the ${grid[0]} x ${grid[1]} grid of its plan`);
     }
@@ -168,6 +164,8 @@ export function checkPlans(
     if (handles.length !== 1) problems.push(`shows ${handles.length} plans, not 1`);
     const last = answer.trim().split('\n').at(-1)?.trim() ?? '';
     if (!/^\[\[plan:[^\]]+\]\]$/.test(last)) problems.push('does not end with the plan');
+  }
+  if (expected !== undefined) {
     const appLinks = answer.match(APP_LINK) ?? [];
     if (appLinks.length > 0) problems.push(`writes a link to the app: ${appLinks.join(', ')}`);
   }
