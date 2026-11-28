@@ -1,0 +1,32 @@
+src/agent/client/session.ts
+  s_cbdce95362cca9::t_85d886cc716162 128-139,144,263,370,413,420,465,469-473
+src/features/ask-ai/components/AskAiPanel/AskAiPanel.tsx
+  s_cbdce95362cca9::t_292fc6781c5ae0 203,205
+src/features/ask-ai/components/AskAiRequestCard/AskAiRequestCard.tsx
+  s_cbdce95362cca9::t_379a555389fc21 1,3,13,74-75,85-94,157-159,161,163-164,166-172,175,177-178,180-186,190
+src/agent/client/session.test.ts
+  s_cbdce95362cca9::t_292fc6781c5ae0 130,152,184,357,377
+  s_cbdce95362cca9::t_613d80e5e6aea7 287-343
+apps/docs/.vitepress/theme/askAi/useAskAi.ts
+  s_cbdce95362cca9::t_292fc6781c5ae0 182
+src/features/ask-ai/components/AskAiAnswer/AskAiAnswer.tsx
+  s_cbdce95362cca9::t_292fc6781c5ae0 5,20
+src/features/ask-ai/components/AskAiRequestCard/AskAiRequestCard.test.tsx
+  s_cbdce95362cca9::t_2300663ae7c5b3 41,68-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4219cffed186a23b9dfee06bb6168d0a05d7fc7d",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
