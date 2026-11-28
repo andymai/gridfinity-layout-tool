@@ -19,7 +19,7 @@ function recordingContext(): { ctx: CanvasRenderingContext2D; drawn: Drawn[]; fi
       if (key === 'fillText')
         return (text: string) =>
           drawn.push({ text, font: String(target.font), fill: String(target.fillStyle) });
-      if (key === 'fillRect') return () => fills.push(String(target.fillStyle));
+      if (key === 'fillRect' || key === 'fill') return () => fills.push(String(target.fillStyle));
       if (key === 'measureText')
         return (text: string) => ({
           width: text.length * 40,
@@ -70,6 +70,15 @@ describe('drawShareCard', () => {
     drawShareCard(recordingContext().ctx, scene, theme, {});
     expect(draw.mock.calls[0]?.[0].t).toBeGreaterThan(scene.still);
     expect(draw.mock.calls[0]?.[0].reduced).toBe(false);
+  });
+
+  it('draws the bin the card shows when there is no 3D canvas and no thumbnail', () => {
+    const scene = buildScene(sceneInput('complicated'));
+    if (!scene?.model) throw new Error('no model slot');
+    const { ctx, fills } = recordingContext();
+    drawShareCard(ctx, scene, theme, {});
+    expect(fills).toContain(scene.model.look.tint);
+    expect(fills).toContain(scene.model.look.edge);
   });
 
   it("draws the thank-you card's keys with their labels", () => {

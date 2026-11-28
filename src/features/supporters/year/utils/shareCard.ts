@@ -5,6 +5,7 @@ import {
   drawTinted,
   fillTimes,
   lineBaseline,
+  paintBinGlyph,
   roundRect,
 } from '../cards/paint';
 import { TEXT, familyFor } from '../look/fonts';
@@ -109,6 +110,8 @@ export function drawShareCard(
   ctx.restore();
 
   const model = scene.model;
+  // With no 3D canvas and no thumbnail, the card shows the drawn bin, and so does the image.
+  if (model && !images.model) paintBinGlyph(ctx, model, model.look.tint, model.look.edge);
   if (model && images.model) {
     const { width, height } = imageSize(images.model);
     const isCanvas =

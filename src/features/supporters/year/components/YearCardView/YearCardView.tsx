@@ -17,7 +17,7 @@ import type { LengthUnit } from '@/shared/utils/lengthUnit';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { detectWebGL, markWebGLUnavailable, webglFailureReason } from '@/shared/webgl/detectWebGL';
 import { buildScene } from '../../cards/buildScene';
-import { THUMB_SIZE, drawTinted } from '../../cards/paint';
+import { BIN_GLYPH, GLYPH_SHARE, THUMB_SIZE, drawTinted } from '../../cards/paint';
 import { PRINT_SPAN, PRINT_START, modelPose } from '../../cards/modelScenes';
 import { CARD_H, CARD_W, type ModelSlot, type Scene, type TextBlock } from '../../cards/scene';
 import { TEXT, familyFor } from '../../look/fonts';
@@ -72,11 +72,23 @@ class ShowcaseBoundary extends Component<ShowcaseBoundaryProps, { failed: boolea
 /** A drawn bin in the card's tint, for a design with no thumbnail yet. */
 function BinGlyph({ tint, edge }: { readonly tint: string; readonly edge: string }) {
   return (
-    <svg viewBox="0 0 120 120" className="h-[60%] w-[60%]" aria-hidden="true">
-      <rect x="14" y="20" width="92" height="22" rx="8" fill={tint} opacity="0.7" />
-      <rect x="22" y="25" width="76" height="12" rx="4" fill={edge} opacity="0.35" />
-      <rect x="14" y="36" width="92" height="64" rx="5" fill={tint} />
-      <rect x="22" y="100" width="76" height="10" rx="3" fill={edge} opacity="0.5" />
+    <svg
+      viewBox="0 0 120 120"
+      style={{ width: `${GLYPH_SHARE * 100}%`, height: `${GLYPH_SHARE * 100}%` }}
+      aria-hidden="true"
+    >
+      {BIN_GLYPH.map((part) => (
+        <rect
+          key={`${part.x}-${part.y}`}
+          x={part.x}
+          y={part.y}
+          width={part.w}
+          height={part.h}
+          rx={part.r}
+          fill={part.colour === 'tint' ? tint : edge}
+          opacity={part.opacity}
+        />
+      ))}
     </svg>
   );
 }
