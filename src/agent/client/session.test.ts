@@ -378,6 +378,61 @@ describe('the app door', () => {
     expect(apply).not.toHaveBeenCalled();
     expect(bodyOf(1).results).toEqual([{ callId: 'toolu_c', status: 'declined' }]);
     expect(state.exchanges[0]?.steps[0]).toMatchObject({ state: 'done', label: 'Not applied' });
+    // The step's translation key would still read as "Preparing changes".
+    expect(state.exchanges[0]?.steps[0]).not.toHaveProperty('key');
+    expect(state.exchanges[0]?.steps[0]).not.toHaveProperty('vars');
+  });
+
+  it('sends its door with a thumb too, so the app door switch covers feedback', async () => {
+    session = start({ door: 'app' });
+    fetchMock.mockResolvedValueOnce(answer());
+    await session.ask('Q?', 'app/layout');
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+    const current = state.exchanges[0];
+    if (current) session.sendFeedback(current, 1);
+    expect(bodyOf(1)).toMatchObject({ op: 'feedback', door: 'app', value: 1 });
+  });
+
+  it('does not resume on its own after Stop', async () => {
+    prepareCalls = () => Promise.resolve(preview({ settled: { outcome: 'refused', change: 1 } }));
+    session = start({ door: 'app' });
+    const encoder = new TextEncoder();
+    // The stream stays open after pending, as a slow server's would, until the abort.
+    fetchMock.mockImplementationOnce((_url, init) => {
+      const body = new ReadableStream<Uint8Array>({
+        start(stream) {
+          stream.enqueue(
+            encoder.encode(
+              `event: message\ndata: ${JSON.stringify({ content: [change] })}\n\n` +
+                `event: pending\ndata: ${JSON.stringify({ calls: [{ id: 'toolu_c', name: 'propose_changes', input: {} }], pending: {} })}\n\n`
+            )
+          );
+          init?.signal?.addEventListener('abort', () =>
+            stream.error(new DOMException('Stopped', 'AbortError'))
+          );
+        },
+      });
+      return Promise.resolve(new Response(body));
+    });
+    const asked = session.ask('Add a bin', 'app/layout');
+    await vi.waitFor(() => expect(state.exchanges[0]?.request?.state).toBe('asking'));
+    session.stop();
+    await asked;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops a preparation that ends after New chat, and resumes nothing', async () => {
+    let finish: (calls: PreparedCall[]) => void = () => undefined;
+    prepareCalls = () => new Promise((resolve) => (finish = resolve));
+    session = start({ door: 'app' });
+    fetchMock.mockResolvedValueOnce(proposal());
+    await session.ask('Add a bin', 'app/layout');
+    session.newChat();
+    finish(preview({ settled: { outcome: 'refused', change: 1 } }));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(state.exchanges).toEqual([]);
   });
 
   it('sends a change that the app refused at once, without a question to the reader', async () => {

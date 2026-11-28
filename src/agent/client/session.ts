@@ -212,15 +212,21 @@ export function createSession(host: SessionHost): Session {
   let nextId = 1;
   // A request that needs no decision, held until the request that brought it ends.
   let settledRequest: Exchange | null = null;
+  // Stop and New chat end every preparation and queued resume that is still
+  // out, so none can restart the model or answer into another chat.
+  let generation = 0;
   const door = host.door === 'app' ? { door: 'app' } : {};
 
+  // Every op names the door, so the door's own switch covers feedback too.
   const post = (body: Record<string, unknown>, signal?: AbortSignal): Promise<Response> =>
     fetch(host.endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...body, ...door }),
       signal,
     });
+
+  const inChat = (target: Exchange): boolean => state.exchanges.includes(target);
 
   function chat(): Conversation {
     conversation ??= loadConversation(host.storage(), host.storageKey, host.newId);
@@ -240,6 +246,7 @@ export function createSession(host: SessionHost): Session {
   }
 
   async function prepare(current: Exchange, calls: unknown[]): Promise<void> {
+    const started = generation;
     const asked = calls.filter(isCall);
     let prepared: PreparedCall[];
     try {
@@ -253,6 +260,7 @@ export function createSession(host: SessionHost): Session {
         unavailable: true,
       }));
     }
+    if (started !== generation || !inChat(current)) return;
     const request = current.request;
     if (request === null || request.state !== 'loading') return;
     request.calls = prepared;
@@ -387,7 +395,6 @@ export function createSession(host: SessionHost): Session {
       const response = await post(
         {
           op: 'ask',
-          ...door,
           sessionId: before.sessionId,
           question: text,
           page,
@@ -412,7 +419,7 @@ export function createSession(host: SessionHost): Session {
 
   async function answerRequest(target: Exchange, answer: RequestAnswer): Promise<void> {
     const request = target.request;
-    if (request === null || request.state !== 'asking' || controller) return;
+    if (request === null || request.state !== 'asking' || controller || !inChat(target)) return;
     request.state = 'sending';
     const abort = new AbortController();
     controller = abort;
@@ -425,8 +432,10 @@ export function createSession(host: SessionHost): Session {
     target.steps = target.steps.map((step) => {
       const call = asked.get(step.id);
       if (call === undefined) return step;
-      const label = declined.has(step.id) ? host.declinedLabel(call) : step.label;
-      return { ...step, state: 'done', label };
+      if (!declined.has(step.id)) return { ...step, state: 'done' };
+      // The host's label replaces the server's, key and values with it.
+      const { key: _key, vars: _vars, ...rest } = step;
+      return { ...rest, state: 'done', label: host.declinedLabel(call) };
     });
     if (results.some((result) => result.status === 'shared')) target.personal = true;
     target.status = 'waiting';
@@ -437,7 +446,6 @@ export function createSession(host: SessionHost): Session {
       const response = await post(
         {
           op: 'resume',
-          ...door,
           sessionId: before.sessionId,
           pending: request.pending,
           results,
@@ -480,6 +488,8 @@ export function createSession(host: SessionHost): Session {
   }
 
   function stop(): void {
+    generation++;
+    settledRequest = null;
     controller?.abort();
   }
 

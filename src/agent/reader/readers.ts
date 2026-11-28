@@ -173,6 +173,7 @@ export function summarizeLayout(layout: Layout, modifiedAt?: number): MyLayoutDa
     }),
     moreBins: Math.max(0, placed.length - READER_LIMITS.BINS),
     stashed: stashed.slice(0, READER_LIMITS.STASHED).map((bin) => ({
+      id: clip(bin.id, 64),
       label: clip(bin.label, 24),
       width: bin.width,
       depth: bin.depth,

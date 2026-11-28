@@ -130,12 +130,15 @@ describe('browser reads', () => {
     const layout = data?.layout;
     if (!layout) throw new Error('no layout');
     expect(layout.bins.map((bin) => bin.id)).toEqual(['b1', 'b2']);
+    // A stashed bin needs its id too, to go back on the grid or be changed.
+    expect(layout.stashed.map((bin) => bin.id)).toEqual(['b3']);
     expect(layout.layers[0]?.id).toBe(desk.layers[0]?.id);
     expect(layout.categories).toEqual(
       desk.categories.map((category) => ({ id: category.id, name: category.name }))
     );
     const text = formatReadMyLayout({ layout });
     expect(text).toContain('"M3 screws" (id "b1")');
+    expect(text).toContain('In the stash: "Case" (id "b3", ');
     expect(text).toContain(
       `Categories: "${desk.categories[0]?.name}" (id "${desk.categories[0]?.id}")`
     );
@@ -144,6 +147,7 @@ describe('browser reads', () => {
       ...older,
       layers: older.layers.map(({ id: _id, ...layer }) => layer),
       bins: older.bins.map(({ id: _id, ...bin }) => bin),
+      stashed: older.stashed.map(({ id: _id, ...bin }) => bin),
     };
     const plain = formatReadMyLayout(readMyLayoutData.parse({ layout: stored }));
     expect(plain).not.toContain('(id ');
